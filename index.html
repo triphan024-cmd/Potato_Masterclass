@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato English Center - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../1. Potato logo.png" alt="Potato Logo" class="logo">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-target="view-dashboard">
+                    <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
+                </li>
+                <li class="nav-item" data-target="view-teacher">
+                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teachers</a>
+                </li>
+                <li class="nav-item" data-target="view-academic">
+                    <a href="#"><i class="fa-solid fa-book-open"></i> Academic</a>
+                </li>
+                <li class="nav-item" data-target="view-operation">
+                    <a href="#"><i class="fa-solid fa-briefcase"></i> Operation</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="greeting-header" style="flex-grow: 1;">
+                    <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning, Admin!</h1>
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Navigate the future of education with Potato Center.</span>
+                </div>
+                <div class="week-selector" style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 8px 16px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-right: 24px;">
+                    <button class="week-btn" id="prevWeekBtn" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="currentWeekDisplay" style="font-weight: 600; color: var(--text-color); font-size: 0.95rem;">Week 14 (01/04 - 07/04)</span>
+                    <button class="week-btn" id="nextWeekBtn" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="user-profile">
+                    <div class="notification-icon">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="avatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=8b5cf6&color=fff" alt="User">
+                    </div>
+                    <div class="user-info">
+                        <h4>Admin</h4>
+                        <span>Center Manager</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- ==================== DASHBOARD VIEW ==================== -->
+                <div id="view-dashboard" class="page-view active">
+                <!-- Metrics Grid -->
+                <section class="metrics-grid">
+                    <div class="metric-card card-purple panel">
+                        <div class="metric-data">
+                            <h3>Total Students</h3>
+                            <p class="value">1,245</p>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 12%</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-blue panel">
+                        <div class="metric-data">
+                            <h3>Total Classes</h3>
+                            <p class="value">86</p>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 5 classes</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon"><i class="fa-solid fa-chalkboard"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-orange panel">
+                        <div class="metric-data">
+                            <h3>Upcoming Exams</h3>
+                            <p class="value">12</p>
+                            <span class="trend neutral">This month</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon alert"><i class="fa-solid fa-pen-to-square"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-green panel">
+                        <div class="metric-data">
+                            <h3>Upcoming Classes</h3>
+                            <p class="value">8</p>
+                            <span class="trend positive">Next week</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon highlight"><i class="fa-solid fa-door-open"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-purple panel">
+                        <div class="metric-data">
+                            <h3>NPS Score</h3>
+                            <p class="value">9.2</p>
+                            <span class="trend positive">Excellent</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon"><i class="fa-solid fa-face-smile"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-blue panel">
+                        <div class="metric-data">
+                            <h3>Churn Rate</h3>
+                            <p class="value">2.4%</p>
+                            <span class="trend neutral">Normal</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon alert"><i class="fa-solid fa-user-minus"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-orange panel">
+                        <div class="metric-data">
+                            <h3>Cash Flow</h3>
+                            <p class="value">2.4B</p>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 8%</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon highlight"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                        </div>
+                    </div>
+                    <div class="metric-card card-green panel">
+                        <div class="metric-data">
+                            <h3>Collected Fees</h3>
+                            <p class="value">85%</p>
+                            <span class="trend positive">On track</span>
+                        </div>
+                        <div class="metric-top">
+                            <div class="metric-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        </div>
+                    </div>
+                </section>
+
+                <h2 style="font-size: 1.3rem; margin-top: 32px; margin-bottom: 16px; color: var(--text-color);">Executive Summary - Center Health</h2>
+                
+                <!-- Class List with Integrated Departments -->
+                <section class="classes-list soft-panel" style="overflow-x: auto;">
+                    <table class="modern-table integrated-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="sticky-col">Class ID</th>
+                                <th rowspan="2" class="text-center">Students</th>
+                                <th rowspan="2">Teacher</th>
+                                <th colspan="4" class="dept-th teacher-th"><i class="fa-solid fa-chalkboard-user"></i> Teachers</th>
+                                <th colspan="4" class="dept-th academic-th"><i class="fa-solid fa-book-open"></i> Academic</th>
+                                <th colspan="4" class="dept-th operation-th"><i class="fa-solid fa-briefcase"></i> Operation</th>
+                                <th rowspan="2">Action</th>
+                            </tr>
+                            <tr class="sub-headers">
+                                <!-- Teacher -->
+                                <th>Homework</th>
+                                <th>Attendance</th>
+                                <th>Engagement</th>
+                                <th>Issues</th>
+                                <!-- Academic -->
+                                <th>Tests</th>
+                                <th>Scores</th>
+                                <th>Progress</th>
+                                <th>Issues</th>
+                                <!-- Operation -->
+                                <th>Fees</th>
+                                <th>Reminders</th>
+                                <th>Reports</th>
+                                <th>Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <!-- Dynamic data -->
+                        </tbody>
+                    </table>
+                </section>
+                </div> <!-- End view-dashboard -->
+
+                <!-- ==================== TEACHER VIEW ==================== -->
+                <div id="view-teacher" class="page-view" style="display: none;">
+                    <section class="metrics-grid">
+                        <div class="metric-card card-blue panel">
+                            <div class="metric-data">
+                                <h3>Total Teachers</h3>
+                                <p class="value">45</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 2 New</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-orange panel">
+                            <div class="metric-data">
+                                <h3>Teaching Quality</h3>
+                                <p class="value">4.8</p>
+                                <span class="trend positive">Excellent</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-star"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Plan Completion</h3>
+                                <p class="value">92%</p>
+                                <span class="trend neutral">On track</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon alert"><i class="fa-solid fa-map-location-dot"></i></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Weekly Review -->
+                    <section id="weekly-board-teacher" class="weekly-board panel">
+                        <div class="weekly-header">
+                            <h2>Weekly Report: Teachers</h2>
+                        </div>
+                        <div class="weekly-content">
+                            <div class="focus-one-thing">
+                                <span>WEEKLY FOCUS</span>
+                                <h3>Improve Student Engagement</h3>
+                            </div>
+                            <div class="pra-grid">
+                                <div class="pra-col plan-col">
+                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
+                                    <ul>
+                                        <li>Conduct 2 workshops on interactive teaching.</li>
+                                        <li>Review low engagement classes.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col result-col">
+                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
+                                    <ul>
+                                        <li>Workshop 1 completed.</li>
+                                        <li>Engagement up 5% in target classes.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col action-col">
+                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
+                                    <ul>
+                                        <li>Follow up with Teachers.</li>
+                                        <li>Schedule Workshop 2.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <table class="modern-table" style="min-width: 1000px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">Class ID</th>
+                                    <th>Teacher (Main)</th>
+                                    <th>TA</th>
+                                    <th>Students</th>
+                                    <th>Homework</th>
+                                    <th>Attendance</th>
+                                    <th style="min-width:200px">Syllabus Tracking</th>
+                                    <th>Engagement</th>
+                                    <th style="min-width:200px">Behavior/Attitude</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-table-body">
+                                <!-- Dynamic data -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <!-- ==================== ACADEMIC VIEW ==================== -->
+                <div id="view-academic" class="page-view" style="display: none;">
+                    <section class="metrics-grid">
+                        <div class="metric-card card-purple panel">
+                            <div class="metric-data">
+                                <h3>Active Courses</h3>
+                                <p class="value">12</p>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-book-open"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-blue panel">
+                            <div class="metric-data">
+                                <h3>Pass Rate</h3>
+                                <p class="value">88%</p>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon highlight"><i class="fa-solid fa-graduation-cap"></i></div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="weekly-board panel">
+                        <div class="weekly-header">
+                            <h2>Weekly Report: Academic</h2>
+                        </div>
+                        <div class="weekly-content">
+                            <div class="focus-one-thing">
+                                <span>WEEKLY FOCUS</span>
+                                <h3>Finalize new IELTS Curriculum</h3>
+                            </div>
+                            <div class="pra-grid">
+                                <div class="pra-col plan-col">
+                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
+                                    <ul>
+                                        <li>Draft remaining 4 modules.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col result-col">
+                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
+                                    <ul>
+                                        <li>3 modules drafted.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col action-col">
+                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
+                                    <ul>
+                                        <li>Review with senior teachers.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <table class="modern-table" style="min-width: 1100px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">Class ID</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
+                                    <th>Curriculum</th>
+                                    <th>Test Date</th>
+                                    <th>Avg Score</th>
+                                    <th>Pass Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="academic-table-body">
+                                <!-- Dynamic data -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <!-- ==================== OPERATION VIEW ==================== -->
+                <div id="view-operation" class="page-view" style="display: none;">
+                    <section class="metrics-grid">
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Collected Fees</h3>
+                                <p class="value">95%</p>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon highlight"><i class="fa-solid fa-money-bill-wave"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-orange panel">
+                            <div class="metric-data">
+                                <h3>Overdue Reminders</h3>
+                                <p class="value">5</p>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon alert"><i class="fa-solid fa-file-invoice"></i></div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="weekly-board panel">
+                        <div class="weekly-header">
+                            <h2>Weekly Report: Operation</h2>
+                        </div>
+                        <div class="weekly-content">
+                            <div class="focus-one-thing">
+                                <span>WEEKLY FOCUS</span>
+                                <h3>Complete month-end fee collection</h3>
+                            </div>
+                            <div class="pra-grid">
+                                <div class="pra-col plan-col">
+                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
+                                    <ul>
+                                        <li>Contact 15 overdue students.</li>
+                                        <li>Issue receipt batch #4.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col result-col">
+                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
+                                    <ul>
+                                        <li>10 paid. 5 pending response.</li>
+                                    </ul>
+                                </div>
+                                <div class="pra-col action-col">
+                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
+                                    <ul>
+                                        <li>Call parents of 5 pending students.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <table class="modern-table" style="min-width: 1000px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">Class ID</th>
+                                    <th>Students</th>
+                                    <th>Expected Revenue</th>
+                                    <th>Collected Fees</th>
+                                    <th>Outstanding Debt</th>
+                                    <th>Reminders</th>
+                                    <th>Reports</th>
+                                    <th>Facility Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operation-table-body">
+                                <!-- Dynamic data -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Class Detail -->
+    <div id="classModal" class="modal-backdrop">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3 id="modalClassTitle">Class Details</h3>
+                <button class="close-btn" onclick="closeClassDetail()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="placeholder-content">
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
+                    <br>
+                    <p>Detailed information about students, scores, and homework will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Issues -->
+    <div id="issuesModal" class="modal-backdrop">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="modalIssuesTitle">Class Issues</h3>
+                <button class="close-btn" onclick="closeIssues()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <ul id="issuesList" style="padding-left: 20px; line-height: 1.6; color: var(--text-color);">
+                    <!-- issues dynamically added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
