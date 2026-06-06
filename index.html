@@ -148,6 +148,19 @@
                     </div>
                 </section>
 
+                <!-- Calendar Panel -->
+                <section class="panel calendar-panel" style="padding: 24px; margin-top: 24px; max-width: 450px;">
+                    <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 id="cal-month-year" style="font-size: 1.1rem; color: var(--text-color); margin: 0;">May 2026</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="renderCalendar(-1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button onclick="renderCalendar(1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center;">
+                    </div>
+                </section>
+
                 <h2 style="font-size: 1.3rem; margin-top: 32px; margin-bottom: 16px; color: var(--text-color);">Executive Summary - Center Health</h2>
                 
                 <!-- Class List with Integrated Departments -->

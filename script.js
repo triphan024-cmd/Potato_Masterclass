@@ -113,6 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Khởi động lấy dữ liệu Dashboard
     fetchDashboardData();
+
+    // Initialize calendar
+    renderCalendar();
 });
 
 
@@ -186,6 +189,15 @@ function updateBoard(boardNode, deptData) {
 // ==========================================
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1019913137';
 const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1739187215';
+const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
+
+let hrMap = {};
+
+function getShortName(fullName) {
+    if (!fullName) return '';
+    if (hrMap[fullName]) return hrMap[fullName];
+    return fullName.split('-')[0].trim();
+}
 
 const getVal = (cell) => {
     if (!cell) return '';
@@ -195,6 +207,20 @@ const getVal = (cell) => {
 
 async function fetchDashboardData() {
     try {
+        console.log("Loading HR data...");
+        try {
+            const hrRes = await fetch(HR_SHEET_URL);
+            const hrText = await hrRes.text();
+            const hrJsonString = hrText.substring(hrText.indexOf('{'), hrText.lastIndexOf('}') + 1);
+            const hrJson = JSON.parse(hrJsonString);
+            hrJson.table.rows.forEach(row => {
+                if(row && row.c && row.c[0] && row.c[5]) {
+                    hrMap[row.c[0].v] = row.c[5].v;
+                }
+            });
+            console.log("HR map built.");
+        } catch(e) { console.error("Error fetching HR:", e); }
+
         console.log("Loading data from Google Sheet...");
         const response = await fetch(SHEET_URL);
         const text = await response.text();
@@ -264,7 +290,7 @@ function renderDashboardTable(classRows) {
         const c = row.c;
         const className = getVal(c[6]) || getVal(c[1]);
         const students = getVal(c[7]);
-        const teacher = (getVal(c[8]) || '').split('-')[0].trim();
+        const teacher = getShortName(getVal(c[8]));
         const testDate = getVal(c[38]);
         const score = getVal(c[39]) || 'N/A';
         const progress = getVal(c[11]);
@@ -303,7 +329,7 @@ function renderTeacherTable(classRows) {
         const c = row.c;
         const className = getVal(c[6]);
         const students = getVal(c[7]);
-        const teacher = (getVal(c[8]) || '').split('-')[0].trim();
+        const teacher = getShortName(getVal(c[8]));
         const lesson = getVal(c[27]);
         const evaluation = getVal(c[24]);
 
@@ -398,7 +424,7 @@ function renderLeaderTable(rows) {
         const c = row.c;
         const status = getVal(c[1]);
         const type = getVal(c[2]); // Task, Report
-        const pic = (getVal(c[4]) || '').split('-')[0].trim(); // Name only
+        const pic = getShortName(getVal(c[4])); // Name only
         const category = getVal(c[5]) || getVal(c[15]);
         const plan = getVal(c[6]) || getVal(c[11]); // Support report descriptions
         const result = getVal(c[7]) || getVal(c[12]);
@@ -462,4 +488,46 @@ function renderLeaderTable(rows) {
             </div>
         `;
     }
+}
+
+let currentCalDate = new Date();
+
+function renderCalendar(monthOffset = 0) {
+    currentCalDate.setMonth(currentCalDate.getMonth() + monthOffset);
+    const year = currentCalDate.getFullYear();
+    const month = currentCalDate.getMonth();
+    
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthYearEl = document.getElementById('cal-month-year');
+    if (monthYearEl) {
+        monthYearEl.innerText = `${monthNames[month]} ${year}`;
+    }
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const grid = document.getElementById('calendar-grid');
+    if (!grid) return;
+    
+    let html = `
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Sun</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Mon</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Tue</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Wed</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Thu</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Fri</div>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.85rem;">Sat</div>
+    `;
+    
+    for(let i=0; i<firstDay; i++) {
+        html += `<div></div>`;
+    }
+    
+    const today = new Date();
+    for(let i=1; i<=daysInMonth; i++) {
+        const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
+        const style = isToday ? `background: var(--primary-color); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);` : `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto;`;
+        html += `<div style="padding: 4px;"><div style="${style}">${i}</div></div>`;
+    }
+    grid.innerHTML = html;
 }
