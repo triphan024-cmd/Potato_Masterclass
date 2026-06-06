@@ -661,12 +661,26 @@ function selectCalendarDate(year, month, day) {
         return;
     }
     
-    const groupedByStart = new Map();
+    // Group events within 15 minutes of start time
+    const groups = [];
     dayEvents.forEach(e => {
-        const timeKey = e.time || 'Unknown';
-        const startKey = timeKey.split(' - ')[0].trim();
-        if (!groupedByStart.has(startKey)) groupedByStart.set(startKey, []);
-        groupedByStart.get(startKey).push(e);
+        const timeKey = e.time || '24:00 - 24:00';
+        const startStr = timeKey.split(' - ')[0].trim();
+        const parts = startStr.split(':');
+        const minutes = parts.length === 2 ? parseInt(parts[0]) * 60 + parseInt(parts[1]) : Number.MAX_SAFE_INTEGER;
+        e._startMins = minutes;
+
+        if (groups.length === 0) {
+            groups.push([e]);
+        } else {
+            const currentGroup = groups[groups.length - 1];
+            const groupStartMins = currentGroup[0]._startMins;
+            if (Math.abs(minutes - groupStartMins) <= 15) {
+                currentGroup.push(e);
+            } else {
+                groups.push([e]);
+            }
+        }
     });
 
     let html = `
@@ -680,7 +694,7 @@ function selectCalendarDate(year, month, day) {
         </div>
     `;
     
-    const renderEventCard = (e) => {
+    const renderEventCard = (e, showTime) => {
         const parts = e.className.split(' - ')[0].split(' | ');
         const branch = parts.length > 1 ? parts[0].trim() : '';
         const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
@@ -690,40 +704,45 @@ function selectCalendarDate(year, month, day) {
         if (branch.includes('HD')) branchText = '#059669'; // Green
         
         const leftBorder = branch ? branchText : 'var(--primary-color)';
+        const timeHtml = showTime ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; margin-right: 6px;"><i class="fa-regular fa-clock"></i> ${e.time}</span>` : '';
 
         return `
         <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
             <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
-                <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
+            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${e.time} - ${getShortName(e.teacher)}">
+                ${timeHtml}
+                <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
             </div>
         </div>
         `;
     };
 
     for (let events of groups) {
-        const uniqueTimes = new Set(events.map(e => e.time));
-        const hasSameTime = uniqueTimes.size === 1;
+        // Find if they all share the exact same time
+        // Need to filter out empty/undefined times if any
+        const validTimes = events.map(e => e.time).filter(Boolean);
+        const uniqueTimes = new Set(validTimes);
+        const hasSameTime = uniqueTimes.size <= 1;
         
         const nqEvents = events.filter(e => e.className.includes('NQ'));
         const hdEvents = events.filter(e => e.className.includes('HD'));
         const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
         nqEvents.push(...otherEvents); // Fallback for other classes
 
-        if (hasSameTime) {
+        if (hasSameTime && validTimes.length > 0) {
             // Central Badge
             html += `
                 <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px; display: flex; justify-content: center; align-items: center;">
                     <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
                     <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
-                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${events[0].time}
+                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${validTimes[0]}
                     </span>
                 </div>
             `;
         } else {
             // Split Badges
-            const nqTimes = [...new Set(nqEvents.map(e => e.time))];
-            const hdTimes = [...new Set(hdEvents.map(e => e.time))];
+            const nqTimes = [...new Set(nqEvents.map(e => e.time).filter(Boolean))];
+            const hdTimes = [...new Set(hdEvents.map(e => e.time).filter(Boolean))];
 
             html += `
                 <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px;">
@@ -740,8 +759,8 @@ function selectCalendarDate(year, month, day) {
             `;
         }
 
-        const showNqTimeInCard = [...new Set(nqEvents.map(e => e.time))].length > 1;
-        const showHdTimeInCard = [...new Set(hdEvents.map(e => e.time))].length > 1;
+        const showNqTimeInCard = [...new Set(nqEvents.map(e => e.time).filter(Boolean))].length > 1;
+        const showHdTimeInCard = [...new Set(hdEvents.map(e => e.time).filter(Boolean))].length > 1;
 
         html += `
             <div style="display: flex; gap: 20px; margin-bottom: 24px;">
