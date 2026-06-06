@@ -672,42 +672,58 @@ function selectCalendarDate(year, month, day) {
     for (let [time, events] of grouped) {
         // Group Header
         html += `
-            <div style="margin-top: 8px; margin-bottom: 12px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
-                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div style="margin-top: 8px; margin-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 12px;">
+                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: var(--primary-light); padding: 4px 12px; border-radius: 20px;">
                     <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${time}
                 </span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
         `;
         
-        events.forEach(e => {
+        const nqEvents = events.filter(e => e.className.includes('NQ'));
+        const hdEvents = events.filter(e => e.className.includes('HD'));
+        const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
+        nqEvents.push(...otherEvents); // Fallback for other classes
+
+        const renderEventCard = (e) => {
             const parts = e.className.split(' - ')[0].split(' | ');
             const branch = parts.length > 1 ? parts[0].trim() : '';
             const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
             
-            // Highlight color based on branch
-            let branchBg = 'var(--primary-light)'; // Default
             let branchText = 'var(--primary-dark)';
-            if (branch.includes('NQ')) { branchBg = 'rgba(14, 165, 233, 0.15)'; branchText = '#0284c7'; } // Blue
-            if (branch.includes('HD')) { branchBg = 'rgba(16, 185, 129, 0.15)'; branchText = '#059669'; } // Green
+            if (branch.includes('NQ')) branchText = '#0284c7'; // Blue
+            if (branch.includes('HD')) branchText = '#059669'; // Green
             
-            const branchBadge = branch ? `<span style="background: ${branchBg}; color: ${branchText}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-right: 8px;">${branch}</span>` : '';
             const leftBorder = branch ? branchText : 'var(--primary-color)';
 
-            html += `
-            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s;">
-                <div style="display: flex; align-items: center;">
-                    ${branchBadge}
-                    <span style="font-weight: 600; color: var(--text-dark); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</span>
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">${getShortName(e.teacher)}</span>
+            return `
+            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
+                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
+                    <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
                 </div>
             </div>
             `;
-        });
-        
-        html += `</div>`; // Close grid container
+        };
+
+        html += `
+            <div style="display: flex; gap: 20px; margin-bottom: 24px;">
+                <!-- NQ Column -->
+                <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
+                    <h4 style="color: #0284c7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">Ngô Quyền (NQ) <span style="background: rgba(14, 165, 233, 0.15); padding: 2px 6px; border-radius: 12px; margin-left: 4px; font-size: 0.7rem;">${nqEvents.length}</span></h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${nqEvents.map(renderEventCard).join('')}
+                    </div>
+                </div>
+                
+                <!-- HD Column -->
+                <div style="flex: 1; min-width: 0;">
+                    <h4 style="color: #059669; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">Hưng Định (HD) <span style="background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 12px; margin-left: 4px; font-size: 0.7rem;">${hdEvents.length}</span></h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${hdEvents.map(renderEventCard).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
     }
     
     listEl.innerHTML = html;
