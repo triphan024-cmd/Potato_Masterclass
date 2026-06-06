@@ -612,11 +612,50 @@ function renderCalendar(monthOffset = 0) {
             if (!isToday) {
                 style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
             }
-            tooltip = dayMap[i].map(e => `${e.time} - ${e.className.split(' - ')[0]}`).join('&#10;'); // &#10; is newline in title attribute
+            tooltip = dayMap[i].map(e => `${e.time} - ${e.className.split(' - ')[0]}`).join('&#10;');
             style += ` cursor: pointer; position: relative;`;
+            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i})"><div style="${style}" class="cal-day-active" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
+        } else {
+            html += `<div style="padding: 4px;"><div style="${style}">${i}</div></div>`;
         }
-
-        html += `<div style="padding: 4px;" title="${tooltip}"><div style="${style}">${i}</div></div>`;
     }
     grid.innerHTML = html;
+}
+
+function selectCalendarDate(year, month, day) {
+    // Reset all day styles to remove active selection
+    document.querySelectorAll('.cal-day-active').forEach(el => {
+        el.style.backgroundColor = '';
+        el.style.color = '';
+        if (el.style.border) el.style.color = 'var(--primary-color)'; // restore text color
+    });
+    
+    // Highlight selected day
+    const selectedEl = document.getElementById(`cal-day-${year}-${month}-${day}`);
+    if (selectedEl) {
+        selectedEl.style.backgroundColor = 'var(--primary-light)';
+        selectedEl.style.color = 'var(--primary-dark)';
+    }
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    document.getElementById('selected-date-display').innerText = `Classes on ${monthNames[month]} ${day}, ${year}`;
+    
+    const listEl = document.getElementById('daily-classes-list');
+    
+    const dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
+    
+    if (dayEvents.length === 0) {
+        listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No classes scheduled for this date.</p>`;
+        return;
+    }
+    
+    listEl.innerHTML = dayEvents.map(e => `
+        <div style="background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">${e.className.split(' - ')[0]}</span>
+                <span style="font-size: 0.8rem; background: var(--bg-color); padding: 2px 8px; border-radius: 12px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${e.time}</span>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(e.teacher)}</div>
+        </div>
+    `).join('');
 }

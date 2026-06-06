@@ -151,56 +151,31 @@
                     </div>
                 </section>
 
-                <!-- Calendar Panel -->
-                <section class="panel calendar-panel" style="padding: 24px; margin-top: 24px; max-width: 450px;">
-                    <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3 id="cal-month-year" style="font-size: 1.1rem; color: var(--text-color); margin: 0;">May 2026</h3>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="renderCalendar(-1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-left"></i></button>
-                            <button onclick="renderCalendar(1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-right"></i></button>
+                <!-- Calendar and Daily Classes Layout -->
+                <div class="calendar-wrapper" style="display: flex; gap: 24px; margin-top: 24px;">
+                    <!-- Calendar Panel -->
+                    <section class="panel calendar-panel" style="padding: 24px; flex: 1; max-width: 450px;">
+                        <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 id="cal-month-year" style="font-size: 1.1rem; color: var(--text-color); margin: 0;">May 2026</h3>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="renderCalendar(-1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button onclick="renderCalendar(1)" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center;">
-                    </div>
-                </section>
-
-
-                <!-- Class List with Integrated Departments -->
-                <section class="classes-list soft-panel" style="overflow-x: auto;">
-                    <table class="modern-table integrated-table">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" class="sticky-col">Class ID</th>
-                                <th rowspan="2" class="text-center">Students</th>
-                                <th rowspan="2">Teacher</th>
-                                <th colspan="4" class="dept-th teacher-th"><i class="fa-solid fa-chalkboard-user"></i> Teachers</th>
-                                <th colspan="4" class="dept-th academic-th"><i class="fa-solid fa-book-open"></i> Academic</th>
-                                <th colspan="4" class="dept-th operation-th"><i class="fa-solid fa-briefcase"></i> Operation</th>
-                                <th rowspan="2">Action</th>
-                            </tr>
-                            <tr class="sub-headers">
-                                <!-- Teacher -->
-                                <th>Homework</th>
-                                <th>Attendance</th>
-                                <th>Engagement</th>
-                                <th>Issues</th>
-                                <!-- Academic -->
-                                <th>Tests</th>
-                                <th>Scores</th>
-                                <th>Progress</th>
-                                <th>Issues</th>
-                                <!-- Operation -->
-                                <th>Fees</th>
-                                <th>Reminders</th>
-                                <th>Reports</th>
-                                <th>Issues</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboard-table-body">
-                            <!-- Dynamic data -->
-                        </tbody>
-                    </table>
-                </section>
+                        <div class="calendar-grid" id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center;">
+                        </div>
+                    </section>
+                    
+                    <!-- Daily Classes Panel -->
+                    <section class="panel daily-classes-panel" style="padding: 24px; flex: 2; display: flex; flex-direction: column;">
+                        <div class="daily-classes-header" style="margin-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 12px;">
+                            <h3 id="selected-date-display" style="font-size: 1.1rem; color: var(--text-color); margin: 0;">Select a date</h3>
+                        </div>
+                        <div id="daily-classes-list" style="overflow-y: auto; max-height: 400px; display: flex; flex-direction: column; gap: 12px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">Click on any highlighted date in the calendar to see the list of classes.</p>
+                        </div>
+                    </section>
+                </div>
                 </div> <!-- End view-dashboard -->
 
                 <!-- ==================== TEACHER VIEW ==================== -->
