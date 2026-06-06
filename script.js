@@ -127,6 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize calendar
     renderCalendar();
+
+    // Initialize month selector
+    changeMonth(0);
 });
 
 
@@ -149,10 +152,16 @@ const mockMonthlyData = {
         teacher: { focus: "Analyze Mid-term Test Results", plan: ["Aggregate scores", "Professional review meeting"], result: ["Not yet taken place"], action: ["Waiting for Academic dept"] },
         academic: { focus: "Organize Mid-term Exam Board", plan: ["Print 100% test papers", "Divide proctoring shifts"], result: ["Tests are sealed"], action: ["Open box on 08/04"] },
         operation: { focus: "Finalize salary & Enrollment bonus", plan: ["Review TA working hours", "Export Excel file to Director"], result: ["Draft created"], action: ["Needs approval on 10/04"] }
+    },
+    3: {
+        label: "June 2026",
+        teacher: { focus: "Evaluate Mid-term Performance", plan: ["Review June feedback forms", "Hold 1-on-1 with teachers"], result: ["Pending"], action: ["Finalize teacher grading"] },
+        academic: { focus: "Finalize Summer Camp Material", plan: ["Print all materials", "Double check activities"], result: ["Material printed"], action: ["Send to branches"] },
+        operation: { focus: "Summer facility prep", plan: ["Check all ACs", "Restock water and snacks"], result: ["AC checked"], action: ["Order snacks next week"] }
     }
 };
 
-let currentMonthIndex = 1;
+let currentMonthIndex = 3;
 
 function changeMonth(diff) {
     let newIndex = currentMonthIndex + diff;
@@ -163,7 +172,7 @@ function changeMonth(diff) {
         // Update Label
         document.getElementById('currentMonthDisplay').innerText = data.label;
         document.getElementById('prevMonthBtn').style.opacity = currentMonthIndex === 0 ? '0.3' : '1';
-        document.getElementById('nextMonthBtn').style.opacity = currentMonthIndex === 2 ? '0.3' : '1';
+        document.getElementById('nextMonthBtn').style.opacity = currentMonthIndex === Object.keys(mockMonthlyData).length - 1 ? '0.3' : '1';
 
         // Update DOM boards safely
         const boards = document.querySelectorAll('.weekly-board');
