@@ -701,36 +701,6 @@ function selectCalendarDate(year, month, day) {
         `;
     };
 
-    const renderColumnContent = (branchEvents, showSubHeader) => {
-        if (branchEvents.length === 0) return '';
-        
-        const branchGrouped = new Map();
-        branchEvents.forEach(e => {
-            const t = e.time || 'Unknown';
-            if (!branchGrouped.has(t)) branchGrouped.set(t, []);
-            branchGrouped.get(t).push(e);
-        });
-
-        let colHtml = '';
-        for (let [fullTime, tEvents] of branchGrouped) {
-            if (showSubHeader) {
-                colHtml += `<div style="text-align: center; margin-bottom: 12px;"><span style="background: var(--bg-color); color: var(--primary-color); font-weight: 700; font-size: 0.75rem; padding: 2px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${fullTime}</span></div>`;
-            }
-            colHtml += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">`;
-            colHtml += tEvents.map(renderEventCard).join('');
-            colHtml += `</div>`;
-        }
-        return colHtml;
-    };
-
-            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${e.time} - ${getShortName(e.teacher)}">
-                ${timeHtml}
-                <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
-            </div>
-        </div>
-        `;
-    };
-
     for (let events of groups) {
         const uniqueTimes = new Set(events.map(e => e.time));
         const hasSameTime = uniqueTimes.size === 1;
