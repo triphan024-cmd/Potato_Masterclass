@@ -114,6 +114,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Khởi động lấy dữ liệu Dashboard
     fetchDashboardData();
 
+    // Sync button logic
+    const syncBtn = document.getElementById('syncDataBtn');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', async () => {
+            const icon = syncBtn.querySelector('i');
+            icon.classList.add('fa-spin');
+            await fetchDashboardData();
+            icon.classList.remove('fa-spin');
+        });
+    }
+
     // Initialize calendar
     renderCalendar();
 });
