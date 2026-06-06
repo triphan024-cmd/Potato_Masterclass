@@ -661,11 +661,12 @@ function selectCalendarDate(year, month, day) {
         return;
     }
     
-    const grouped = new Map();
+    const groupedByStart = new Map();
     dayEvents.forEach(e => {
-        const timeKey = e.time || 'Time not set';
-        if (!grouped.has(timeKey)) grouped.set(timeKey, []);
-        grouped.get(timeKey).push(e);
+        const timeKey = e.time || 'Unknown';
+        const startKey = timeKey.split(' - ')[0].trim();
+        if (!groupedByStart.has(startKey)) groupedByStart.set(startKey, []);
+        groupedByStart.get(startKey).push(e);
     });
 
     let html = `
@@ -679,57 +680,85 @@ function selectCalendarDate(year, month, day) {
         </div>
     `;
     
-    for (let [time, events] of grouped) {
-        // Time Divider
-        html += `
-            <div style="margin-top: 16px; margin-bottom: 16px; text-align: center; position: relative;">
-                <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
-                <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
-                    <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${time}
-                </span>
+    const renderEventCard = (e) => {
+        const parts = e.className.split(' - ')[0].split(' | ');
+        const branch = parts.length > 1 ? parts[0].trim() : '';
+        const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
+        
+        let branchText = 'var(--primary-dark)';
+        if (branch.includes('NQ')) branchText = '#0284c7'; // Blue
+        if (branch.includes('HD')) branchText = '#059669'; // Green
+        
+        const leftBorder = branch ? branchText : 'var(--primary-color)';
+
+        return `
+        <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
+            <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
+                <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
             </div>
+        </div>
         `;
+    };
+
+    const renderColumnContent = (branchEvents, showSubHeader) => {
+        if (branchEvents.length === 0) return '';
+        
+        const branchGrouped = new Map();
+        branchEvents.forEach(e => {
+            const t = e.time || 'Unknown';
+            if (!branchGrouped.has(t)) branchGrouped.set(t, []);
+            branchGrouped.get(t).push(e);
+        });
+
+        let colHtml = '';
+        for (let [fullTime, tEvents] of branchGrouped) {
+            if (showSubHeader) {
+                colHtml += `<div style="text-align: center; margin-bottom: 12px;"><span style="background: var(--bg-color); color: var(--primary-color); font-weight: 700; font-size: 0.75rem; padding: 2px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${fullTime}</span></div>`;
+            }
+            colHtml += `<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px;">`;
+            colHtml += tEvents.map(renderEventCard).join('');
+            colHtml += `</div>`;
+        }
+        return colHtml;
+    };
+
+    for (let [startTime, events] of groupedByStart) {
+        const uniqueTimes = new Set(events.map(e => e.time));
+        const hasSameTime = uniqueTimes.size === 1;
+
+        if (hasSameTime) {
+            // Time Divider with central badge
+            html += `
+                <div style="margin-top: 16px; margin-bottom: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
+                    <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${events[0].time}
+                    </span>
+                </div>
+            `;
+        } else {
+            // Simple Divider without badge
+            html += `
+                <div style="margin-top: 16px; margin-bottom: 16px; border-top: 1px dashed rgba(0,0,0,0.1);"></div>
+            `;
+        }
         
         const nqEvents = events.filter(e => e.className.includes('NQ'));
         const hdEvents = events.filter(e => e.className.includes('HD'));
         const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
         nqEvents.push(...otherEvents); // Fallback for other classes
 
-        const renderEventCard = (e) => {
-            const parts = e.className.split(' - ')[0].split(' | ');
-            const branch = parts.length > 1 ? parts[0].trim() : '';
-            const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
-            
-            let branchText = 'var(--primary-dark)';
-            if (branch.includes('NQ')) branchText = '#0284c7'; // Blue
-            if (branch.includes('HD')) branchText = '#059669'; // Green
-            
-            const leftBorder = branch ? branchText : 'var(--primary-color)';
-
-            return `
-            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
-                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
-                    <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
-                </div>
-            </div>
-            `;
-        };
-
         html += `
             <div style="display: flex; gap: 20px; margin-bottom: 24px;">
                 <!-- NQ Column -->
                 <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        ${nqEvents.map(renderEventCard).join('')}
-                    </div>
+                    ${renderColumnContent(nqEvents, !hasSameTime)}
                 </div>
                 
                 <!-- HD Column -->
                 <div style="flex: 1; min-width: 0;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        ${hdEvents.map(renderEventCard).join('')}
-                    </div>
+                    ${renderColumnContent(hdEvents, !hasSameTime)}
                 </div>
             </div>
         `;
