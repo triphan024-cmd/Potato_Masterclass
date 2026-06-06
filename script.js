@@ -661,13 +661,51 @@ function selectCalendarDate(year, month, day) {
         return;
     }
     
-    listEl.innerHTML = dayEvents.map(e => `
-        <div style="background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 12px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 4px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">${e.className.split(' - ')[0]}</span>
-                <span style="font-size: 0.8rem; background: var(--bg-color); padding: 2px 8px; border-radius: 12px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${e.time}</span>
+    const grouped = new Map();
+    dayEvents.forEach(e => {
+        const timeKey = e.time || 'Time not set';
+        if (!grouped.has(timeKey)) grouped.set(timeKey, []);
+        grouped.get(timeKey).push(e);
+    });
+
+    let html = '';
+    for (let [time, events] of grouped) {
+        // Group Header
+        html += `
+            <div style="margin-top: 8px; margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
+                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${time}
+                </span>
             </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(e.teacher)}</div>
-        </div>
-    `).join('');
+        `;
+        
+        events.forEach(e => {
+            const parts = e.className.split(' - ')[0].split(' | ');
+            const branch = parts.length > 1 ? parts[0].trim() : '';
+            const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
+            
+            // Highlight color based on branch
+            let branchBg = 'var(--primary-light)'; // Default
+            let branchText = 'var(--primary-dark)';
+            if (branch.includes('NQ')) { branchBg = 'rgba(14, 165, 233, 0.15)'; branchText = '#0284c7'; } // Blue
+            if (branch.includes('HD')) { branchBg = 'rgba(16, 185, 129, 0.15)'; branchText = '#059669'; } // Green
+            
+            const branchBadge = branch ? `<span style="background: ${branchBg}; color: ${branchText}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; margin-right: 8px;">${branch}</span>` : '';
+            const leftBorder = branch ? branchText : 'var(--primary-color)';
+
+            html += `
+            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s;">
+                <div style="display: flex; align-items: center;">
+                    ${branchBadge}
+                    <span style="font-weight: 600; color: var(--text-dark); font-size: 0.9rem;">${cName}</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-chalkboard-user"></i> <span>${getShortName(e.teacher)}</span>
+                </div>
+            </div>
+            `;
+        });
+    }
+    
+    listEl.innerHTML = html;
 }
