@@ -116,40 +116,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Mock Weekly Data & Logic
-const mockWeeklyData = {
+// Mock Monthly Data & Logic
+const mockMonthlyData = {
     0: {
-        label: "Week 13 (25/03 - 31/03/2026)",
+        label: "March 2026",
         teacher: { focus: "Resolve quality complaints", plan: ["Private meeting with Teacher A", "Surprise class observation"], result: ["Internal disciplinary action taken", "Reputation restored"], action: ["Issue new rules notice"] },
         academic: { focus: "Review Kid 4 curriculum", plan: ["Recheck Unit 1-5", "Review spelling errors"], result: ["100% completed"], action: ["Print and publish"] },
         operation: { focus: "Set up new District 3 facility", plan: ["Receive 50 sets of tables/chairs", "Paint room lines"], result: ["3/5 rooms completed"], action: ["Call for additional curtains"] }
     },
     1: {
-        label: "Week 14 (01/04 - 07/04/2026)",
-        teacher: { focus: "Improve Student Engagement", plan: ["Conduct 2 workshops on interactive teaching.", "Review low engagement classes."], result: ["Workshop 1 completed.", "Engagement up 5% in target classes."], action: ["Schedule Workshop 2 next week."] },
+        label: "April 2026",
+        teacher: { focus: "Improve Student Engagement", plan: ["Conduct 2 workshops on interactive teaching.", "Review low engagement classes."], result: ["Workshop 1 completed.", "Engagement up 5% in target classes."], action: ["Schedule Workshop 2 next month."] },
         academic: { focus: "Finalize new IELTS Curriculum", plan: ["Draft remaining 4 modules."], result: ["3/4 modules drafted."], action: ["Review with senior teachers."] },
         operation: { focus: "Complete month-end fee collection", plan: ["Contact 15 overdue students.", "Issue receipt batch #4."], result: ["10 paid. 5 pending response."], action: ["Call parents of 5 pending students directly."] }
     },
     2: {
-        label: "Week 15 (08/04 - 14/04/2026)",
+        label: "May 2026",
         teacher: { focus: "Analyze Mid-term Test Results", plan: ["Aggregate scores", "Professional review meeting"], result: ["Not yet taken place"], action: ["Waiting for Academic dept"] },
         academic: { focus: "Organize Mid-term Exam Board", plan: ["Print 100% test papers", "Divide proctoring shifts"], result: ["Tests are sealed"], action: ["Open box on 08/04"] },
         operation: { focus: "Finalize salary & Enrollment bonus", plan: ["Review TA working hours", "Export Excel file to Director"], result: ["Draft created"], action: ["Needs approval on 10/04"] }
     }
 };
 
-let currentWeekIndex = 1;
+let currentMonthIndex = 1;
 
-function changeWeek(diff) {
-    let newIndex = currentWeekIndex + diff;
-    if(mockWeeklyData[newIndex]) {
-        currentWeekIndex = newIndex;
-        const data = mockWeeklyData[currentWeekIndex];
+function changeMonth(diff) {
+    let newIndex = currentMonthIndex + diff;
+    if(mockMonthlyData[newIndex]) {
+        currentMonthIndex = newIndex;
+        const data = mockMonthlyData[currentMonthIndex];
         
         // Update Label
-        document.getElementById('currentWeekDisplay').innerText = data.label;
-        document.getElementById('prevWeekBtn').style.opacity = currentWeekIndex === 0 ? '0.3' : '1';
-        document.getElementById('nextWeekBtn').style.opacity = currentWeekIndex === 2 ? '0.3' : '1';
+        document.getElementById('currentMonthDisplay').innerText = data.label;
+        document.getElementById('prevMonthBtn').style.opacity = currentMonthIndex === 0 ? '0.3' : '1';
+        document.getElementById('nextMonthBtn').style.opacity = currentMonthIndex === 2 ? '0.3' : '1';
 
         // Update DOM boards safely
         const boards = document.querySelectorAll('.weekly-board');

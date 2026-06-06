@@ -33,6 +33,10 @@
     font-family: 'Inter', sans-serif;
 }
 
+html {
+    font-size: 13.5px; /* Giảm size toàn bộ chữ */
+}
+
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
@@ -84,6 +88,10 @@ body {
     background: #ffffff;
     box-shadow: 1px 0 10px rgba(0,0,0,0.02);
     z-index: 10;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
 
 .sidebar-header {

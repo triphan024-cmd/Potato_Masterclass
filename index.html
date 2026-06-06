@@ -41,10 +41,10 @@
                     <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning, Admin!</h1>
                     <span style="color: var(--text-muted); font-size: 0.9rem;">Navigate the future of education with Potato Center.</span>
                 </div>
-                <div class="week-selector" style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 8px 16px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-right: 24px;">
-                    <button class="week-btn" id="prevWeekBtn" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span id="currentWeekDisplay" style="font-weight: 600; color: var(--text-color); font-size: 0.95rem;">Week 14 (01/04 - 07/04)</span>
-                    <button class="week-btn" id="nextWeekBtn" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="month-selector" style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 8px 16px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-right: 24px;">
+                    <button class="week-btn" id="prevMonthBtn" onclick="changeMonth(-1)" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="currentMonthDisplay" style="font-weight: 600; color: var(--text-color); font-size: 0.95rem;">April 2026</span>
+                    <button class="week-btn" id="nextMonthBtn" onclick="changeMonth(1)" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <div class="user-profile">
                     <div class="notification-icon">
@@ -223,14 +223,14 @@
                         </div>
                     </section>
 
-                    <!-- Weekly Review -->
-                    <section id="weekly-board-teacher" class="weekly-board panel">
+                    <!-- Monthly Review -->
+                    <section id="monthly-board-teacher" class="weekly-board panel">
                         <div class="weekly-header">
-                            <h2>Weekly Report: Teachers</h2>
+                            <h2>Monthly Report: Teachers</h2>
                         </div>
                         <div class="weekly-content">
                             <div class="focus-one-thing">
-                                <span>WEEKLY FOCUS</span>
+                                <span>MONTHLY FOCUS</span>
                                 <h3>Improve Student Engagement</h3>
                             </div>
                             <div class="pra-grid">
@@ -305,11 +305,11 @@
                     </section>
                     <section class="weekly-board panel">
                         <div class="weekly-header">
-                            <h2>Weekly Report: Academic</h2>
+                            <h2>Monthly Report: Academic</h2>
                         </div>
                         <div class="weekly-content">
                             <div class="focus-one-thing">
-                                <span>WEEKLY FOCUS</span>
+                                <span>MONTHLY FOCUS</span>
                                 <h3>Finalize new IELTS Curriculum</h3>
                             </div>
                             <div class="pra-grid">
@@ -381,11 +381,11 @@
                     </section>
                     <section class="weekly-board panel">
                         <div class="weekly-header">
-                            <h2>Weekly Report: Operation</h2>
+                            <h2>Monthly Report: Operation</h2>
                         </div>
                         <div class="weekly-content">
                             <div class="focus-one-thing">
-                                <span>WEEKLY FOCUS</span>
+                                <span>MONTHLY FOCUS</span>
                                 <h3>Complete month-end fee collection</h3>
                             </div>
                             <div class="pra-grid">
