@@ -702,14 +702,16 @@ function selectCalendarDate(year, month, day) {
         if (branch.includes('HD')) branchText = '#059669'; // Green
         
         const leftBorder = branch ? branchText : 'var(--primary-color)';
-        const timeHtml = showTime ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; margin-left: 6px;"><i class="fa-regular fa-clock"></i> ${e.time}</span>` : '';
+        const timeHtml = showTime ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: normal; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${e.time}</span>` : '';
 
         return `
         <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
-            <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
+                ${timeHtml}
+            </div>
             <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${e.time} - ${getShortName(e.teacher)}">
                 <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
-                ${timeHtml}
             </div>
         </div>
         `;
