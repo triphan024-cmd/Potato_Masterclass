@@ -723,14 +723,27 @@ function selectCalendarDate(year, month, day) {
         return colHtml;
     };
 
-    for (let [startTime, events] of groupedByStart) {
+            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${e.time} - ${getShortName(e.teacher)}">
+                ${timeHtml}
+                <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
+            </div>
+        </div>
+        `;
+    };
+
+    for (let events of groups) {
         const uniqueTimes = new Set(events.map(e => e.time));
         const hasSameTime = uniqueTimes.size === 1;
+        
+        const nqEvents = events.filter(e => e.className.includes('NQ'));
+        const hdEvents = events.filter(e => e.className.includes('HD'));
+        const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
+        nqEvents.push(...otherEvents); // Fallback for other classes
 
         if (hasSameTime) {
-            // Time Divider with central badge
+            // Central Badge
             html += `
-                <div style="margin-top: 16px; margin-bottom: 16px; text-align: center; position: relative;">
+                <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px; display: flex; justify-content: center; align-items: center;">
                     <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
                     <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
                         <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${events[0].time}
@@ -738,27 +751,42 @@ function selectCalendarDate(year, month, day) {
                 </div>
             `;
         } else {
-            // Simple Divider without badge
+            // Split Badges
+            const nqTimes = [...new Set(nqEvents.map(e => e.time))];
+            const hdTimes = [...new Set(hdEvents.map(e => e.time))];
+
             html += `
-                <div style="margin-top: 16px; margin-bottom: 16px; border-top: 1px dashed rgba(0,0,0,0.1);"></div>
+                <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px;">
+                    <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
+                    <div style="display: flex; gap: 20px; position: absolute; top: 0; left: 0; right: 0; z-index: 2; height: 100%;">
+                        <div style="flex: 1; padding-right: 20px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            ${nqTimes.map(t => `<span style="background: white; padding: 2px 12px; color: #0284c7; font-weight: 700; font-size: 0.75rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${t}</span>`).join('')}
+                        </div>
+                        <div style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            ${hdTimes.map(t => `<span style="background: white; padding: 2px 12px; color: #059669; font-weight: 700; font-size: 0.75rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${t}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
             `;
         }
-        
-        const nqEvents = events.filter(e => e.className.includes('NQ'));
-        const hdEvents = events.filter(e => e.className.includes('HD'));
-        const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
-        nqEvents.push(...otherEvents); // Fallback for other classes
+
+        const showNqTimeInCard = [...new Set(nqEvents.map(e => e.time))].length > 1;
+        const showHdTimeInCard = [...new Set(hdEvents.map(e => e.time))].length > 1;
 
         html += `
             <div style="display: flex; gap: 20px; margin-bottom: 24px;">
                 <!-- NQ Column -->
                 <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
-                    ${renderColumnContent(nqEvents, !hasSameTime)}
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${nqEvents.map(e => renderEventCard(e, showNqTimeInCard)).join('')}
+                    </div>
                 </div>
                 
                 <!-- HD Column -->
                 <div style="flex: 1; min-width: 0;">
-                    ${renderColumnContent(hdEvents, !hasSameTime)}
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        ${hdEvents.map(e => renderEventCard(e, showHdTimeInCard)).join('')}
+                    </div>
                 </div>
             </div>
         `;
