@@ -716,63 +716,65 @@ function selectCalendarDate(year, month, day) {
     };
 
     for (let events of groups) {
-        // Find if they all share the exact same time
-        // Need to filter out empty/undefined times if any
         const validTimes = events.map(e => e.time).filter(Boolean);
         const uniqueTimes = new Set(validTimes);
         const hasSameTime = uniqueTimes.size <= 1;
+        
+        let groupBadgeTime = '';
+        if (validTimes.length > 0) {
+            if (hasSameTime) {
+                groupBadgeTime = validTimes[0];
+            } else {
+                const startTimes = [];
+                const endTimes = [];
+                validTimes.forEach(t => {
+                    const parts = t.split(' - ');
+                    if (parts.length === 2) {
+                        startTimes.push(parts[0].trim());
+                        endTimes.push(parts[1].trim());
+                    } else {
+                        startTimes.push(t.trim());
+                        endTimes.push(t.trim());
+                    }
+                });
+                startTimes.sort();
+                endTimes.sort();
+                groupBadgeTime = `${startTimes[0]} - ${endTimes[endTimes.length - 1]}`;
+            }
+        }
         
         const nqEvents = events.filter(e => e.className.includes('NQ'));
         const hdEvents = events.filter(e => e.className.includes('HD'));
         const otherEvents = events.filter(e => !e.className.includes('NQ') && !e.className.includes('HD'));
         nqEvents.push(...otherEvents); // Fallback for other classes
 
-        if (hasSameTime && validTimes.length > 0) {
-            // Central Badge
+        if (groupBadgeTime) {
+            // Always Central Badge
             html += `
                 <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px; display: flex; justify-content: center; align-items: center;">
                     <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
                     <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
-                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${validTimes[0]}
+                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${groupBadgeTime}
                     </span>
-                </div>
-            `;
-        } else {
-            // Split Badges
-            const nqTimes = [...new Set(nqEvents.map(e => e.time).filter(Boolean))];
-            const hdTimes = [...new Set(hdEvents.map(e => e.time).filter(Boolean))];
-
-            html += `
-                <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px;">
-                    <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
-                    <div style="display: flex; gap: 20px; position: absolute; top: 0; left: 0; right: 0; z-index: 2; height: 100%;">
-                        <div style="flex: 1; padding-right: 20px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            ${nqTimes.map(t => `<span style="background: white; padding: 2px 12px; color: #0284c7; font-weight: 700; font-size: 0.75rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${t}</span>`).join('')}
-                        </div>
-                        <div style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            ${hdTimes.map(t => `<span style="background: white; padding: 2px 12px; color: #059669; font-weight: 700; font-size: 0.75rem; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);"><i class="fa-regular fa-clock"></i> ${t}</span>`).join('')}
-                        </div>
-                    </div>
                 </div>
             `;
         }
 
-        const showNqTimeInCard = [...new Set(nqEvents.map(e => e.time).filter(Boolean))].length > 1;
-        const showHdTimeInCard = [...new Set(hdEvents.map(e => e.time).filter(Boolean))].length > 1;
+        const showTimeInCard = !hasSameTime;
 
         html += `
             <div style="display: flex; gap: 20px; margin-bottom: 24px;">
                 <!-- NQ Column -->
                 <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        ${nqEvents.map(e => renderEventCard(e, showNqTimeInCard)).join('')}
+                        ${nqEvents.map(e => renderEventCard(e, showTimeInCard)).join('')}
                     </div>
                 </div>
                 
                 <!-- HD Column -->
                 <div style="flex: 1; min-width: 0;">
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        ${hdEvents.map(e => renderEventCard(e, showHdTimeInCard)).join('')}
+                        ${hdEvents.map(e => renderEventCard(e, showTimeInCard)).join('')}
                     </div>
                 </div>
             </div>
