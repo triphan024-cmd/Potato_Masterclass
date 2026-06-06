@@ -668,12 +668,23 @@ function selectCalendarDate(year, month, day) {
         grouped.get(timeKey).push(e);
     });
 
-    let html = '';
+    let html = `
+        <div style="display: flex; gap: 20px; position: sticky; top: 0; background: white; z-index: 10; padding: 12px 0 8px 0; border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 16px;">
+            <div style="flex: 1; text-align: center; border-right: 1px dashed rgba(0,0,0,0.1);">
+                <h4 style="color: #0284c7; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0;">Ngô Quyền (NQ)</h4>
+            </div>
+            <div style="flex: 1; text-align: center;">
+                <h4 style="color: #059669; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0;">Hưng Định (HD)</h4>
+            </div>
+        </div>
+    `;
+    
     for (let [time, events] of grouped) {
-        // Group Header
+        // Time Divider
         html += `
-            <div style="margin-top: 8px; margin-bottom: 16px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 12px;">
-                <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; background: var(--primary-light); padding: 4px 12px; border-radius: 20px;">
+            <div style="margin-top: 16px; margin-bottom: 16px; text-align: center; position: relative;">
+                <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
+                <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
                     <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${time}
                 </span>
             </div>
@@ -709,7 +720,6 @@ function selectCalendarDate(year, month, day) {
             <div style="display: flex; gap: 20px; margin-bottom: 24px;">
                 <!-- NQ Column -->
                 <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
-                    <h4 style="color: #0284c7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">Ngô Quyền (NQ) <span style="background: rgba(14, 165, 233, 0.15); padding: 2px 6px; border-radius: 12px; margin-left: 4px; font-size: 0.7rem;">${nqEvents.length}</span></h4>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                         ${nqEvents.map(renderEventCard).join('')}
                     </div>
@@ -717,7 +727,6 @@ function selectCalendarDate(year, month, day) {
                 
                 <!-- HD Column -->
                 <div style="flex: 1; min-width: 0;">
-                    <h4 style="color: #059669; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">Hưng Định (HD) <span style="background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 12px; margin-left: 4px; font-size: 0.7rem;">${hdEvents.length}</span></h4>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                         ${hdEvents.map(renderEventCard).join('')}
                     </div>
