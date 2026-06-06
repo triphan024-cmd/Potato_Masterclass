@@ -642,9 +642,11 @@ function selectCalendarDate(year, month, day) {
     }
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('selected-date-display').innerText = `Classes on ${monthNames[month]} ${day}, ${year}`;
+    document.getElementById('selected-date-display').innerText = `${monthNames[month]} ${day}, ${year}`;
     
     const listEl = document.getElementById('daily-classes-list');
+    const nqHeaderEl = document.getElementById('header-nq');
+    const hdHeaderEl = document.getElementById('header-hd');
     
     const dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
     
@@ -657,8 +659,13 @@ function selectCalendarDate(year, month, day) {
     });
     
     if (dayEvents.length === 0) {
-        listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No classes scheduled for this date.</p>`;
+        listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding-top: 24px;">No classes scheduled for this date.</p>`;
+        if (nqHeaderEl) nqHeaderEl.style.display = 'none';
+        if (hdHeaderEl) hdHeaderEl.style.display = 'none';
         return;
+    } else {
+        if (nqHeaderEl) nqHeaderEl.style.display = 'block';
+        if (hdHeaderEl) hdHeaderEl.style.display = 'block';
     }
     
     // Group events within 15 minutes of start time
@@ -683,16 +690,7 @@ function selectCalendarDate(year, month, day) {
         }
     });
 
-    let html = `
-        <div style="display: flex; gap: 20px; position: sticky; top: 0; background: white; z-index: 10; padding: 12px 0 8px 0; border-bottom: 2px solid rgba(0,0,0,0.05); margin-bottom: 16px;">
-            <div style="flex: 1; text-align: center; border-right: 1px dashed rgba(0,0,0,0.1);">
-                <h4 style="color: #0284c7; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0;">Ngô Quyền (NQ)</h4>
-            </div>
-            <div style="flex: 1; text-align: center;">
-                <h4 style="color: #059669; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0;">Hưng Định (HD)</h4>
-            </div>
-        </div>
-    `;
+    let html = '';
     
     const renderEventCard = (e, showTime) => {
         const parts = e.className.split(' - ')[0].split(' | ');
