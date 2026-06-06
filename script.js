@@ -672,11 +672,12 @@ function selectCalendarDate(year, month, day) {
     for (let [time, events] of grouped) {
         // Group Header
         html += `
-            <div style="margin-top: 8px; margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
+            <div style="margin-top: 8px; margin-bottom: 12px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 4px;">
                 <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
                     <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${time}
                 </span>
             </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
         `;
         
         events.forEach(e => {
@@ -694,17 +695,19 @@ function selectCalendarDate(year, month, day) {
             const leftBorder = branch ? branchText : 'var(--primary-color)';
 
             html += `
-            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s;">
+            <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s;">
                 <div style="display: flex; align-items: center;">
                     ${branchBadge}
-                    <span style="font-weight: 600; color: var(--text-dark); font-size: 0.9rem;">${cName}</span>
+                    <span style="font-weight: 600; color: var(--text-dark); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</span>
                 </div>
                 <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-chalkboard-user"></i> <span>${getShortName(e.teacher)}</span>
+                    <i class="fa-solid fa-chalkboard-user"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">${getShortName(e.teacher)}</span>
                 </div>
             </div>
             `;
         });
+        
+        html += `</div>`; // Close grid container
     }
     
     listEl.innerHTML = html;
