@@ -162,6 +162,8 @@ const mockMonthlyData = {
 };
 
 let currentMonthIndex = 3;
+let globalClassRows = [];
+let globalMetricsRow = [];
 
 function changeMonth(diff) {
     let newIndex = currentMonthIndex + diff;
@@ -173,6 +175,14 @@ function changeMonth(diff) {
         document.getElementById('currentMonthDisplay').innerText = data.label;
         document.getElementById('prevMonthBtn').style.opacity = currentMonthIndex === 0 ? '0.3' : '1';
         document.getElementById('nextMonthBtn').style.opacity = currentMonthIndex === Object.keys(mockMonthlyData).length - 1 ? '0.3' : '1';
+
+        // Filter data by month (0 = "03", 1 = "04", 2 = "05", 3 = "06")
+        const monthStr = String(currentMonthIndex + 3).padStart(2, '0');
+        if (globalClassRows.length > 0) {
+            const filteredRows = globalClassRows.filter(row => row && row.c[56] && row.c[56].v == monthStr);
+            updateMetricsCards(filteredRows, globalMetricsRow);
+            renderDashboardTable(filteredRows);
+        }
 
         // Update DOM boards safely
         const boards = document.querySelectorAll('.weekly-board');
@@ -210,8 +220,10 @@ function updateBoard(boardNode, deptData) {
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1019913137';
 const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1739187215';
 const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
+const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
 
 let hrMap = {};
+let globalCalendarEvents = [];
 
 function getShortName(fullName) {
     if (!fullName) return '';
@@ -253,15 +265,16 @@ async function fetchDashboardData() {
             return;
         }
 
-        const metricsRow = rows[0].c; 
-        const classRows = rows.slice(2).filter(row => row && row.c && row.c[1] && row.c[1].v);
-        console.log(`Retrieved ${classRows.length} classes.`);
+        globalMetricsRow = rows[0].c; 
+        globalClassRows = rows.slice(2).filter(row => row && row.c && row.c[1] && row.c[1].v);
+        console.log(`Retrieved ${globalClassRows.length} classes.`);
         
-        updateMetricsCards(classRows, metricsRow);
-        renderDashboardTable(classRows);
-        renderTeacherTable(classRows);
-        renderAcademicTable(classRows);
-        renderOperationTable(classRows);
+        // Initial render based on selected month
+        changeMonth(0);
+        
+        renderTeacherTable(globalClassRows);
+        renderAcademicTable(globalClassRows);
+        renderOperationTable(globalClassRows);
         console.log("Finished rendering all tables.");
         
         // Fetch Leader Data
@@ -276,6 +289,36 @@ async function fetchDashboardData() {
             console.log(`Retrieved leader data.`);
         } catch (err) {
             console.error("Error fetching leader data:", err);
+        }
+        
+        // Fetch Calendar Data
+        try {
+            console.log("Loading calendar data...");
+            const calRes = await fetch(CALENDAR_SHEET_URL);
+            const calText = await calRes.text();
+            const calJsonString = calText.substring(calText.indexOf('{'), calText.lastIndexOf('}') + 1);
+            const calJson = JSON.parse(calJsonString);
+            const calRows = calJson.table.rows;
+            
+            globalCalendarEvents = [];
+            calRows.forEach(row => {
+                if(!row || !row.c || !row.c[10] || !row.c[10].f) return;
+                const dateStr = row.c[10].f; // "dd/mm/yyyy"
+                const parts = dateStr.split('/');
+                if(parts.length === 3) {
+                    const d = new Date(parts[2], parts[1] - 1, parts[0]);
+                    globalCalendarEvents.push({
+                        date: d,
+                        className: getVal(row.c[3]),
+                        time: getVal(row.c[14]),
+                        teacher: getVal(row.c[6])
+                    });
+                }
+            });
+            console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
+            renderCalendar(0); // Re-render with data
+        } catch (err) {
+            console.error("Error fetching calendar data:", err);
         }
         
     } catch (error) {
@@ -544,10 +587,36 @@ function renderCalendar(monthOffset = 0) {
     }
     
     const today = new Date();
+    
+    // Map events for this month
+    const monthEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month);
+    const dayMap = {};
+    monthEvents.forEach(e => {
+        const d = e.date.getDate();
+        if(!dayMap[d]) dayMap[d] = [];
+        dayMap[d].push(e);
+    });
+
     for(let i=1; i<=daysInMonth; i++) {
         const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
-        const style = isToday ? `background: var(--primary-color); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);` : `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto;`;
-        html += `<div style="padding: 4px;"><div style="${style}">${i}</div></div>`;
+        
+        let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
+        let tooltip = '';
+        
+        if (isToday) {
+            style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
+        }
+        
+        if (dayMap[i]) {
+            // Day has events
+            if (!isToday) {
+                style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
+            }
+            tooltip = dayMap[i].map(e => `${e.time} - ${e.className.split(' - ')[0]}`).join('&#10;'); // &#10; is newline in title attribute
+            style += ` cursor: pointer; position: relative;`;
+        }
+
+        html += `<div style="padding: 4px;" title="${tooltip}"><div style="${style}">${i}</div></div>`;
     }
     grid.innerHTML = html;
 }

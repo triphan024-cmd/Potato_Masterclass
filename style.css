@@ -294,22 +294,27 @@ body {
 .metric-card {
     padding: 24px;
     display: flex;
-    flex-direction: row-reverse; /* Content on left, Icon on right */
-    justify-content: space-between;
+    flex-direction: row; /* Content on right, Icon on left */
+    justify-content: flex-start;
     align-items: center;
+    gap: 20px;
     border-radius: var(--border-radius);
-    transition: transform 0.3s;
-    background-color: #ffffff; /* fallback */
+    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .metric-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 }
 
-.card-purple { background-color: var(--pastel-purple); }
-.card-blue { background-color: var(--pastel-blue); }
-.card-orange { background-color: var(--pastel-orange); }
-.card-green { background-color: var(--pastel-green); }
+/* Remove full card colors */
+.card-purple { }
+.card-blue { }
+.card-orange { }
+.card-green { }
 
 .metric-top {
     display: flex;
@@ -321,18 +326,19 @@ body {
 }
 
 .metric-icon {
-    width: 60px;
-    height: 60px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.2rem;
+    font-size: 1.5rem;
+    border-radius: 14px;
 }
 
-.card-purple .metric-icon { color: var(--pastel-purple-icon); }
-.card-blue .metric-icon { color: var(--pastel-blue-icon); }
-.card-orange .metric-icon { color: var(--pastel-orange-icon); }
-.card-green .metric-icon { color: var(--pastel-green-icon); }
+.card-purple .metric-icon { background: rgba(139, 92, 246, 0.1); color: var(--primary-color); }
+.card-blue .metric-icon { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
+.card-orange .metric-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.card-green .metric-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
 .metric-data {
     display: flex;
@@ -340,18 +346,19 @@ body {
 }
 
 .metric-data h3 {
-    font-size: 1rem;
-    color: var(--text-color);
-    font-weight: 500;
-    margin-bottom: 6px;
-    opacity: 0.7;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .metric-data .value {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-color);
-    margin-bottom: 4px;
+    color: var(--text-dark);
+    margin-bottom: 6px;
     line-height: 1;
 }
 
