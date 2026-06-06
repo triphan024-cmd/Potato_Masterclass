@@ -648,6 +648,14 @@ function selectCalendarDate(year, month, day) {
     
     const dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
     
+    // Sort events by time (morning -> afternoon) then by branch
+    dayEvents.sort((a, b) => {
+        const timeA = a.time ? a.time.split(' - ')[0].trim() : '24:00';
+        const timeB = b.time ? b.time.split(' - ')[0].trim() : '24:00';
+        if (timeA !== timeB) return timeA.localeCompare(timeB);
+        return (a.className || '').localeCompare(b.className || '');
+    });
+    
     if (dayEvents.length === 0) {
         listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">No classes scheduled for this date.</p>`;
         return;
