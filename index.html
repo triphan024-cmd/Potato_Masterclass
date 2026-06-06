@@ -13,11 +13,14 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="../1. Potato logo.png" alt="Potato Logo" class="logo">
+                <img src="https://www.appsheet.com:443/fsimage.png?appid=35e5f9f7-248a-4eb4-a87e-672f26329edc&datasource=google&filename=DocId%3D17DO_wZowyRRcJ2RwJgieoOk-8rNKqraq&signature=531e139f3b6b655d2c117ff2508266b82e3eb3c280f0e627e9890cb549161cc8&tableprovider=google&userid=113051404" alt="Potato Logo" class="logo">
             </div>
             <ul class="nav-menu">
                 <li class="nav-item active" data-target="view-dashboard">
                     <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
+                </li>
+                <li class="nav-item" data-target="view-leader">
+                    <a href="#"><i class="fa-solid fa-crown"></i> Leader</a>
                 </li>
                 <li class="nav-item" data-target="view-teacher">
                     <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teachers</a>
@@ -424,6 +427,34 @@
                                 </tr>
                             </thead>
                             <tbody id="operation-table-body">
+                                <!-- Dynamic data -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <!-- ==================== LEADER VIEW ==================== -->
+                <div id="view-leader" class="page-view" style="display: none;">
+                    <section class="metrics-grid" id="leader-metrics">
+                        <!-- metrics populated dynamically -->
+                    </section>
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Leader Tasks & Reports</h2>
+                        </div>
+                        <table class="modern-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">PIC</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th style="min-width:250px">Plan / Details</th>
+                                    <th style="min-width:250px">Result</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leader-table-body">
                                 <!-- Dynamic data -->
                             </tbody>
                         </table>

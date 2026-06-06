@@ -185,6 +185,7 @@ function updateBoard(boardNode, deptData) {
 // GOOGLE SHEET DATA FETCHING AND RENDERING
 // ==========================================
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1019913137';
+const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1739187215';
 
 const getVal = (cell) => {
     if (!cell) return '';
@@ -216,6 +217,21 @@ async function fetchDashboardData() {
         renderAcademicTable(classRows);
         renderOperationTable(classRows);
         console.log("Finished rendering all tables.");
+        
+        // Fetch Leader Data
+        try {
+            console.log("Loading leader data...");
+            const leaderRes = await fetch(LEADER_SHEET_URL);
+            const leaderText = await leaderRes.text();
+            const leaderJsonString = leaderText.substring(leaderText.indexOf('{'), leaderText.lastIndexOf('}') + 1);
+            const leaderJson = JSON.parse(leaderJsonString);
+            const leaderRows = leaderJson.table.rows;
+            renderLeaderTable(leaderRows);
+            console.log(`Retrieved leader data.`);
+        } catch (err) {
+            console.error("Error fetching leader data:", err);
+        }
+        
     } catch (error) {
         console.error('Error fetching or parsing data:', error);
     }
@@ -366,4 +382,84 @@ function renderOperationTable(classRows) {
         `;
         tbody.appendChild(tr);
     });
+}
+
+function renderLeaderTable(rows) {
+    const tbody = document.getElementById('leader-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const validRows = rows.filter(row => row && row.c && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== ''));
+    
+    let totalTasks = 0;
+    let completedTasks = 0;
+    
+    validRows.forEach(row => {
+        const c = row.c;
+        const status = getVal(c[1]);
+        const type = getVal(c[2]); // Task, Report
+        const pic = (getVal(c[4]) || '').split('-')[0].trim(); // Name only
+        const category = getVal(c[5]) || getVal(c[15]);
+        const plan = getVal(c[6]) || getVal(c[11]); // Support report descriptions
+        const result = getVal(c[7]) || getVal(c[12]);
+        const deadline = getVal(c[9]);
+        
+        if (type === 'Task') {
+            totalTasks++;
+            if (status.includes('Completed')) completedTasks++;
+        }
+        
+        // Status styling
+        let statusBadge = 'neutral';
+        if (status.includes('Completed')) statusBadge = 'positive';
+        else if (status.includes('Processing')) statusBadge = 'warning';
+        else if (status.includes('New')) statusBadge = 'neutral';
+        
+        const tr = document.createElement('tr');
+        tr.className = 'clickable-row';
+        tr.innerHTML = `
+            <td class="sticky-col"><strong>${pic || 'N/A'}</strong></td>
+            <td><span class="stat-badge ${type === 'Task' ? 'neutral' : 'success'}">${type || 'N/A'}</span></td>
+            <td>${category || 'N/A'}</td>
+            <td><div style="white-space: pre-wrap; font-size: 0.9em; max-width: 400px;">${plan}</div></td>
+            <td><div style="white-space: pre-wrap; font-size: 0.9em; max-width: 400px;">${result}</div></td>
+            <td>${deadline || 'N/A'}</td>
+            <td><span class="trend ${statusBadge}">${status || 'N/A'}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    // Render Leader Metrics
+    const metricsGrid = document.getElementById('leader-metrics');
+    if (metricsGrid) {
+        metricsGrid.innerHTML = `
+            <div class="metric-card card-blue panel">
+                <div class="metric-data">
+                    <h3>Total Tasks</h3>
+                    <p class="value">${totalTasks}</p>
+                </div>
+                <div class="metric-top">
+                    <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
+                </div>
+            </div>
+            <div class="metric-card card-green panel">
+                <div class="metric-data">
+                    <h3>Completed Tasks</h3>
+                    <p class="value">${completedTasks}</p>
+                </div>
+                <div class="metric-top">
+                    <div class="metric-icon highlight"><i class="fa-solid fa-check-double"></i></div>
+                </div>
+            </div>
+            <div class="metric-card card-orange panel">
+                <div class="metric-data">
+                    <h3>Completion Rate</h3>
+                    <p class="value">${totalTasks > 0 ? Math.round((completedTasks/totalTasks)*100) : 0}%</p>
+                </div>
+                <div class="metric-top">
+                    <div class="metric-icon alert"><i class="fa-solid fa-chart-pie"></i></div>
+                </div>
+            </div>
+        `;
+    }
 }
