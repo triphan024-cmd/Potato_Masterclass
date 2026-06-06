@@ -319,6 +319,7 @@ body {
 .metric-top {
     display: flex;
     align-items: center;
+    order: -1; /* Move icon to the left */
 }
 
 .menu-dots {
