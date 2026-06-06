@@ -129,14 +129,16 @@
                     
                     <!-- Daily Classes Panel -->
                     <section class="panel daily-classes-panel" style="padding: 24px; flex: 2; display: flex; flex-direction: column;">
-                        <div class="daily-classes-header" id="daily-classes-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px; position: sticky; top: 0; background: white; z-index: 10;">
-                            <div style="flex: 1; text-align: center; border-right: 1px dashed rgba(0,0,0,0.1);">
-                                <h4 id="header-nq" style="color: #0284c7; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Ngô Quyền (NQ)</h4>
-                            </div>
-                            <div style="flex: 0 0 auto; padding: 0 24px;">
+                        <div class="daily-classes-header" id="daily-classes-header" style="display: flex; gap: 20px; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px; padding-top: 4px; position: sticky; top: 0; background: white; z-index: 10;">
+                            <!-- Date (Absolute Center) -->
+                            <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 0 16px; background: white; z-index: 2; margin-top: -4px;">
                                 <h3 id="selected-date-display" style="font-size: 1.1rem; color: var(--text-color); margin: 0; text-align: center; font-weight: 600;">Select a date</h3>
                             </div>
-                            <div style="flex: 1; text-align: center; border-left: 1px dashed rgba(0,0,0,0.1);">
+                            
+                            <div style="flex: 1; text-align: center; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; z-index: 1;">
+                                <h4 id="header-nq" style="color: #0284c7; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Ngô Quyền (NQ)</h4>
+                            </div>
+                            <div style="flex: 1; text-align: center; min-width: 0; z-index: 1;">
                                 <h4 id="header-hd" style="color: #059669; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Hưng Định (HD)</h4>
                             </div>
                         </div>
