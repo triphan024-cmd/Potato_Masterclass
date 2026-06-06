@@ -181,23 +181,8 @@ function changeMonth(diff) {
         const monthStr = String(monthVal).padStart(2, '0');
         if (globalClassRows.length > 0) {
             const filteredRows = globalClassRows.filter(row => {
-                const startDateStr = getVal(row.c[9]);
-                const endDateStr = getVal(row.c[10]);
-                
-                if (startDateStr && endDateStr) {
-                    const startParts = startDateStr.split('/');
-                    const endParts = endDateStr.split('/');
-                    if (startParts.length === 3 && endParts.length === 3) {
-                        const start = new Date(startParts[2], startParts[1] - 1, startParts[0]);
-                        const end = new Date(endParts[2], endParts[1] - 1, endParts[0]);
-                        const filterStart = new Date(2026, monthVal - 1, 1);
-                        const filterEnd = new Date(2026, monthVal, 0); // last day of month
-                        
-                        return start <= filterEnd && end >= filterStart;
-                    }
-                }
-                
-                return row.c[56] && row.c[56].v == monthStr;
+                // The user clarified that the Month column (c[56]) correctly represents the month's snapshot data.
+                return row.c[56] && String(row.c[56].v).padStart(2, '0') === monthStr;
             });
             updateMetricsCards(filteredRows, globalMetricsRow);
             renderDashboardTable(filteredRows);
@@ -352,14 +337,14 @@ function updateMetricsCards(classRows, metricsRow) {
     
     // Tìm thẻ dựa trên text của h3
     document.querySelectorAll('.metric-data').forEach(div => {
-        const title = div.querySelector('h3').innerText;
+        const title = div.querySelector('h3').textContent.trim().toLowerCase();
         const valEl = div.querySelector('.value');
         if (!valEl) return;
         
-        if (title === 'Total Students') valEl.innerText = totalStudents.toLocaleString();
-        if (title === 'Total Classes') valEl.innerText = totalClasses.toLocaleString();
-        if (title === 'Total Teachers') valEl.innerText = totalTeachers.toLocaleString();
-        if (title === 'Active Courses') valEl.innerText = totalClasses.toLocaleString();
+        if (title === 'total students') valEl.innerText = totalStudents.toLocaleString();
+        if (title === 'total classes') valEl.innerText = totalClasses.toLocaleString();
+        if (title === 'total teachers') valEl.innerText = totalTeachers.toLocaleString();
+        if (title === 'active courses') valEl.innerText = totalClasses.toLocaleString();
     });
 }
 
