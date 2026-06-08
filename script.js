@@ -806,23 +806,39 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             groupedTasks[dept].push(row);
         });
 
+        const getDeptStyle = (dept) => {
+            const colors = [
+                { bg: '#e0e7ff', color: '#4f46e5', icon: 'fa-layer-group' },
+                { bg: '#dcfce7', color: '#16a34a', icon: 'fa-briefcase' },
+                { bg: '#ffedd5', color: '#ea580c', icon: 'fa-chart-pie' },
+                { bg: '#fce7f3', color: '#db2777', icon: 'fa-users' },
+                { bg: '#e0f2fe', color: '#0284c7', icon: 'fa-laptop-code' },
+                { bg: '#fef9c3', color: '#ca8a04', icon: 'fa-lightbulb' }
+            ];
+            let hash = 0;
+            for (let i = 0; i < dept.length; i++) hash = dept.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        };
+
         for (const [dept, rows] of Object.entries(groupedTasks)) {
-            listHtml += `<div style="margin-top: 16px; margin-bottom: 8px; font-weight: 700; color: var(--primary-dark); border-bottom: 2px solid var(--primary-light); padding-bottom: 4px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-building"></i> ${dept}</div>`;
+            const dStyle = getDeptStyle(dept);
+            listHtml += `<div class="dept-header" style="background: ${dStyle.bg}; color: ${dStyle.color};"><i class="fa-solid ${dStyle.icon}"></i> ${dept}</div>`;
             rows.forEach(row => {
                 const c = row.c;
                 const status = getVal(c[1]) || 'New';
-                let statusClass = 'neutral';
-                let borderColor = 'var(--text-muted)';
+                
+                let statusBg = 'var(--bg-color)';
+                let statusColor = 'var(--text-muted)';
                 
                 if (status.includes('Completed')) {
-                    statusClass = 'positive';
-                    borderColor = 'var(--success)';
+                    statusBg = 'rgba(46, 204, 113, 0.1)';
+                    statusColor = 'var(--success)';
                 } else if (status.includes('Processing')) {
-                    statusClass = 'warning';
-                    borderColor = 'var(--warning)';
+                    statusBg = 'rgba(243, 156, 18, 0.1)';
+                    statusColor = 'var(--warning)';
                 } else if (status.includes('New')) {
-                    statusClass = 'neutral';
-                    borderColor = 'var(--primary-color)';
+                    statusBg = 'rgba(231, 76, 60, 0.1)';
+                    statusColor = 'var(--danger)'; // Red for new
                 }
 
                 const category = getVal(c[5]) || getVal(c[15]);
@@ -830,15 +846,13 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const deadline = getVal(c[9]);
                 
                 listHtml += `
-                    <div class="planner-card" style="border-left-color: ${borderColor}; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                        <div class="planner-card-meta" style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <span class="status ${statusClass}">${status}</span>
-                                <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
-                            </div>
-                            <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                    <div class="modern-card" style="border-left: 4px solid ${statusColor};">
+                        <div class="modern-card-header">
+                            <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
+                            <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
+                            <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                         </div>
-                        <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark); border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px;">
+                        <div class="modern-card-body">
                             ${plan || 'No details provided'}
                         </div>
                     </div>
