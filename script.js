@@ -1055,12 +1055,15 @@ function renderTeacherObservations(classRows) {
             let hasEval = sEval !== '-' && sEval !== '';
             let hasComment = headComment !== '-' && headComment !== '';
             
+            let formattedEval = hasEval ? sEval.replace(/\n/g, '<br>') : 'No evaluation';
+            let formattedComment = hasComment ? headComment.replace(/\n/g, '<br>') : 'No comment';
+            
             let combinedHTML = `
                 <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
                     <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
-                    <p style="margin-top: 0; margin-bottom: 15px;">${hasEval ? sEval : 'No evaluation'}</p>
+                    <p style="margin-top: 0; margin-bottom: 15px;">${formattedEval}</p>
                     <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
-                    <p style="margin-top: 0; margin-bottom: 0;">${hasComment ? headComment : 'No comment'}</p>
+                    <p style="margin-top: 0; margin-bottom: 0;">${formattedComment}</p>
                 </div>
             `;
             
@@ -1071,7 +1074,7 @@ function renderTeacherObservations(classRows) {
                 .replace(/\r/g, ' ');
                 
             let headIcon = (hasEval || hasComment)
-                ? `<i class="fa-solid fa-folder-open" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
+                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
                 : '-';
 
             rowsHtml += `
