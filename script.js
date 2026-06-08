@@ -1,9 +1,12 @@
 // Function to open the detailed view of a class
-function openClassDetail(className) {
+function openClassDetail(titleStr, contentStr) {
+    if (event) event.stopPropagation();
     const modal = document.getElementById('classModal');
     const title = document.getElementById('modalClassTitle');
+    const content = document.getElementById('modalClassContent');
     
-    title.innerText = `Class Details: ${className}`;
+    title.innerText = titleStr;
+    content.innerText = contentStr || 'No details available.';
     modal.classList.add('show');
 }
 
@@ -1049,13 +1052,20 @@ function renderTeacherObservations(classRows) {
                 statusBadge = `<span class="status-badge" style="background: rgba(243, 156, 18, 0.1); color: var(--warning); font-size: 0.75rem;">Pending</span>`;
             }
 
+            let sEvalIcon = sEval !== '-' && sEval !== '' 
+                ? `<i class="fa-solid fa-file-lines" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Student Evaluation - ${className.split(' - ')[0]}', \`${sEval.replace(/`/g, '\\`')}\`)"></i>`
+                : '-';
+            let hCommentIcon = headComment !== '-' && headComment !== ''
+                ? `<i class="fa-solid fa-comment-dots" style="color: var(--warning); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Comment - ${className.split(' - ')[0]}', \`${headComment.replace(/`/g, '\\`')}\`)"></i>`
+                : '-';
+
             rowsHtml += `
                 <tr>
                     <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
                     <td style="padding: 8px;">${statusBadge}</td>
                     <td style="padding: 8px;">${tScore}</td>
-                    <td style="padding: 8px;">${sEval}</td>
-                    <td style="padding: 8px;">${headComment}</td>
+                    <td style="padding: 8px; text-align: center;">${sEvalIcon}</td>
+                    <td style="padding: 8px; text-align: center;">${hCommentIcon}</td>
                 </tr>
             `;
         });
@@ -1081,8 +1091,8 @@ function renderTeacherObservations(classRows) {
                                 <th style="padding: 8px;">Class</th>
                                 <th style="padding: 8px;">Observation</th>
                                 <th style="padding: 8px;">T.Score</th>
-                                <th style="padding: 8px;">S.Eval</th>
-                                <th style="padding: 8px;">H.Comment</th>
+                                <th style="padding: 8px; text-align: center;">S.Eval</th>
+                                <th style="padding: 8px; text-align: center;">H.Comment</th>
                             </tr>
                         </thead>
                         <tbody>
