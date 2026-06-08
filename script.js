@@ -1064,8 +1064,14 @@ function renderTeacherObservations(classRows) {
                 </div>
             `;
             
+            let safeHTML = combinedHTML
+                .replace(/"/g, '&quot;')
+                .replace(/`/g, '\\`')
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, ' ');
+                
             let headIcon = (hasEval || hasComment)
-                ? `<i class="fa-solid fa-folder-open" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${combinedHTML.replace(/`/g, '\\`')}\`)"></i>`
+                ? `<i class="fa-solid fa-folder-open" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
                 : '-';
 
             rowsHtml += `
