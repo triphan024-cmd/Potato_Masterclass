@@ -1079,7 +1079,7 @@ function renderTeacherObservations(classRows) {
                 .replace(/\r/g, ' ');
                 
             let headIcon = (hasEval || hasComment)
-                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
+                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', \`${safeHTML}\`)"></i>`
                 : '-';
 
             rowsHtml += `
