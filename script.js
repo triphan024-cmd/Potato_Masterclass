@@ -1,4 +1,4 @@
-// Function to open the detailed view of a class
+﻿// Function to open the detailed view of a class
 function openClassDetail(titleStr, contentStr) {
     if (event) event.stopPropagation();
     const modal = document.getElementById('classModal');
@@ -1506,13 +1506,6 @@ function updateAllRolesTasksMetrics() {
     updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
 }
 
-function renderTeacherPerformance(classRows) {
-    const grid = document.getElementById('teacher-performance-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    const teacherMap = {};
-    classRows.forEach(row => {
 function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     if (!globalLeaderRows || globalLeaderRows.length === 0) return;
 
