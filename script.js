@@ -1784,7 +1784,7 @@ function renderAcademicPerformance(classRows) {
                                         <td style="padding: 14px 12px; text-align: center; color: var(--text-color);">${material}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;"><span class="stat-badge ${exam !== '-' ? 'primary' : 'neutral'}">${exam}</span></td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam)}</td>
                                     </tr>
                                 `;
                             }).join('')}
