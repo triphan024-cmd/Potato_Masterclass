@@ -1131,32 +1131,127 @@ function renderTeacherObservations(classRows) {
     });
     
     // Update Head Metrics DOM
-    const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');
-    let taskPending = 0;
-    let completedHeadTasks = 0;
+    const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
+    const monthStr = String(monthVal).padStart(2, '0');
+    const prevMonthStr = (typeof currentMonthIndex !== 'undefined' && currentMonthIndex > 0) ? String(monthVal - 1).padStart(2, '0') : null;
 
-    headTasks.forEach(t => {
-        const c = t.c;
-        const status = getVal(c[1]) || '';
-        
-        if (!status.includes('Completed')) taskPending++;
-        else completedHeadTasks++;
+    // 1. Current Month Task Pending and Completion
+    const currentHeadTasks = globalLeaderRows.filter(row => {
+        if (!row || !row.c || getShortName(getVal(row.c[4])) !== 'Ms. Đào' || getVal(row.c[2]) !== 'Task') return false;
+        const deadline = getVal(row.c[9]) || '';
+        const parts = deadline.split('/');
+        return parts.length >= 2 && parts[1] === monthStr;
     });
 
+    let currentTaskPending = 0;
+    let currentCompletedTasks = 0;
+    currentHeadTasks.forEach(t => {
+        if (!(getVal(t.c[1]) || '').includes('Completed')) currentTaskPending++;
+        else currentCompletedTasks++;
+    });
+    const currentTaskCompletion = currentHeadTasks.length > 0 ? Math.round((currentCompletedTasks / currentHeadTasks.length) * 100) : 0;
+
+    // 2. Previous Month Data
+    let prevCompletedObs = 0;
+    let prevPendingObs = 0;
+    let prevTaskPending = 0;
+    let prevTaskCompletion = 0;
+
+    if (prevMonthStr) {
+        // Class Observations
+        const prevClassRows = globalClassRows.filter(row => row.c[56] && String(row.c[56].v).padStart(2, '0') === prevMonthStr);
+        prevClassRows.forEach(row => {
+            const obs = getVal(row.c[12]) || '';
+            if (obs && String(obs).trim() !== '') prevCompletedObs++;
+            else prevPendingObs++;
+        });
+
+        // Head Tasks
+        const prevHeadTasks = globalLeaderRows.filter(row => {
+            if (!row || !row.c || getShortName(getVal(row.c[4])) !== 'Ms. Đào' || getVal(row.c[2]) !== 'Task') return false;
+            const deadline = getVal(row.c[9]) || '';
+            const parts = deadline.split('/');
+            return parts.length >= 2 && parts[1] === prevMonthStr;
+        });
+        
+        let prevCompletedTasks = 0;
+        prevHeadTasks.forEach(t => {
+            if (!(getVal(t.c[1]) || '').includes('Completed')) prevTaskPending++;
+            else prevCompletedTasks++;
+        });
+        prevTaskCompletion = prevHeadTasks.length > 0 ? Math.round((prevCompletedTasks / prevHeadTasks.length) * 100) : 0;
+    }
+
+    // Helper for formatting trend
+    const formatTrend = (current, prev) => {
+        if (!prevMonthStr) return `<i class="fa-solid fa-minus"></i> No previous data`;
+        if (prev === 0) return current > 0 ? `<i class="fa-solid fa-arrow-up"></i> +100% vs last month` : `<i class="fa-solid fa-minus"></i> 0% vs last month`;
+        
+        const diff = current - prev;
+        const pct = Math.round((diff / prev) * 100);
+        
+        if (pct > 0) return `<i class="fa-solid fa-arrow-up"></i> +${pct}% vs last month`;
+        if (pct < 0) return `<i class="fa-solid fa-arrow-down"></i> ${pct}% vs last month`;
+        return `<i class="fa-solid fa-minus"></i> 0% vs last month`;
+    };
+
+    // Update DOM values
     const obsEl1 = document.getElementById('head-completed-obs');
     if(obsEl1) obsEl1.innerText = totalCompletedObs;
+    
     const obsEl2 = document.getElementById('head-pending-obs');
     if(obsEl2) obsEl2.innerText = totalPendingObs;
+    
     const pendEl = document.getElementById('head-task-pending');
-    if(pendEl) pendEl.innerText = taskPending;
+    if(pendEl) pendEl.innerText = currentTaskPending;
     
     const completionEl = document.getElementById('head-task-completion');
     if(completionEl) {
-        if(headTasks.length > 0) {
-            completionEl.innerText = Math.round((completedHeadTasks / headTasks.length) * 100) + '%';
+        if(currentHeadTasks.length > 0) {
+            completionEl.innerText = currentTaskCompletion + '%';
         } else {
             completionEl.innerText = 'N/A';
         }
+    }
+
+    // Update Trends
+    const getTrendEl = (id) => {
+        const el = document.getElementById(id);
+        if (el) return el.nextElementSibling;
+        return null;
+    };
+    
+    const trendObs1 = getTrendEl('head-completed-obs');
+    if (trendObs1) {
+        trendObs1.innerHTML = formatTrend(totalCompletedObs, prevCompletedObs);
+        trendObs1.className = 'trend ' + (totalCompletedObs >= prevCompletedObs ? 'positive' : 'negative');
+    }
+    
+    const trendObs2 = getTrendEl('head-pending-obs');
+    if (trendObs2) {
+        trendObs2.innerHTML = formatTrend(totalPendingObs, prevPendingObs);
+        trendObs2.className = 'trend ' + (totalPendingObs <= prevPendingObs ? 'positive' : 'negative');
+    }
+
+    const trendTask1 = getTrendEl('head-task-pending');
+    if (trendTask1) {
+        trendTask1.innerHTML = formatTrend(currentTaskPending, prevTaskPending);
+        trendTask1.className = 'trend ' + (currentTaskPending <= prevTaskPending ? 'positive' : 'negative');
+    }
+
+    const trendTask2 = getTrendEl('head-task-completion');
+    if (trendTask2) {
+        const diff = currentTaskCompletion - prevTaskCompletion;
+        let trendText = `<i class="fa-solid fa-minus"></i> 0% vs last month`;
+        if (!prevMonthStr) {
+            trendText = `<i class="fa-solid fa-minus"></i> No previous data`;
+        } else if (diff > 0) {
+            trendText = `<i class="fa-solid fa-arrow-up"></i> +${diff}% vs last month`;
+        } else if (diff < 0) {
+            trendText = `<i class="fa-solid fa-arrow-down"></i> ${diff}% vs last month`;
+        }
+        trendTask2.innerHTML = trendText;
+        trendTask2.className = 'trend ' + (diff >= 0 ? 'positive' : 'negative');
     }
 }
 
