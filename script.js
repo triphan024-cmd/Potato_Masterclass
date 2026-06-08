@@ -187,7 +187,7 @@ function changeMonth(diff) {
             });
             updateMetricsCards(filteredRows, globalMetricsRow);
             renderDashboardTable(filteredRows);
-            renderHeadTable(filteredRows);
+            renderTeacherObservations(filteredRows);
         }
 
         // Re-render role tasks when month changes
@@ -992,41 +992,109 @@ function renderWeeklyReports(rows, containerId, monthStr) {
     container.appendChild(tableWrapper);
 }
 
-function renderHeadTable(classRows) {
-    const tbody = document.getElementById('head-table-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+function renderTeacherObservations(classRows) {
+    const grid = document.getElementById('teacher-observation-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
     
-    // Calculate Head metrics based on globalLeaderRows and classRows
-    let totalClasses = classRows.length;
-    let totalStudents = 0;
+    // Group by teacher
+    const teacherMap = {};
     classRows.forEach(row => {
-        const studentsStr = getVal(row.c[7]);
-        if(studentsStr) totalStudents += parseInt(studentsStr) || 0;
-        
         const c = row.c;
-        const className = getVal(c[6]);
-        const teacher = getShortName(getVal(c[12]));
-        const ta = getShortName(getVal(c[16]));
-        const course = getVal(c[4]);
-        const status = getVal(c[2]) || '';
-        const start = getVal(c[9]);
-        const end = getVal(c[10]);
-
-        const tr = document.createElement('tr');
-        tr.className = 'clickable-row';
-        tr.innerHTML = `
-            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
-            <td>${teacher}</td>
-            <td>${ta}</td>
-            <td>${course}</td>
-            <td>${getVal(c[7]) || '0'}</td>
-            <td><span class="trend ${status.includes('Teaching') ? 'positive' : 'neutral'}">${status}</span></td>
-            <td>${start}</td>
-            <td>${end}</td>
-        `;
-        tbody.appendChild(tr);
+        const teacher = getShortName(getVal(c[8])) || 'Unknown Teacher';
+        if (!teacherMap[teacher]) {
+            teacherMap[teacher] = {
+                rows: [],
+                observed: 0,
+                pending: 0
+            };
+        }
+        teacherMap[teacher].rows.push(row);
+        
+        const obs = getVal(c[12]) || '';
+        if (obs && String(obs).trim() !== '') {
+            teacherMap[teacher].observed++;
+        } else {
+            teacherMap[teacher].pending++;
+        }
     });
+
+    const teachers = Object.keys(teacherMap).sort();
+    if (teachers.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
+        return;
+    }
+
+    teachers.forEach(teacher => {
+        const data = teacherMap[teacher];
+        const sortedRows = data.rows.sort((a, b) => {
+            const obsA = getVal(a.c[12]) ? 1 : 0;
+            const obsB = getVal(b.c[12]) ? 1 : 0;
+            return obsA - obsB;
+        });
+
+        let rowsHtml = '';
+        sortedRows.forEach(row => {
+            const c = row.c;
+            const className = getVal(c[6]) || 'Unknown';
+            const obs = getVal(c[12]) || '';
+            const tScore = getVal(c[23]) || '-';
+            const sEval = getVal(c[24]) || '-';
+            const headComment = getVal(c[25]) || '-';
+            
+            let statusBadge = '';
+            if (obs && String(obs).trim() !== '') {
+                statusBadge = `<span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); font-size: 0.75rem;">Observed</span>`;
+            } else {
+                statusBadge = `<span class="status-badge" style="background: rgba(243, 156, 18, 0.1); color: var(--warning); font-size: 0.75rem;">Pending</span>`;
+            }
+
+            rowsHtml += `
+                <tr>
+                    <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
+                    <td style="padding: 8px;">${statusBadge}</td>
+                    <td style="padding: 8px;">${tScore}</td>
+                    <td style="padding: 8px;">${sEval}</td>
+                    <td style="padding: 8px;">${headComment}</td>
+                </tr>
+            `;
+        });
+
+        const card = document.createElement('div');
+        card.className = 'modern-card panel';
+        card.style.margin = '0';
+        card.innerHTML = `
+            <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-chalkboard-user"></i> ${teacher}
+                </h3>
+                <div style="display: flex; gap: 8px;">
+                    <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);"><i class="fa-solid fa-check"></i> ${data.observed} Observed</span>
+                    <span class="status-badge" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);"><i class="fa-solid fa-clock"></i> ${data.pending} Pending</span>
+                </div>
+            </div>
+            <div class="modern-card-body" style="padding: 0;">
+                <div style="overflow-x: auto;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 400px;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 8px;">Class</th>
+                                <th style="padding: 8px;">Observation</th>
+                                <th style="padding: 8px;">T.Score</th>
+                                <th style="padding: 8px;">S.Eval</th>
+                                <th style="padding: 8px;">H.Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
     
     // Update Head Metrics DOM
     const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');

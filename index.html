@@ -206,27 +206,13 @@
                         </div>
                     </section>
 
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                    <section style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>All Classes Overview</h2>
+                            <h2>Teacher Observations</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1000px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">Class Name</th>
-                                    <th>Teacher</th>
-                                    <th>TA</th>
-                                    <th>Course</th>
-                                    <th>Students</th>
-                                    <th>Status</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="head-table-body">
-                                <!-- Dynamic data -->
-                            </tbody>
-                        </table>
+                        <div id="teacher-observation-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+                            <!-- Dynamic Teacher Cards -->
+                        </div>
                     </section>
                 </div>
 
