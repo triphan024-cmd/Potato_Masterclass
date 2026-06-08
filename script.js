@@ -516,7 +516,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     });
 
     if (validRows.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks found for ${picName} this month.</div>`;
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks found for ${picName} this month.</div>`;
         return;
     }
 
@@ -529,10 +529,24 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
 
     container.innerHTML = '';
     
+    // Split layout wrapper
+    const splitWrapper = document.createElement('div');
+    splitWrapper.className = 'task-split-container';
+    
+    // Left: Calendar Board
+    const leftDiv = document.createElement('div');
+    leftDiv.className = 'task-split-left';
+    
     const board = document.createElement('div');
     board.className = 'planner-board';
     board.style.padding = '0';
     
+    // Right: Detail Panel
+    const rightDiv = document.createElement('div');
+    rightDiv.className = 'task-split-right';
+    rightDiv.id = `${containerId}-detail-panel`;
+    rightDiv.innerHTML = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px;">Tasks Overview</h3><p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
+
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
         const dStr = dateStr.split(' ')[0];
@@ -583,32 +597,47 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     let currentDate = 1;
     for (let i = 0; i < totalCells; i++) {
         const cell = document.createElement('div');
-        cell.style.padding = '4px';
-        cell.style.display = 'flex';
-        cell.style.justifyContent = 'center';
-        cell.style.alignItems = 'center';
-        cell.style.borderRight = '1px solid rgba(0,0,0,0.06)';
-        cell.style.borderBottom = '1px solid rgba(0,0,0,0.06)';
+        cell.className = 'planner-day-column';
+        cell.style.padding = '8px';
         
         if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
             const today = new Date();
             const isToday = currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear();
             
-            let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
+            const dateLabel = document.createElement('div');
+            dateLabel.className = 'planner-date-label';
+            dateLabel.innerText = currentDate;
             
             if (isToday) {
-                style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
+                cell.classList.add('today');
             }
             
+            cell.appendChild(dateLabel);
+            
             if (dayMap[currentDate]) {
-                if (!isToday) {
-                    style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
-                }
-                style += ` cursor: pointer;`;
+                cell.style.cursor = 'pointer';
                 const dateNum = currentDate;
-                cell.innerHTML = `<div style="${style}" onclick="openTaskModal('${picName}', ${year}, ${month}, ${dateNum})">${dateNum}</div>`;
+                cell.onclick = () => showTaskDetails(picName, year, month, dateNum, rightDiv.id, validRows);
+                
+                // Add mini indicators
+                dayMap[currentDate].forEach(taskRow => {
+                    const c = taskRow.c;
+                    const plan = getVal(c[6]) || getVal(c[11]) || 'Task';
+                    const status = getVal(c[1]) || 'New';
+                    
+                    let indicatorColor = 'var(--primary-color)';
+                    if (status.includes('Completed')) indicatorColor = 'var(--success)';
+                    else if (status.includes('Processing')) indicatorColor = 'var(--warning)';
+                    
+                    const indicator = document.createElement('div');
+                    indicator.className = 'mini-task-item';
+                    indicator.style.borderLeftColor = indicatorColor;
+                    indicator.innerText = plan;
+                    indicator.title = plan;
+                    cell.appendChild(indicator);
+                });
             } else {
-                cell.innerHTML = `<div style="${style}">${currentDate}</div>`;
+                cell.style.cursor = 'default';
             }
             
             currentDate++;
@@ -618,34 +647,39 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         board.appendChild(cell);
     }
     
-    container.appendChild(board);
+    leftDiv.appendChild(board);
     
-    if (dayMap['unscheduled']) {
-        const unscheduledContainer = document.createElement('div');
-        unscheduledContainer.style.cssText = 'margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;';
-        unscheduledContainer.innerHTML = `
-            <div style="display: flex; flex-direction: column;">
-                <h4 style="margin: 0; color: var(--primary-color);">No Deadline</h4>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">${dayMap['unscheduled'].length} tasks pending</span>
-            </div>
-            <button onclick="openTaskModal('${picName}', null, null, null)" style="background: var(--primary-light); color: var(--primary-dark); border-radius: 6px; padding: 6px 16px; font-size: 0.85rem; font-weight: bold; border: none; cursor: pointer; transition: all 0.2s;">View Tasks</button>
-        `;
-        container.appendChild(unscheduledContainer);
+    if (dayMap['unscheduled'] && dayMap['unscheduled'].length > 0) {
+        const unscheduledBtn = document.createElement('button');
+        unscheduledBtn.className = 'icon-btn';
+        unscheduledBtn.style.cssText = 'margin-top: 16px; background: #f8fafc; color: var(--primary-color); border: 1px dashed rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: all 0.2s;';
+        unscheduledBtn.innerText = `View ${dayMap['unscheduled'].length} Unscheduled Tasks`;
+        unscheduledBtn.onclick = () => showTaskDetails(picName, null, null, null, rightDiv.id, validRows);
+        leftDiv.appendChild(unscheduledBtn);
+    }
+    
+    splitWrapper.appendChild(leftDiv);
+    splitWrapper.appendChild(rightDiv);
+    container.appendChild(splitWrapper);
+    
+    // Automatically show today's tasks or unscheduled
+    const today = new Date();
+    if (today.getMonth() === month && today.getFullYear() === year && dayMap[today.getDate()]) {
+        showTaskDetails(picName, year, month, today.getDate(), rightDiv.id, validRows);
+    } else if (dayMap['unscheduled'] && dayMap['unscheduled'].length > 0) {
+        showTaskDetails(picName, null, null, null, rightDiv.id, validRows);
     }
 }
 
-function openTaskModal(picName, year, month, date) {
-    const modal = document.getElementById('taskModal');
-    const title = document.getElementById('modalTaskTitle');
-    const list = document.getElementById('modalTaskList');
-    if (!modal || !list || !title) return;
-
-    list.innerHTML = '';
+function showTaskDetails(picName, year, month, date, containerId, validRows) {
+    const detailPanel = document.getElementById(containerId);
+    if (!detailPanel) return;
     
+    let titleHtml = '';
     if (date) {
-        title.innerText = `Tasks for ${picName} - ${date}/${month + 1}/${year}`;
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
     } else {
-        title.innerText = `Unscheduled Tasks for ${picName}`;
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
     }
 
     const parseDateStr = (dateStr) => {
@@ -658,12 +692,7 @@ function openTaskModal(picName, year, month, date) {
         return null;
     };
 
-    const validRows = globalLeaderRows.filter(row => {
-        if(!row || !row.c) return false;
-        const type = getVal(row.c[2]);
-        const pic = getShortName(getVal(row.c[4]));
-        if (type !== 'Task' || pic !== picName) return false;
-        
+    const targetRows = validRows.filter(row => {
         const d = parseDateStr(getVal(row.c[9]));
         if (date) {
             return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
@@ -672,10 +701,11 @@ function openTaskModal(picName, year, month, date) {
         }
     });
 
-    if (validRows.length === 0) {
-        list.innerHTML = '<p>No tasks found.</p>';
+    let listHtml = '';
+    if (targetRows.length === 0) {
+        listHtml = '<p style="color: var(--text-muted);">No tasks found.</p>';
     } else {
-        validRows.forEach(row => {
+        targetRows.forEach(row => {
             const c = row.c;
             const status = getVal(c[1]) || 'New';
             let statusClass = 'neutral';
@@ -696,32 +726,24 @@ function openTaskModal(picName, year, month, date) {
             const plan = getVal(c[6]) || getVal(c[11]);
             const deadline = getVal(c[9]);
             
-            const card = document.createElement('div');
-            card.className = 'planner-card';
-            card.style.borderLeftColor = borderColor;
-            card.style.padding = '12px';
-            card.innerHTML = `
-                <div class="planner-card-meta" style="margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:2px;"></i>${category || 'Task'}</span>
-                    <span class="status ${statusClass}">${status}</span>
-                </div>
-                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.9rem;">
-                    ${plan || 'No details provided'}
-                </div>
-                <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px; margin-top: 8px;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+            listHtml += `
+                <div class="planner-card" style="border-left-color: ${borderColor}; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <div class="planner-card-meta" style="margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
+                        <span class="status ${statusClass}">${status}</span>
+                    </div>
+                    <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark);">
+                        ${plan || 'No details provided'}
+                    </div>
+                    <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px; margin-top: 8px;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                    </div>
                 </div>
             `;
-            list.appendChild(card);
         });
     }
 
-    modal.classList.add('show');
-}
-
-function closeTaskModal() {
-    const modal = document.getElementById('taskModal');
-    if (modal) modal.classList.remove('show');
+    detailPanel.innerHTML = titleHtml + `<div style="display: flex; flex-direction: column;">${listHtml}</div>`;
 }
 
 function renderWeeklyReports(rows, containerId, monthStr) {
@@ -746,57 +768,95 @@ function renderWeeklyReports(rows, containerId, monthStr) {
         return;
     }
     
-    // Group by PIC
-    const groupedByPic = {};
+    // Group by PIC and Week
+    const dataMap = {};
+    const weeksSet = new Set();
+    const picsSet = new Set();
+    
     reportRows.forEach(row => {
         const pic = getShortName(getVal(row.c[4])) || 'Unknown';
-        if (!groupedByPic[pic]) groupedByPic[pic] = [];
-        groupedByPic[pic].push(row);
+        let week = getVal(row.c[19]) || 'W1';
+        // Normalize week name (e.g. "1" -> "Week 1")
+        if (!week.toLowerCase().includes('week') && !week.toLowerCase().includes('w')) {
+            week = 'Week ' + week;
+        } else if (week.toLowerCase().startsWith('w') && week.length === 2) {
+            week = 'Week ' + week.substring(1);
+        }
+        
+        picsSet.add(pic);
+        weeksSet.add(week);
+        
+        if (!dataMap[pic]) dataMap[pic] = {};
+        if (!dataMap[pic][week]) dataMap[pic][week] = [];
+        dataMap[pic][week].push(row);
     });
 
-    const pics = Object.keys(groupedByPic).sort();
+    const pics = Array.from(picsSet).sort();
+    const weeks = Array.from(weeksSet).sort();
 
-    const board = document.createElement('div');
-    board.className = 'report-kanban-board';
-    container.appendChild(board);
-
+    const tableWrapper = document.createElement('div');
+    tableWrapper.style.overflowX = 'auto';
+    
+    const table = document.createElement('table');
+    table.className = 'report-table';
+    
+    let thead = '<thead><tr><th style="min-width: 120px;">PIC</th>';
+    weeks.forEach(w => {
+        thead += `<th style="min-width: 250px;">${w}</th>`;
+    });
+    thead += '</tr></thead>';
+    table.innerHTML = thead;
+    
+    const tbody = document.createElement('tbody');
     pics.forEach(pic => {
-        const col = document.createElement('div');
-        col.className = 'report-kanban-column';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="font-weight: 600; color: var(--primary-color); vertical-align: middle; text-align: center;">${pic}</td>`;
         
-        const colHeader = document.createElement('h3');
-        colHeader.innerText = pic;
-        col.appendChild(colHeader);
-
-        groupedByPic[pic].forEach(row => {
-            const c = row.c;
-            const category = getVal(c[5]) || getVal(c[15]) || 'Report';
-            const plan = getVal(c[6]) || getVal(c[11]);
-            const result = getVal(c[7]) || getVal(c[12]);
-            const deadline = getVal(c[9]);
-            
-            const card = document.createElement('div');
-            card.className = 'planner-card';
-            card.style.borderLeftColor = 'var(--primary-color)';
-            card.innerHTML = `
-                <div class="planner-card-meta" style="margin-bottom: 8px;">
-                    <span style="font-weight: 700; color: var(--primary-color); font-size: 0.85rem;"><i class="fa-solid fa-tag" style="margin-right: 4px;"></i>${category}</span>
-                </div>
-                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.8rem; font-weight: normal; margin-bottom: 8px;">
-                    <strong>Plan:</strong> ${plan || 'No details'}
-                </div>
-                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.8rem; font-weight: normal; margin-bottom: 8px; color: var(--text-color);">
-                    <strong>Result:</strong> ${result || 'Awaiting'}
-                </div>
-                <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 6px; margin-top: auto;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
-                </div>
-            `;
-            col.appendChild(card);
+        weeks.forEach(week => {
+            const cell = document.createElement('td');
+            if (dataMap[pic][week]) {
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'report-table-cell-content';
+                
+                dataMap[pic][week].forEach(row => {
+                    const c = row.c;
+                    const win = getVal(c[12]);
+                    const redFlag = getVal(c[13]);
+                    const top5 = getVal(c[14]);
+                    
+                    let html = '';
+                    if (win) html += `<div class="report-item"><strong>Win:</strong> ${win}</div>`;
+                    if (redFlag) html += `<div class="report-item" style="color: var(--danger);"><strong>Red Flag:</strong> ${redFlag}</div>`;
+                    if (top5) html += `<div class="report-item"><strong>Top 5 Things:</strong> ${top5}</div>`;
+                    
+                    if (!html) {
+                        html = `<div class="report-item" style="color: var(--text-muted); font-style: italic;">No specific highlights.</div>`;
+                    }
+                    
+                    const block = document.createElement('div');
+                    block.style.background = '#fafafa';
+                    block.style.padding = '8px';
+                    block.style.borderRadius = '6px';
+                    block.style.border = '1px solid rgba(0,0,0,0.05)';
+                    block.innerHTML = html;
+                    contentDiv.appendChild(block);
+                });
+                
+                cell.appendChild(contentDiv);
+            } else {
+                cell.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">No report</span>';
+                cell.style.textAlign = 'center';
+                cell.style.verticalAlign = 'middle';
+            }
+            tr.appendChild(cell);
         });
         
-        board.appendChild(col);
+        tbody.appendChild(tr);
     });
+    
+    table.appendChild(tbody);
+    tableWrapper.appendChild(table);
+    container.appendChild(tableWrapper);
 }
 
 function renderHeadTable(classRows) {

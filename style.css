@@ -989,7 +989,80 @@ body {
     border-right: none;
 }
 
-.planner-day-column {
+/* Split Layout for Tasks */
+.task-split-container {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.task-split-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-split-right {
+    flex: 1;
+    min-width: 0;
+    background: #f8fafc;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 800px;
+    overflow-y: auto;
+}
+
+.mini-task-item {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--bg-color);
+    border-left: 2px solid var(--text-muted);
+    margin-bottom: 2px;
+    color: var(--text-dark);
+}
+
+/* Weekly Reports Table */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.report-table th, .report-table td {
+    padding: 12px 16px;
+    border: 1px solid rgba(0,0,0,0.06);
+    vertical-align: top;
+}
+
+.report-table th {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-align: center;
+}
+
+.report-table-cell-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-item {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+.report-item strong {
+    color: var(--text-dark);
+}
     min-height: 200px;
     padding: 8px;
     border-right: 1px solid rgba(0,0,0,0.06);
