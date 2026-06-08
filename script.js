@@ -1002,6 +1002,8 @@ function renderTeacherObservations(classRows) {
     
     // Group by teacher
     const teacherMap = {};
+    let totalCompletedObs = 0;
+    let totalPendingObs = 0;
     classRows.forEach(row => {
         const c = row.c;
         const teacher = getShortName(getVal(c[8])) || 'Unknown Teacher';
@@ -1017,8 +1019,10 @@ function renderTeacherObservations(classRows) {
         const obs = getVal(c[12]) || '';
         if (obs && String(obs).trim() !== '') {
             teacherMap[teacher].observed++;
+            totalCompletedObs++;
         } else {
             teacherMap[teacher].pending++;
+            totalPendingObs++;
         }
     });
 
@@ -1060,6 +1064,7 @@ function renderTeacherObservations(classRows) {
             
             let combinedHTML = `
                 <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                    <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${className.split(' - ')[0]}</h3>
                     <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
                     <p style="margin-top: 0; margin-bottom: 15px;">${formattedEval}</p>
                     <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
@@ -1074,7 +1079,7 @@ function renderTeacherObservations(classRows) {
                 .replace(/\r/g, ' ');
                 
             let headIcon = (hasEval || hasComment)
-                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
+                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('${className.split(' - ')[0]}', \`${safeHTML}\`)"></i>`
                 : '-';
 
             rowsHtml += `
@@ -1123,29 +1128,21 @@ function renderTeacherObservations(classRows) {
     
     // Update Head Metrics DOM
     const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');
-    let completedObs = 0;
-    let pendingObs = 0;
     let taskPending = 0;
     let completedHeadTasks = 0;
 
     headTasks.forEach(t => {
         const c = t.c;
         const status = getVal(c[1]) || '';
-        const category = (getVal(c[5]) || getVal(c[15]) || '').toLowerCase();
-        
-        if (category.includes('observation')) {
-            if (status.includes('Completed')) completedObs++;
-            else pendingObs++;
-        }
         
         if (!status.includes('Completed')) taskPending++;
         else completedHeadTasks++;
     });
 
     const obsEl1 = document.getElementById('head-completed-obs');
-    if(obsEl1) obsEl1.innerText = completedObs;
+    if(obsEl1) obsEl1.innerText = totalCompletedObs;
     const obsEl2 = document.getElementById('head-pending-obs');
-    if(obsEl2) obsEl2.innerText = pendingObs;
+    if(obsEl2) obsEl2.innerText = totalPendingObs;
     const pendEl = document.getElementById('head-task-pending');
     if(pendEl) pendEl.innerText = taskPending;
     

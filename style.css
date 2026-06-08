@@ -355,6 +355,7 @@ body {
 .card-purple { }
 .card-blue { }
 .card-orange { }
+.card-red { }
 .card-green { }
 
 .metric-top {
@@ -380,6 +381,7 @@ body {
 .card-purple .metric-icon { background: rgba(139, 92, 246, 0.1); color: var(--primary-color); }
 .card-blue .metric-icon { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
 .card-orange .metric-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.card-red .metric-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .card-green .metric-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
 .metric-data {
