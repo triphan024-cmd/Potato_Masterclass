@@ -616,7 +616,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
             weekContainer.appendChild(weekHeader);
 
             const board = document.createElement('div');
-            board.className = 'planner-board';
+            board.className = 'planner-board weekly';
 
             const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const columns = [];
