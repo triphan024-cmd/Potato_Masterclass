@@ -570,6 +570,10 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     const month = refDate.getMonth();
     
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    // Blank top-left corner
+    const blankHeader = document.createElement('div');
+    board.appendChild(blankHeader);
+    
     daysOfWeek.forEach(day => {
         const header = document.createElement('div');
         header.className = 'planner-day-header';
@@ -595,54 +599,67 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     });
 
     let currentDate = 1;
+    let weekIndex = 1;
+    window[`tmpValidRows_${containerId}`] = validRows;
+
     for (let i = 0; i < totalCells; i++) {
+        // Start of a week row: inject week button
+        if (i % 7 === 0) {
+            const btnCell = document.createElement('div');
+            btnCell.className = 'planner-day-column';
+            
+            let wStart = new Date(year, month, currentDate - (i >= firstDayOfMonth ? 0 : firstDayOfMonth));
+            let wEnd = new Date(wStart);
+            wEnd.setDate(wStart.getDate() + 6);
+            
+            const wBtn = document.createElement('div');
+            wBtn.className = 'week-btn';
+            wBtn.innerText = 'W' + weekIndex;
+            wBtn.title = `View Week ${weekIndex} Tasks`;
+            const currentWeekIndex = weekIndex;
+            wBtn.onclick = () => {
+                document.querySelectorAll(`#${containerId} .week-btn`).forEach(b => b.classList.remove('active'));
+                wBtn.classList.add('active');
+                document.querySelectorAll(`#${containerId} .cal-day-active`).forEach(el => {
+                    el.style.backgroundColor = '';
+                    el.style.color = 'var(--primary-color)';
+                });
+                showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentWeekIndex}, rightDiv.id, validRows);
+            };
+            btnCell.appendChild(wBtn);
+            board.appendChild(btnCell);
+            weekIndex++;
+        }
+        
         const cell = document.createElement('div');
         cell.className = 'planner-day-column';
-        cell.style.padding = '8px';
         
         if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
             const today = new Date();
             const isToday = currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear();
             
-            const dateLabel = document.createElement('div');
-            dateLabel.className = 'planner-date-label';
-            dateLabel.innerText = currentDate;
-            
+            let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
             if (isToday) {
-                cell.classList.add('today');
+                style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
             }
-            
-            cell.appendChild(dateLabel);
             
             if (dayMap[currentDate]) {
-                cell.style.cursor = 'pointer';
+                if (!isToday) {
+                    style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
+                }
+                style += ` cursor: pointer; position: relative;`;
                 const dateNum = currentDate;
-                cell.onclick = () => showTaskDetails(picName, year, month, dateNum, rightDiv.id, validRows);
-                
-                // Add mini indicators
-                dayMap[currentDate].forEach(taskRow => {
-                    const c = taskRow.c;
-                    const plan = getVal(c[6]) || getVal(c[11]) || 'Task';
-                    const status = getVal(c[1]) || 'New';
-                    
-                    let indicatorColor = 'var(--primary-color)';
-                    if (status.includes('Completed')) indicatorColor = 'var(--success)';
-                    else if (status.includes('Processing')) indicatorColor = 'var(--warning)';
-                    
-                    const indicator = document.createElement('div');
-                    indicator.className = 'mini-task-item';
-                    indicator.style.borderLeftColor = indicatorColor;
-                    indicator.innerText = plan;
-                    indicator.title = plan;
-                    cell.appendChild(indicator);
-                });
+                const tooltip = dayMap[currentDate].map(r => getVal(r.c[6]) || getVal(r.c[11])).join('&#10;');
+                cell.innerHTML = `<div style="padding: 4px;" title="${tooltip}"><div style="${style}" class="cal-day-active" id="${containerId}-day-${dateNum}" onclick="
+                    document.querySelectorAll('#${containerId} .week-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('#${containerId} .cal-day-active').forEach(el => { el.style.backgroundColor=''; el.style.color='var(--primary-color)'; });
+                    this.style.backgroundColor='var(--primary-light)'; this.style.color='var(--primary-dark)';
+                    showTaskDetails('${picName}', ${year}, ${month}, ${dateNum}, '${rightDiv.id}', window['tmpValidRows_${containerId}'])
+                ">${dateNum}</div></div>`;
             } else {
-                cell.style.cursor = 'default';
+                cell.innerHTML = `<div style="padding: 4px;"><div style="${style}">${currentDate}</div></div>`;
             }
-            
             currentDate++;
-        } else {
-            cell.style.background = '#fafafa';
         }
         board.appendChild(cell);
     }
@@ -662,7 +679,6 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     splitWrapper.appendChild(rightDiv);
     container.appendChild(splitWrapper);
     
-    // Automatically show today's tasks or unscheduled
     const today = new Date();
     if (today.getMonth() === month && today.getFullYear() === year && dayMap[today.getDate()]) {
         showTaskDetails(picName, year, month, today.getDate(), rightDiv.id, validRows);
@@ -676,11 +692,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     if (!detailPanel) return;
     
     let titleHtml = '';
-    if (date) {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
-    } else {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
-    }
+    let targetRows = [];
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -691,15 +703,41 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         }
         return null;
     };
-
-    const targetRows = validRows.filter(row => {
-        const d = parseDateStr(getVal(row.c[9]));
-        if (date) {
+    
+    if (date && typeof date === 'object' && date.type === 'week') {
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${date.index} Tasks</h3>`;
+        targetRows = validRows.filter(row => {
+            const d = parseDateStr(getVal(row.c[9]));
+            if (!d || isNaN(d)) return false;
+            // set time to 0 to compare dates easily
+            d.setHours(0,0,0,0);
+            const s = new Date(date.start); s.setHours(0,0,0,0);
+            const e = new Date(date.end); e.setHours(23,59,59,999);
+            return d >= s && d <= e;
+        });
+        
+        // Sort by deadline
+        targetRows.sort((a, b) => {
+            const dA = parseDateStr(getVal(a.c[9]));
+            const dB = parseDateStr(getVal(b.c[9]));
+            if (!dA) return 1;
+            if (!dB) return -1;
+            return dA - dB;
+        });
+        
+    } else if (date) {
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
+        targetRows = validRows.filter(row => {
+            const d = parseDateStr(getVal(row.c[9]));
             return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
-        } else {
+        });
+    } else {
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
+        targetRows = validRows.filter(row => {
+            const d = parseDateStr(getVal(row.c[9]));
             return !d || isNaN(d);
-        }
-    });
+        });
+    }
 
     let listHtml = '';
     if (targetRows.length === 0) {

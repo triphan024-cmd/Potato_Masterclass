@@ -1002,12 +1002,49 @@ body {
 }
 
 .task-split-left .planner-board {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: 40px repeat(7, minmax(0, 1fr));
     overflow-x: hidden;
+    border: none;
+    background: transparent;
+    gap: 8px;
 }
 
 .task-split-left .planner-day-column {
-    min-height: 120px;
+    min-height: auto;
+    border: none;
+    background: transparent;
+    padding: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-split-left .planner-day-header {
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
+}
+
+.week-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: var(--bg-color);
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin: 0 auto;
+}
+
+.week-btn:hover, .week-btn.active {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-color: var(--primary-color);
 }
 
 .task-split-right {
