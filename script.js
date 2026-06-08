@@ -281,6 +281,8 @@ async function fetchDashboardData() {
             renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid');
             renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid');
             
+            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid');
+            
             console.log(`Retrieved leader data.`);
         } catch (err) {
             console.error("Error fetching leader data:", err);
@@ -501,58 +503,174 @@ function renderRoleTasks(rows, picName, containerId) {
     if (!container) return;
     container.innerHTML = '';
     
-    // Filter rows by PIC
+    // Filter rows by PIC and Type === 'Task'
     const validRows = rows.filter(row => {
         if(!row || !row.c) return false;
         const pic = getShortName(getVal(row.c[4]));
-        return pic === picName && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+        const type = getVal(row.c[2]);
+        return pic === picName && type === 'Task' && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
     });
     
     if (validRows.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks/reports found for ${picName} this month.</div>`;
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks found for ${picName} this month.</div>`;
         return;
     }
     
+    // Group by Week
+    const groupedByWeek = {};
     validRows.forEach(row => {
-        const c = row.c;
-        const status = getVal(c[1]);
-        const type = getVal(c[2]); // Task, Report
-        const category = getVal(c[5]) || getVal(c[15]);
-        const plan = getVal(c[6]) || getVal(c[11]); // Support report descriptions
-        const result = getVal(c[7]) || getVal(c[12]);
-        const deadline = getVal(c[9]);
+        const week = getVal(row.c[19]) || 'Unassigned Week';
+        if (!groupedByWeek[week]) groupedByWeek[week] = [];
+        groupedByWeek[week].push(row);
+    });
+
+    const weeks = Object.keys(groupedByWeek).sort();
+
+    weeks.forEach(week => {
+        // Render Week Header
+        const weekHeader = document.createElement('h3');
+        weekHeader.style.cssText = 'grid-column: 1 / -1; margin-top: 16px; margin-bottom: 0px; color: var(--primary-color); font-size: 1.2rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;';
+        weekHeader.innerText = week;
+        container.appendChild(weekHeader);
+
+        // Group by Status within Week
+        const tasksInWeek = groupedByWeek[week];
+        const groupedByStatus = {};
+        tasksInWeek.forEach(row => {
+            let status = getVal(row.c[1]) || 'New';
+            if (status.includes('Completed')) status = 'Completed';
+            else if (status.includes('Processing')) status = 'Processing';
+            else if (status.includes('New')) status = 'New';
+            else status = 'Other';
+
+            if (!groupedByStatus[status]) groupedByStatus[status] = [];
+            groupedByStatus[status].push(row);
+        });
+
+        // Define status order
+        const statusOrder = ['Completed', 'Processing', 'New', 'Other'];
         
-        // Status styling
-        let statusBadge = 'neutral';
-        if (status.includes('Completed')) statusBadge = 'positive';
-        else if (status.includes('Processing')) statusBadge = 'warning';
-        else if (status.includes('New')) statusBadge = 'neutral';
-        
-        const card = document.createElement('div');
-        card.className = 'task-card';
-        card.innerHTML = `
-            <div class="task-header">
-                <div class="task-meta">
-                    <span class="task-category">${category || 'N/A'}</span>
-                    <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+        statusOrder.forEach(status => {
+            if (groupedByStatus[status] && groupedByStatus[status].length > 0) {
+                // Render Status Header
+                let color = 'var(--text-color)';
+                if (status === 'Completed') color = 'var(--success)';
+                if (status === 'Processing') color = 'var(--warning)';
+
+                const statusHeader = document.createElement('h4');
+                statusHeader.style.cssText = `grid-column: 1 / -1; margin-top: 8px; margin-bottom: 0px; color: ${color}; font-size: 1rem;`;
+                statusHeader.innerText = status;
+                container.appendChild(statusHeader);
+
+                groupedByStatus[status].forEach(row => {
+                    const c = row.c;
+                    const fullStatus = getVal(c[1]);
+                    const category = getVal(c[5]) || getVal(c[15]);
+                    const plan = getVal(c[6]) || getVal(c[11]);
+                    const result = getVal(c[7]) || getVal(c[12]);
+                    const deadline = getVal(c[9]);
+
+                    const card = document.createElement('div');
+                    card.className = 'task-card';
+                    card.innerHTML = `
+                        <div class="task-header">
+                            <div class="task-meta">
+                                <span class="task-category">${category || 'N/A'}</span>
+                                <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                                <span class="task-badge ${status === 'Completed' ? 'positive' : status === 'Processing' ? 'warning' : 'neutral'}">${fullStatus || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="task-body">
+                            <div class="task-section">
+                                <h4>Plan / Details</h4>
+                                <p>${plan || 'No details provided.'}</p>
+                            </div>
+                            <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
+                                <h4>Result</h4>
+                                <p>${result || 'Awaiting results.'}</p>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+        });
+    });
+}
+
+function renderWeeklyReports(rows, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    
+    // Filter rows by Type === 'Report'
+    const reportRows = rows.filter(row => {
+        if(!row || !row.c) return false;
+        const type = getVal(row.c[2]);
+        return type === 'Report' && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+    });
+    
+    if (reportRows.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No reports found this month.</div>`;
+        return;
+    }
+    
+    // Group by PIC
+    const groupedByPic = {};
+    reportRows.forEach(row => {
+        const pic = getShortName(getVal(row.c[4])) || 'Unknown';
+        if (!groupedByPic[pic]) groupedByPic[pic] = [];
+        groupedByPic[pic].push(row);
+    });
+
+    const pics = Object.keys(groupedByPic).sort();
+
+    pics.forEach(pic => {
+        const picHeader = document.createElement('h3');
+        picHeader.style.cssText = 'grid-column: 1 / -1; margin-top: 16px; margin-bottom: 8px; color: var(--primary-color); font-size: 1.2rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;';
+        picHeader.innerText = pic;
+        container.appendChild(picHeader);
+
+        groupedByPic[pic].forEach(row => {
+            const c = row.c;
+            const status = getVal(c[1]);
+            const category = getVal(c[5]) || getVal(c[15]);
+            const plan = getVal(c[6]) || getVal(c[11]);
+            const result = getVal(c[7]) || getVal(c[12]);
+            const deadline = getVal(c[9]);
+            
+            let statusBadge = 'neutral';
+            if (status.includes('Completed')) statusBadge = 'positive';
+            else if (status.includes('Processing')) statusBadge = 'warning';
+            
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.innerHTML = `
+                <div class="task-header">
+                    <div class="task-meta">
+                        <span class="task-category">${category || 'N/A'}</span>
+                        <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                        <span class="task-badge ${statusBadge}">${status || 'N/A'}</span>
+                        <span class="task-badge success">Report</span>
+                    </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                    <span class="task-badge ${statusBadge}">${status || 'N/A'}</span>
-                    <span class="task-badge ${type === 'Task' ? 'neutral' : 'success'}">${type || 'N/A'}</span>
+                <div class="task-body">
+                    <div class="task-section">
+                        <h4>Details</h4>
+                        <p>${plan || 'No details provided.'}</p>
+                    </div>
+                    <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
+                        <h4>Result</h4>
+                        <p>${result || 'Awaiting results.'}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="task-body">
-                <div class="task-section">
-                    <h4>Plan / Details</h4>
-                    <p>${plan || 'No details provided.'}</p>
-                </div>
-                <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
-                    <h4>Result</h4>
-                    <p>${result || 'Awaiting results.'}</p>
-                </div>
-            </div>
-        `;
-        container.appendChild(card);
+            `;
+            container.appendChild(card);
+        });
     });
 }
 
