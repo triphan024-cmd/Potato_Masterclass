@@ -721,30 +721,39 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     
     const today = new Date();
     if (today.getMonth() === month && today.getFullYear() === year) {
-        let firstDay = new Date(year, month, 1);
-        let dayOfWeek = firstDay.getDay();
-        let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
+        let firstDayOfMonth = new Date(year, month, 1).getDay();
+        let firstTuesdayDate = 1;
+        for (let day = 1; day <= 7; day++) {
+            let d = new Date(year, month, day);
+            if (d.getDay() === 2) {
+                firstTuesdayDate = day;
+                break;
+            }
+        }
         
-        const w1Start = new Date(year, month, firstTuesdayDate);
-        let currentWeek = 0;
+        let indexOfFirstTue = firstDayOfMonth + firstTuesdayDate - 1;
+        let w1RowIndex = Math.floor(indexOfFirstTue / 7);
         
-        if (today < w1Start) {
+        let todayCellIndex = firstDayOfMonth + today.getDate() - 1;
+        let todayRowIndex = Math.floor(todayCellIndex / 7);
+        
+        if (todayRowIndex < w1RowIndex) {
             const allBtn = Array.from(document.querySelectorAll(`#${containerId} .week-btn`)).find(b => b.innerText === 'All');
             if (allBtn) allBtn.click();
             else showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
         } else {
-            // We set hours to 0 to compare dates accurately
-            today.setHours(0,0,0,0);
-            w1Start.setHours(0,0,0,0);
-            const diffDays = Math.floor((today - w1Start) / (1000 * 60 * 60 * 24));
-            currentWeek = Math.floor(diffDays / 7) + 1;
-            
+            let currentWeek = todayRowIndex - w1RowIndex + 1;
             const weekBtns = Array.from(document.querySelectorAll(`#${containerId} .week-btn`));
             const targetBtn = weekBtns.find(b => b.innerText === 'W' + currentWeek);
             if (targetBtn) {
                 targetBtn.click();
             } else {
-                showTaskDetails(picName, year, month, {type: 'week', index: currentWeek}, rightDiv.id, validRows);
+                // Determine start and end to pass
+                let startCell = todayRowIndex * 7;
+                let wStart = new Date(year, month, 1 - firstDayOfMonth + startCell);
+                let wEnd = new Date(wStart);
+                wEnd.setDate(wStart.getDate() + 6);
+                showTaskDetails(picName, year, month, {type: 'week', index: currentWeek, start: wStart, end: wEnd}, rightDiv.id, validRows);
             }
         }
     } else if (dayMap['unscheduled'] && dayMap['unscheduled'].length > 0) {
@@ -775,15 +784,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         const { type, index } = date;
         if (type === 'week') {
             titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>`;
-            let firstDay = new Date(year, month, 1);
-            let dayOfWeek = firstDay.getDay();
-            let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
-            
-            const w1Start = new Date(year, month, firstTuesdayDate);
-            const weekStart = new Date(w1Start);
-            weekStart.setDate(w1Start.getDate() + (index - 1) * 7);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
+            const { start, end } = date;
+            const weekStart = new Date(start);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(end);
+            weekEnd.setHours(23, 59, 59, 999);
             
             targetRows = validRows.filter(row => {
                 const d = parseDateStr(getVal(row.c[9]));
