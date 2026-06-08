@@ -798,7 +798,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     let listHtml = '';
     if (targetRows.length === 0) {
         listHtml = '<p style="color: var(--text-muted);">No tasks found.</p>';
-        listHtml += `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">`;
+    } else {
         targetRows.forEach(row => {
             const c = row.c;
             const status = getVal(c[1]) || 'New';
@@ -834,7 +834,6 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 </div>
             `;
         });
-        listHtml += `</div>`;
     }
 
     if (targetRows.length > 0) {
