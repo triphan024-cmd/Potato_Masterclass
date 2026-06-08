@@ -6,7 +6,7 @@ function openClassDetail(titleStr, contentStr) {
     const content = document.getElementById('modalClassContent');
     
     title.innerText = titleStr;
-    content.innerText = contentStr || 'No details available.';
+    content.innerHTML = contentStr || 'No details available.';
     modal.classList.add('show');
 }
 
@@ -1052,11 +1052,20 @@ function renderTeacherObservations(classRows) {
                 statusBadge = `<span class="status-badge" style="background: rgba(243, 156, 18, 0.1); color: var(--warning); font-size: 0.75rem;">Pending</span>`;
             }
 
-            let sEvalIcon = sEval !== '-' && sEval !== '' 
-                ? `<i class="fa-solid fa-file-lines" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Student Evaluation - ${className.split(' - ')[0]}', \`${sEval.replace(/`/g, '\\`')}\`)"></i>`
-                : '-';
-            let hCommentIcon = headComment !== '-' && headComment !== ''
-                ? `<i class="fa-solid fa-comment-dots" style="color: var(--warning); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Comment - ${className.split(' - ')[0]}', \`${headComment.replace(/`/g, '\\`')}\`)"></i>`
+            let hasEval = sEval !== '-' && sEval !== '';
+            let hasComment = headComment !== '-' && headComment !== '';
+            
+            let combinedHTML = `
+                <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
+                    <p style="margin-top: 0; margin-bottom: 15px;">${hasEval ? sEval : 'No evaluation'}</p>
+                    <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
+                    <p style="margin-top: 0; margin-bottom: 0;">${hasComment ? headComment : 'No comment'}</p>
+                </div>
+            `;
+            
+            let headIcon = (hasEval || hasComment)
+                ? `<i class="fa-solid fa-folder-open" style="color: var(--primary); cursor: pointer; font-size: 1.1rem;" onclick="openClassDetail('Head Detail - ${className.split(' - ')[0]}', \`${combinedHTML.replace(/`/g, '\\`')}\`)"></i>`
                 : '-';
 
             rowsHtml += `
@@ -1064,8 +1073,7 @@ function renderTeacherObservations(classRows) {
                     <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
                     <td style="padding: 8px;">${statusBadge}</td>
                     <td style="padding: 8px;">${tScore}</td>
-                    <td style="padding: 8px; text-align: center;">${sEvalIcon}</td>
-                    <td style="padding: 8px; text-align: center;">${hCommentIcon}</td>
+                    <td style="padding: 8px; text-align: center;">${headIcon}</td>
                 </tr>
             `;
         });
@@ -1091,8 +1099,7 @@ function renderTeacherObservations(classRows) {
                                 <th style="padding: 8px;">Class</th>
                                 <th style="padding: 8px;">Observation</th>
                                 <th style="padding: 8px;">T.Score</th>
-                                <th style="padding: 8px; text-align: center;">S.Eval</th>
-                                <th style="padding: 8px; text-align: center;">H.Comment</th>
+                                <th style="padding: 8px; text-align: center;">Head</th>
                             </tr>
                         </thead>
                         <tbody>
