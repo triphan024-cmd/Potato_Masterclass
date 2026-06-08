@@ -1771,10 +1771,11 @@ function renderAcademicPerformance(classRows) {
                                 const getBadgeHtml = (text) => {
                                     if (!text || text === '-') return text;
                                     const lower = text.toLowerCase();
-                                    if (lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) return `<span class="stat-badge success">${text}</span>`;
-                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) return `<span class="stat-badge danger">${text}</span>`;
-                                    if (lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) return `<span class="stat-badge warning">${text}</span>`;
-                                    return `<span class="stat-badge primary">${text}</span>`;
+                                    const style = 'style="font-weight: 400; white-space: nowrap;"';
+                                    if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) return `<span class="stat-badge success" ${style}>${text}</span>`;
+                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) return `<span class="stat-badge danger" ${style}>${text}</span>`;
+                                    if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) return `<span class="stat-badge warning" ${style}>${text}</span>`;
+                                    return `<span class="stat-badge primary" ${style}>${text}</span>`;
                                 };
 
                                 return `
