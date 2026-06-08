@@ -1026,7 +1026,11 @@ function renderTeacherObservations(classRows) {
         }
     });
 
-    const teachers = Object.keys(teacherMap).sort();
+    const teachers = Object.keys(teacherMap).sort((a, b) => {
+        const totalA = teacherMap[a].observed + teacherMap[a].pending;
+        const totalB = teacherMap[b].observed + teacherMap[b].pending;
+        return totalB - totalA;
+    });
     if (teachers.length === 0) {
         grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
         return;
