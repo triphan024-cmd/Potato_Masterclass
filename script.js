@@ -86,54 +86,31 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Check if it's the toggle
-            if (item.classList.contains('submenu-toggle') || item.closest('.has-submenu') === item) {
-                // do nothing for routing, we handle toggle separately
-            } else {
-                // Remove active from all nav items (including nested)
-                navItems.forEach(nav => nav.classList.remove('active'));
-                // Add active to clicked nav
-                item.classList.add('active');
-                
-                // Also activate parent submenu if applicable
-                const parentSubmenu = item.closest('.has-submenu');
-                if (parentSubmenu) {
-                    parentSubmenu.classList.add('active');
-                }
+            // Remove active from all nav items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            // Add active to clicked nav
+            item.classList.add('active');
 
-                const targetId = item.getAttribute('data-target');
+            const targetId = item.getAttribute('data-target');
 
-                // Hide all views
-                pageViews.forEach(view => {
-                    view.style.display = 'none';
-                    view.classList.remove('active');
-                });
+            // Hide all views
+            pageViews.forEach(view => {
+                view.style.display = 'none';
+                view.classList.remove('active');
+            });
 
-                // Show target view
-                const targetView = document.getElementById(targetId);
-                if(targetView) {
-                    targetView.style.display = 'block';
-                    // Small delay to allow CSS transitions to grab on
-                    setTimeout(() => {
-                        targetView.classList.add('active');
-                    }, 10);
-                }
+            // Show target view
+            const targetView = document.getElementById(targetId);
+            if(targetView) {
+                targetView.style.display = 'block';
+                // Small delay to allow CSS transitions to grab on
+                setTimeout(() => {
+                    targetView.classList.add('active');
+                }, 10);
             }
         });
     });
 
-    // Submenu Toggle Logic
-    const submenuToggles = document.querySelectorAll('.submenu-toggle');
-    submenuToggles.forEach(toggle => {
-        toggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            const parent = toggle.closest('.has-submenu');
-            if (parent) {
-                parent.classList.toggle('open');
-            }
-        });
-    });
-    
     // Khởi động lấy dữ liệu Dashboard
     fetchDashboardData();
 
@@ -558,45 +535,66 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     weeks.forEach(week => {
         // Create Week Container
         const weekContainer = document.createElement('div');
-        weekContainer.className = 'kanban-week';
+        weekContainer.style.cssText = 'margin-bottom: 32px;';
         
         const weekHeader = document.createElement('h3');
         weekHeader.innerText = week;
+        weekHeader.style.cssText = 'color: var(--primary-color); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.25rem;';
         weekContainer.appendChild(weekHeader);
 
-        // Create Kanban Board
-        const kanbanBoard = document.createElement('div');
-        kanbanBoard.className = 'kanban-board';
+        // Create Table Wrap
+        const tableWrap = document.createElement('div');
+        tableWrap.style.cssText = 'overflow-x: auto;';
         
-        // Define Columns
-        const columns = {
-            'New': document.createElement('div'),
-            'Processing': document.createElement('div'),
-            'Completed': document.createElement('div')
+        const table = document.createElement('table');
+        table.className = 'modern-table';
+        table.style.cssText = 'min-width: 800px; width: 100%;';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Task / Category</th>
+                    <th style="width: 45%;">Plan / Details</th>
+                    <th style="width: 15%;">Deadline</th>
+                    <th style="width: 15%; text-align: center;">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+
+        // Group by Status within Week to sort
+        const tasksInWeek = groupedByWeek[week];
+        
+        // Define sorting weight
+        const statusWeight = {
+            'Completed': 3,
+            'Processing': 1,
+            'New': 2
         };
-        
-        // Initialize columns
-        Object.keys(columns).forEach(status => {
-            columns[status].className = `kanban-column ${status.toLowerCase()}`;
-            const colHeader = document.createElement('h4');
-            colHeader.innerText = status;
-            columns[status].appendChild(colHeader);
-            kanbanBoard.appendChild(columns[status]);
+
+        tasksInWeek.sort((a, b) => {
+            let statusA = getVal(a.c[1]) || 'New';
+            let statusB = getVal(b.c[1]) || 'New';
+            let weightA = statusWeight[statusA] || 4;
+            let weightB = statusWeight[statusB] || 4;
+            if (statusA.includes('Completed')) weightA = 3;
+            else if (statusA.includes('Processing')) weightA = 1;
+            else if (statusA.includes('New')) weightA = 2;
+
+            if (statusB.includes('Completed')) weightB = 3;
+            else if (statusB.includes('Processing')) weightB = 1;
+            else if (statusB.includes('New')) weightB = 2;
+
+            return weightA - weightB;
         });
 
-        // Group by Status within Week
-        const tasksInWeek = groupedByWeek[week];
         tasksInWeek.forEach(row => {
             let status = getVal(row.c[1]) || 'New';
-            let targetCol = 'New';
-            let borderColor = 'var(--primary-color)';
-            if (status.includes('Completed')) {
-                targetCol = 'Completed';
-                borderColor = 'var(--success)';
-            } else if (status.includes('Processing')) {
-                targetCol = 'Processing';
-                borderColor = 'var(--warning)';
-            }
+            let statusClass = 'neutral';
+            
+            if (status.includes('Completed')) statusClass = 'success';
+            else if (status.includes('Processing')) statusClass = 'warning';
+            else if (status.includes('New')) statusClass = 'new';
 
             const c = row.c;
             const fullStatus = getVal(c[1]);
@@ -604,25 +602,19 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
             const plan = getVal(c[6]) || getVal(c[11]);
             const deadline = getVal(c[9]);
 
-            const card = document.createElement('div');
-            card.className = 'compact-card';
-            card.style.borderLeft = `4px solid ${borderColor}`;
-            card.innerHTML = `
-                <div class="compact-card-header">
-                    <span class="compact-card-title">${category || 'N/A'}</span>
-                </div>
-                <div class="compact-card-body">
-                    ${plan || 'No details provided.'}
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.05);">
-                    <span class="compact-card-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                    <span class="task-badge ${targetCol === 'Completed' ? 'positive' : targetCol === 'Processing' ? 'warning' : 'neutral'}" style="font-size: 0.7rem; padding: 2px 6px;">${fullStatus || 'N/A'}</span>
-                </div>
+            const tr = document.createElement('tr');
+            tr.className = 'clickable-row';
+            tr.innerHTML = `
+                <td style="font-weight: 600; color: var(--primary-color);">${category || 'N/A'}</td>
+                <td style="white-space: pre-wrap;">${plan || 'No details provided.'}</td>
+                <td><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</td>
+                <td style="text-align: center;"><span class="status ${statusClass}">${fullStatus || 'N/A'}</span></td>
             `;
-            columns[targetCol].appendChild(card);
+            tbody.appendChild(tr);
         });
 
-        weekContainer.appendChild(kanbanBoard);
+        tableWrap.appendChild(table);
+        weekContainer.appendChild(tableWrap);
         container.appendChild(weekContainer);
     });
 }
@@ -665,6 +657,25 @@ function renderWeeklyReports(rows, containerId, monthStr) {
         picHeader.innerText = pic;
         container.appendChild(picHeader);
 
+        const tableWrap = document.createElement('div');
+        tableWrap.style.cssText = 'overflow-x: auto; margin-bottom: 32px;';
+        
+        const table = document.createElement('table');
+        table.className = 'modern-table';
+        table.style.cssText = 'min-width: 800px; width: 100%;';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Category</th>
+                    <th style="width: 45%;">Plan / Result</th>
+                    <th style="width: 15%;">Deadline</th>
+                    <th style="width: 15%; text-align: center;">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+
         groupedByPic[pic].forEach(row => {
             const c = row.c;
             const status = getVal(c[1]);
@@ -673,36 +684,24 @@ function renderWeeklyReports(rows, containerId, monthStr) {
             const result = getVal(c[7]) || getVal(c[12]);
             const deadline = getVal(c[9]);
             
-            let statusBadge = 'neutral';
-            if (status.includes('Completed')) statusBadge = 'positive';
-            else if (status.includes('Processing')) statusBadge = 'warning';
+            let statusClass = 'neutral';
+            if (status.includes('Completed')) statusClass = 'success';
+            else if (status.includes('Processing')) statusClass = 'warning';
+            else if (status.includes('New')) statusClass = 'new';
             
-            const card = document.createElement('div');
-            card.className = 'task-card';
-            card.innerHTML = `
-                <div class="task-header">
-                    <div class="task-meta">
-                        <span class="task-category">${category || 'N/A'}</span>
-                        <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                        <span class="task-badge ${statusBadge}">${status || 'N/A'}</span>
-                        <span class="task-badge success">Report</span>
-                    </div>
-                </div>
-                <div class="task-body">
-                    <div class="task-section">
-                        <h4>Details</h4>
-                        <p>${plan || 'No details provided.'}</p>
-                    </div>
-                    <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
-                        <h4>Result</h4>
-                        <p>${result || 'Awaiting results.'}</p>
-                    </div>
-                </div>
+            const tr = document.createElement('tr');
+            tr.className = 'clickable-row';
+            tr.innerHTML = `
+                <td style="font-weight: 600; color: var(--primary-color);">${category || 'N/A'}</td>
+                <td style="white-space: pre-wrap;"><strong>Plan:</strong> ${plan || 'No details'}<br><br><strong>Result:</strong> ${result || 'Awaiting'}</td>
+                <td><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</td>
+                <td style="text-align: center;"><span class="status ${statusClass}">${status || 'N/A'}</span></td>
             `;
-            container.appendChild(card);
+            tbody.appendChild(tr);
         });
+
+        tableWrap.appendChild(table);
+        container.appendChild(tableWrap);
     });
 }
 
