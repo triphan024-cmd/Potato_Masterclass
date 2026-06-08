@@ -999,6 +999,11 @@ body {
 .task-split-left {
     flex: 3;
     min-width: 0;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0,0,0,0.04);
+    padding: 24px;
 }
 
 .task-split-left .planner-board {
@@ -1052,8 +1057,9 @@ body {
     min-width: 0;
     background: #f8fafc;
     border: 1px solid rgba(0,0,0,0.06);
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    padding: 24px;
     max-height: 800px;
     overflow-y: auto;
 }
