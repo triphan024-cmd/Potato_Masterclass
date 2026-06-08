@@ -523,11 +523,9 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         return;
     }
 
-    let roleTitle = `Weekly Planner: ${picName}`;
+    let roleTitle = `Weekly Planner - ${picName}`;
     const headerElement = container.previousElementSibling;
     if (headerElement && headerElement.classList.contains('weekly-header')) {
-        const h2 = headerElement.querySelector('h2');
-        if (h2) roleTitle = h2.innerText;
         headerElement.style.display = 'none';
     }
 
@@ -747,16 +745,16 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     };
     
     if (date && typeof date === 'object') {
-        const { type, weekNumber, year: y, month: m } = date;
+        const { type, index } = date;
         if (type === 'week') {
-            titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${weekNumber} Tasks</h3>`;
-            let firstDay = new Date(y, m, 1);
+            titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>`;
+            let firstDay = new Date(year, month, 1);
             let dayOfWeek = firstDay.getDay();
             let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
             
-            const w1Start = new Date(y, m, firstTuesdayDate);
+            const w1Start = new Date(year, month, firstTuesdayDate);
             const weekStart = new Date(w1Start);
-            weekStart.setDate(w1Start.getDate() + (weekNumber - 1) * 7);
+            weekStart.setDate(w1Start.getDate() + (index - 1) * 7);
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 6);
             
