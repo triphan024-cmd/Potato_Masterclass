@@ -19,8 +19,16 @@
                 <li class="nav-item active" data-target="view-dashboard">
                     <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
                 </li>
-                <li class="nav-item" data-target="view-coo">
-                    <a href="#"><i class="fa-solid fa-star"></i> COO</a>
+                <li class="nav-item has-submenu">
+                    <a href="#" class="submenu-toggle"><i class="fa-solid fa-star"></i> COO <i class="fa-solid fa-chevron-down submenu-icon" style="margin-left: auto; font-size: 0.8rem;"></i></a>
+                    <ul class="submenu">
+                        <li class="nav-item" data-target="view-coo">
+                            <a href="#">Weekly Task</a>
+                        </li>
+                        <li class="nav-item" data-target="view-weekly-report">
+                            <a href="#">Weekly Report</a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item" data-target="view-head">
                     <a href="#"><i class="fa-solid fa-crown"></i> Head</a>
@@ -33,9 +41,6 @@
                 </li>
                 <li class="nav-item" data-target="view-operation">
                     <a href="#"><i class="fa-solid fa-briefcase"></i> Operation</a>
-                </li>
-                <li class="nav-item" data-target="view-weekly-report">
-                    <a href="#"><i class="fa-solid fa-calendar-week"></i> Weekly Report</a>
                 </li>
             </ul>
         </aside>
@@ -192,7 +197,7 @@
 
                     <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Monthly Report: Head (Ms. Đào)</h2>
+                            <h2>Weekly Task: Head (Ms. Đào)</h2>
                         </div>
                         <div id="head-report-grid" class="task-grid">
                             <!-- Dynamic Cards -->
@@ -261,7 +266,7 @@
                     <!-- Monthly Review -->
                     <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Monthly Report: Teachers (Mr. Khôi)</h2>
+                            <h2>Weekly Task: Teachers (Mr. Khôi)</h2>
                         </div>
                         <div id="teacher-report-grid" class="task-grid">
                             <!-- Dynamic Cards -->
@@ -313,7 +318,7 @@
                     </section>
                     <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Monthly Report: Academic (Ms. Khanh)</h2>
+                            <h2>Weekly Task: Academic (Ms. Khanh)</h2>
                         </div>
                         <div id="academic-report-grid" class="task-grid">
                             <!-- Dynamic Cards -->
@@ -366,7 +371,7 @@
                     </section>
                     <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Monthly Report: Operation (Mr. Đạt)</h2>
+                            <h2>Weekly Task: Operation (Mr. Đạt)</h2>
                         </div>
                         <div id="operation-report-grid" class="task-grid">
                             <!-- Dynamic Cards -->
@@ -398,7 +403,7 @@
                 <div id="view-coo" class="page-view" style="display: none;">
                     <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Monthly Report: COO (Mr. Trí)</h2>
+                            <h2>Weekly Task: COO (Mr. Trí)</h2>
                         </div>
                         <div id="coo-report-grid" class="task-grid">
                             <!-- Dynamic Cards -->

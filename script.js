@@ -86,27 +86,50 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Remove active from all nav items
-            navItems.forEach(nav => nav.classList.remove('active'));
-            // Add active to clicked nav
-            item.classList.add('active');
+            // Check if it's the toggle
+            if (item.classList.contains('submenu-toggle') || item.closest('.has-submenu') === item) {
+                // do nothing for routing, we handle toggle separately
+            } else {
+                // Remove active from all nav items (including nested)
+                navItems.forEach(nav => nav.classList.remove('active'));
+                // Add active to clicked nav
+                item.classList.add('active');
+                
+                // Also activate parent submenu if applicable
+                const parentSubmenu = item.closest('.has-submenu');
+                if (parentSubmenu) {
+                    parentSubmenu.classList.add('active');
+                }
 
-            const targetId = item.getAttribute('data-target');
+                const targetId = item.getAttribute('data-target');
 
-            // Hide all views
-            pageViews.forEach(view => {
-                view.style.display = 'none';
-                view.classList.remove('active');
-            });
+                // Hide all views
+                pageViews.forEach(view => {
+                    view.style.display = 'none';
+                    view.classList.remove('active');
+                });
 
-            // Show target view
-            const targetView = document.getElementById(targetId);
-            if(targetView) {
-                targetView.style.display = 'block';
-                // Small delay to allow CSS transitions to grab on
-                setTimeout(() => {
-                    targetView.classList.add('active');
-                }, 10);
+                // Show target view
+                const targetView = document.getElementById(targetId);
+                if(targetView) {
+                    targetView.style.display = 'block';
+                    // Small delay to allow CSS transitions to grab on
+                    setTimeout(() => {
+                        targetView.classList.add('active');
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // Submenu Toggle Logic
+    const submenuToggles = document.querySelectorAll('.submenu-toggle');
+    submenuToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const parent = toggle.closest('.has-submenu');
+            if (parent) {
+                parent.classList.toggle('open');
             }
         });
     });
@@ -527,76 +550,67 @@ function renderRoleTasks(rows, picName, containerId) {
     const weeks = Object.keys(groupedByWeek).sort();
 
     weeks.forEach(week => {
-        // Render Week Header
+        // Create Week Container
+        const weekContainer = document.createElement('div');
+        weekContainer.className = 'kanban-week';
+        
         const weekHeader = document.createElement('h3');
-        weekHeader.style.cssText = 'grid-column: 1 / -1; margin-top: 16px; margin-bottom: 0px; color: var(--primary-color); font-size: 1.2rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;';
         weekHeader.innerText = week;
-        container.appendChild(weekHeader);
+        weekContainer.appendChild(weekHeader);
+
+        // Create Kanban Board
+        const kanbanBoard = document.createElement('div');
+        kanbanBoard.className = 'kanban-board';
+        
+        // Define Columns
+        const columns = {
+            'New': document.createElement('div'),
+            'Processing': document.createElement('div'),
+            'Completed': document.createElement('div')
+        };
+        
+        // Initialize columns
+        Object.keys(columns).forEach(status => {
+            columns[status].className = `kanban-column ${status.toLowerCase()}`;
+            const colHeader = document.createElement('h4');
+            colHeader.innerText = status;
+            columns[status].appendChild(colHeader);
+            kanbanBoard.appendChild(columns[status]);
+        });
 
         // Group by Status within Week
         const tasksInWeek = groupedByWeek[week];
-        const groupedByStatus = {};
         tasksInWeek.forEach(row => {
             let status = getVal(row.c[1]) || 'New';
-            if (status.includes('Completed')) status = 'Completed';
-            else if (status.includes('Processing')) status = 'Processing';
-            else if (status.includes('New')) status = 'New';
-            else status = 'Other';
+            let targetCol = 'New';
+            if (status.includes('Completed')) targetCol = 'Completed';
+            else if (status.includes('Processing')) targetCol = 'Processing';
 
-            if (!groupedByStatus[status]) groupedByStatus[status] = [];
-            groupedByStatus[status].push(row);
+            const c = row.c;
+            const fullStatus = getVal(c[1]);
+            const category = getVal(c[5]) || getVal(c[15]);
+            const plan = getVal(c[6]) || getVal(c[11]);
+            const deadline = getVal(c[9]);
+
+            const card = document.createElement('div');
+            card.className = 'compact-card';
+            card.innerHTML = `
+                <div class="compact-card-header">
+                    <span class="compact-card-title">${category || 'N/A'}</span>
+                </div>
+                <div class="compact-card-body">
+                    ${plan || 'No details provided.'}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.05);">
+                    <span class="compact-card-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                    <span class="task-badge ${targetCol === 'Completed' ? 'positive' : targetCol === 'Processing' ? 'warning' : 'neutral'}" style="font-size: 0.7rem; padding: 2px 6px;">${fullStatus || 'N/A'}</span>
+                </div>
+            `;
+            columns[targetCol].appendChild(card);
         });
 
-        // Define status order
-        const statusOrder = ['Completed', 'Processing', 'New', 'Other'];
-        
-        statusOrder.forEach(status => {
-            if (groupedByStatus[status] && groupedByStatus[status].length > 0) {
-                // Render Status Header
-                let color = 'var(--text-color)';
-                if (status === 'Completed') color = 'var(--success)';
-                if (status === 'Processing') color = 'var(--warning)';
-
-                const statusHeader = document.createElement('h4');
-                statusHeader.style.cssText = `grid-column: 1 / -1; margin-top: 8px; margin-bottom: 0px; color: ${color}; font-size: 1rem;`;
-                statusHeader.innerText = status;
-                container.appendChild(statusHeader);
-
-                groupedByStatus[status].forEach(row => {
-                    const c = row.c;
-                    const fullStatus = getVal(c[1]);
-                    const category = getVal(c[5]) || getVal(c[15]);
-                    const plan = getVal(c[6]) || getVal(c[11]);
-                    const result = getVal(c[7]) || getVal(c[12]);
-                    const deadline = getVal(c[9]);
-
-                    const card = document.createElement('div');
-                    card.className = 'task-card';
-                    card.innerHTML = `
-                        <div class="task-header">
-                            <div class="task-meta">
-                                <span class="task-category">${category || 'N/A'}</span>
-                                <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
-                                <span class="task-badge ${status === 'Completed' ? 'positive' : status === 'Processing' ? 'warning' : 'neutral'}">${fullStatus || 'N/A'}</span>
-                            </div>
-                        </div>
-                        <div class="task-body">
-                            <div class="task-section">
-                                <h4>Plan / Details</h4>
-                                <p>${plan || 'No details provided.'}</p>
-                            </div>
-                            <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
-                                <h4>Result</h4>
-                                <p>${result || 'Awaiting results.'}</p>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            }
-        });
+        weekContainer.appendChild(kanbanBoard);
+        container.appendChild(weekContainer);
     });
 }
 
