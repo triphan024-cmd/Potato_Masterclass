@@ -502,121 +502,241 @@ function renderOperationTable(classRows) {
 function renderRoleTasks(rows, picName, containerId, monthStr) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = '';
     
-    // Filter rows by PIC, Type === 'Task', and Month
+    let viewMode = container.dataset.viewMode || 'weekly';
+
     const validRows = rows.filter(row => {
         if(!row || !row.c) return false;
-        const pic = getShortName(getVal(row.c[4]));
         const type = getVal(row.c[2]);
+        const pic = getShortName(getVal(row.c[4]));
         const rowMonth = getVal(row.c[20]);
         let rMonthStr = rowMonth;
         if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
         
         const monthMatches = !monthStr || rMonthStr === monthStr;
-        return pic === picName && type === 'Task' && monthMatches && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+        return type === 'Task' && pic === picName && monthMatches;
     });
-    
+
     if (validRows.length === 0) {
         container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks found for ${picName} this month.</div>`;
         return;
     }
+
+    container.innerHTML = `
+        <div class="planner-controls">
+            <button class="planner-toggle-btn ${viewMode === 'weekly' ? 'active' : ''}" data-mode="weekly">Weekly</button>
+            <button class="planner-toggle-btn ${viewMode === 'monthly' ? 'active' : ''}" data-mode="monthly">Monthly</button>
+        </div>
+        <div id="${containerId}-content"></div>
+    `;
+
+    const contentDiv = document.getElementById(`${containerId}-content`);
+
+    const btns = container.querySelectorAll('.planner-toggle-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            container.dataset.viewMode = e.target.dataset.mode;
+            renderRoleTasks(rows, picName, containerId, monthStr);
+        });
+    });
+
+    const parseDateStr = (dateStr) => {
+        if (!dateStr) return null;
+        const dStr = dateStr.split(' ')[0];
+        const parts = dStr.split('/');
+        if (parts.length === 3) {
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        return null;
+    };
     
-    // Group by Week
-    const groupedByWeek = {};
-    validRows.forEach(row => {
-        const week = getVal(row.c[19]) || 'Unassigned Week';
-        if (!groupedByWeek[week]) groupedByWeek[week] = [];
-        groupedByWeek[week].push(row);
-    });
-
-    const weeks = Object.keys(groupedByWeek).sort();
-
-    weeks.forEach(week => {
-        // Create Week Container
-        const weekContainer = document.createElement('div');
-        weekContainer.style.cssText = 'margin-bottom: 32px;';
+    const renderCard = (row) => {
+        let status = getVal(row.c[1]) || 'New';
+        let statusClass = 'neutral';
+        let borderColor = 'var(--text-muted)';
         
-        const weekHeader = document.createElement('h3');
-        weekHeader.innerText = week;
-        weekHeader.style.cssText = 'color: var(--primary-color); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.25rem;';
-        weekContainer.appendChild(weekHeader);
+        if (status.includes('Completed')) {
+            statusClass = 'positive';
+            borderColor = 'var(--success)';
+        } else if (status.includes('Processing')) {
+            statusClass = 'warning';
+            borderColor = 'var(--warning)';
+        } else if (status.includes('New')) {
+            statusClass = 'neutral';
+            borderColor = 'var(--primary-color)';
+        }
 
-        // Create Table Wrap
-        const tableWrap = document.createElement('div');
-        tableWrap.style.cssText = 'overflow-x: auto;';
+        const category = getVal(row.c[5]) || getVal(row.c[15]);
+        const plan = getVal(row.c[6]) || getVal(row.c[11]);
         
-        const table = document.createElement('table');
-        table.className = 'modern-table';
-        table.style.cssText = 'min-width: 800px; width: 100%;';
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th style="width: 25%;">Task / Category</th>
-                    <th style="width: 45%;">Plan / Details</th>
-                    <th style="width: 15%;">Deadline</th>
-                    <th style="width: 15%; text-align: center;">Status</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
+        const card = document.createElement('div');
+        card.className = 'planner-card';
+        card.style.borderLeftColor = borderColor;
+        card.innerHTML = `
+            <div class="planner-card-title">${plan || category || 'No details'}</div>
+            <div class="planner-card-meta">
+                <span style="font-weight:600; color:var(--text-muted); font-size:0.7rem;"><i class="fa-solid fa-tag" style="margin-right:2px;"></i>${category || 'Task'}</span>
+                <span class="status ${statusClass}">${status}</span>
+            </div>
         `;
-        const tbody = table.querySelector('tbody');
+        return card;
+    };
 
-        // Group by Status within Week to sort
-        const tasksInWeek = groupedByWeek[week];
-        
-        // Define sorting weight
-        const statusWeight = {
-            'Completed': 3,
-            'Processing': 1,
-            'New': 2
-        };
-
-        tasksInWeek.sort((a, b) => {
-            let statusA = getVal(a.c[1]) || 'New';
-            let statusB = getVal(b.c[1]) || 'New';
-            let weightA = statusWeight[statusA] || 4;
-            let weightB = statusWeight[statusB] || 4;
-            if (statusA.includes('Completed')) weightA = 3;
-            else if (statusA.includes('Processing')) weightA = 1;
-            else if (statusA.includes('New')) weightA = 2;
-
-            if (statusB.includes('Completed')) weightB = 3;
-            else if (statusB.includes('Processing')) weightB = 1;
-            else if (statusB.includes('New')) weightB = 2;
-
-            return weightA - weightB;
+    if (viewMode === 'weekly') {
+        const groupedByWeek = {};
+        validRows.forEach(row => {
+            const week = getVal(row.c[19]) || 'Unassigned Week';
+            if (!groupedByWeek[week]) groupedByWeek[week] = [];
+            groupedByWeek[week].push(row);
         });
 
-        tasksInWeek.forEach(row => {
-            let status = getVal(row.c[1]) || 'New';
-            let statusClass = 'neutral';
+        const weeks = Object.keys(groupedByWeek).sort();
+
+        weeks.forEach(week => {
+            const weekContainer = document.createElement('div');
+            weekContainer.style.cssText = 'margin-bottom: 32px;';
             
-            if (status.includes('Completed')) statusClass = 'success';
-            else if (status.includes('Processing')) statusClass = 'warning';
-            else if (status.includes('New')) statusClass = 'new';
+            const weekHeader = document.createElement('h3');
+            weekHeader.innerText = week;
+            weekHeader.style.cssText = 'color: var(--primary-color); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.25rem;';
+            weekContainer.appendChild(weekHeader);
 
-            const c = row.c;
-            const fullStatus = getVal(c[1]);
-            const category = getVal(c[5]) || getVal(c[15]);
-            const plan = getVal(c[6]) || getVal(c[11]);
-            const deadline = getVal(c[9]);
+            const board = document.createElement('div');
+            board.className = 'planner-board';
 
-            const tr = document.createElement('tr');
-            tr.className = 'clickable-row';
-            tr.innerHTML = `
-                <td style="font-weight: 600; color: var(--primary-color);">${category || 'N/A'}</td>
-                <td style="white-space: pre-wrap;">${plan || 'No details provided.'}</td>
-                <td><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</td>
-                <td style="text-align: center;"><span class="status ${statusClass}">${fullStatus || 'N/A'}</span></td>
-            `;
-            tbody.appendChild(tr);
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const columns = [];
+
+            daysOfWeek.forEach((day, idx) => {
+                const col = document.createElement('div');
+                col.className = 'planner-day-column';
+                col.innerHTML = `<div class="planner-day-header">${day}</div>`;
+                board.appendChild(col);
+                columns.push(col);
+            });
+
+            const unscheduledCol = document.createElement('div');
+            unscheduledCol.className = 'planner-day-column';
+            unscheduledCol.style.background = '#fcfcfc';
+            unscheduledCol.innerHTML = `<div class="planner-day-header">No Deadline</div>`;
+            board.appendChild(unscheduledCol);
+
+            groupedByWeek[week].forEach(row => {
+                const deadline = getVal(row.c[9]);
+                const d = parseDateStr(deadline);
+                const card = renderCard(row);
+                
+                if (d && !isNaN(d)) {
+                    const dayIdx = d.getDay(); // 0 for Sunday
+                    columns[dayIdx].appendChild(card);
+                    
+                    // Add date label to column if not already added
+                    if (!columns[dayIdx].querySelector('.planner-date-label')) {
+                        const dateLabel = document.createElement('div');
+                        dateLabel.className = 'planner-date-label';
+                        dateLabel.innerText = d.getDate();
+                        columns[dayIdx].appendChild(dateLabel);
+                        
+                        // Check if today
+                        const today = new Date();
+                        if (d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()) {
+                            columns[dayIdx].classList.add('today');
+                        }
+                    }
+                } else {
+                    unscheduledCol.appendChild(card);
+                }
+            });
+
+            weekContainer.appendChild(board);
+            contentDiv.appendChild(weekContainer);
+        });
+    } else {
+        // Monthly view
+        // Generate a standard monthly calendar grid for tasks
+        const board = document.createElement('div');
+        board.className = 'planner-board';
+        
+        // Find reference month from rows
+        let refDate = new Date();
+        for (let row of validRows) {
+            let d = parseDateStr(getVal(row.c[9]));
+            if (d && !isNaN(d)) {
+                refDate = d;
+                break;
+            }
+        }
+        
+        const year = refDate.getFullYear();
+        const month = refDate.getMonth();
+        
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        daysOfWeek.forEach(day => {
+            const header = document.createElement('div');
+            header.className = 'planner-day-header';
+            header.innerText = day;
+            board.appendChild(header);
         });
 
-        tableWrap.appendChild(table);
-        weekContainer.appendChild(tableWrap);
-        container.appendChild(weekContainer);
-    });
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let currentDate = 1;
+        const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
+        
+        const dayColumns = {};
+        
+        for (let i = 0; i < totalCells; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'planner-day-column';
+            
+            if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
+                const dateLabel = document.createElement('div');
+                dateLabel.className = 'planner-date-label';
+                dateLabel.innerText = currentDate;
+                cell.appendChild(dateLabel);
+                
+                dayColumns[currentDate] = cell;
+                
+                const today = new Date();
+                if (currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    cell.classList.add('today');
+                }
+                
+                currentDate++;
+            } else {
+                cell.style.background = '#fafafa';
+            }
+            board.appendChild(cell);
+        }
+        
+        // Place tasks
+        const unscheduledContainer = document.createElement('div');
+        unscheduledContainer.style.cssText = 'margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid rgba(0,0,0,0.06);';
+        unscheduledContainer.innerHTML = '<h4 style="margin-top: 0; color: var(--primary-color);">No Deadline</h4><div class="unscheduled-grid" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>';
+        const unscheduledGrid = unscheduledContainer.querySelector('.unscheduled-grid');
+        let hasUnscheduled = false;
+
+        validRows.forEach(row => {
+            const d = parseDateStr(getVal(row.c[9]));
+            const card = renderCard(row);
+            
+            if (d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year) {
+                if (dayColumns[d.getDate()]) {
+                    dayColumns[d.getDate()].appendChild(card);
+                }
+            } else {
+                card.style.flex = '0 0 300px';
+                unscheduledGrid.appendChild(card);
+                hasUnscheduled = true;
+            }
+        });
+
+        contentDiv.appendChild(board);
+        if (hasUnscheduled) {
+            contentDiv.appendChild(unscheduledContainer);
+        }
+    }
 }
 
 function renderWeeklyReports(rows, containerId, monthStr) {
@@ -641,67 +761,81 @@ function renderWeeklyReports(rows, containerId, monthStr) {
         return;
     }
     
-    // Group by PIC
-    const groupedByPic = {};
+    // Group by Label (e.g. "2026 - 05 - 2") -> "Week 2"
+    const groupedByWeek = {};
     reportRows.forEach(row => {
-        const pic = getShortName(getVal(row.c[4])) || 'Unknown';
-        if (!groupedByPic[pic]) groupedByPic[pic] = [];
-        groupedByPic[pic].push(row);
+        const label = getVal(row.c[15]); 
+        let weekStr = 'Unknown Week';
+        if (label && label.includes('-')) {
+            const parts = label.split('-');
+            if (parts.length >= 3) {
+                weekStr = 'Week ' + parts[2].trim();
+            } else {
+                weekStr = label;
+            }
+        } else if (label) {
+            weekStr = label;
+        }
+
+        if (!groupedByWeek[weekStr]) groupedByWeek[weekStr] = [];
+        groupedByWeek[weekStr].push(row);
     });
 
-    const pics = Object.keys(groupedByPic).sort();
+    const weeks = Object.keys(groupedByWeek).sort();
 
-    pics.forEach(pic => {
-        const picHeader = document.createElement('h3');
-        picHeader.style.cssText = 'grid-column: 1 / -1; margin-top: 16px; margin-bottom: 8px; color: var(--primary-color); font-size: 1.2rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;';
-        picHeader.innerText = pic;
-        container.appendChild(picHeader);
+    const board = document.createElement('div');
+    board.className = 'report-kanban-board';
+    container.appendChild(board);
 
-        const tableWrap = document.createElement('div');
-        tableWrap.style.cssText = 'overflow-x: auto; margin-bottom: 32px;';
+    weeks.forEach(week => {
+        const col = document.createElement('div');
+        col.className = 'report-kanban-column';
         
-        const table = document.createElement('table');
-        table.className = 'modern-table';
-        table.style.cssText = 'min-width: 800px; width: 100%;';
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th style="width: 25%;">Category</th>
-                    <th style="width: 45%;">Plan / Result</th>
-                    <th style="width: 15%;">Deadline</th>
-                    <th style="width: 15%; text-align: center;">Status</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        `;
-        const tbody = table.querySelector('tbody');
+        const colHeader = document.createElement('h3');
+        colHeader.innerText = week;
+        col.appendChild(colHeader);
 
-        groupedByPic[pic].forEach(row => {
+        groupedByWeek[week].forEach(row => {
             const c = row.c;
             const status = getVal(c[1]);
-            const category = getVal(c[5]) || getVal(c[15]);
+            const pic = getShortName(getVal(c[4])) || 'Unknown';
             const plan = getVal(c[6]) || getVal(c[11]);
             const result = getVal(c[7]) || getVal(c[12]);
             const deadline = getVal(c[9]);
             
             let statusClass = 'neutral';
-            if (status.includes('Completed')) statusClass = 'success';
-            else if (status.includes('Processing')) statusClass = 'warning';
-            else if (status.includes('New')) statusClass = 'new';
+            let borderColor = 'var(--text-muted)';
+            if (status.includes('Completed')) {
+                statusClass = 'positive';
+                borderColor = 'var(--success)';
+            } else if (status.includes('Processing')) {
+                statusClass = 'warning';
+                borderColor = 'var(--warning)';
+            } else if (status.includes('New')) {
+                statusClass = 'neutral';
+                borderColor = 'var(--primary-color)';
+            }
             
-            const tr = document.createElement('tr');
-            tr.className = 'clickable-row';
-            tr.innerHTML = `
-                <td style="font-weight: 600; color: var(--primary-color);">${category || 'N/A'}</td>
-                <td style="white-space: pre-wrap;"><strong>Plan:</strong> ${plan || 'No details'}<br><br><strong>Result:</strong> ${result || 'Awaiting'}</td>
-                <td><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</td>
-                <td style="text-align: center;"><span class="status ${statusClass}">${status || 'N/A'}</span></td>
+            const card = document.createElement('div');
+            card.className = 'planner-card';
+            card.style.borderLeftColor = borderColor;
+            card.innerHTML = `
+                <div class="planner-card-meta" style="margin-bottom: 4px;">
+                    <span style="font-weight: 700; color: var(--primary-color); font-size: 0.85rem;"><i class="fa-solid fa-user" style="margin-right: 4px;"></i>${pic}</span>
+                    <span class="status ${statusClass}">${status || 'N/A'}</span>
+                </div>
+                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.8rem; font-weight: normal; margin-bottom: 8px;">
+                    <strong>Plan:</strong> ${plan || 'No details'}
+                </div>
+                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.8rem; font-weight: normal; margin-bottom: 8px; color: var(--text-color);">
+                    <strong>Result:</strong> ${result || 'Awaiting'}
+                </div>
+                <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 6px; margin-top: auto;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                </div>
             `;
-            tbody.appendChild(tr);
+            col.appendChild(card);
         });
-
-        tableWrap.appendChild(table);
-        container.appendChild(tableWrap);
     });
 }
 

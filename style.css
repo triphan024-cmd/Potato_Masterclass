@@ -935,6 +935,161 @@ body {
     margin: 0;
 }
 
+/* Weekly & Monthly Planner Styles */
+.planner-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+.planner-toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.planner-toggle-btn.active {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.planner-board {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(180px, 1fr));
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    overflow-x: auto;
+    background: #ffffff;
+}
+
+.planner-day-header {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    border-right: 1px solid rgba(0,0,0,0.06);
+    background: #f8fafc;
+}
+
+.planner-day-header:last-child {
+    border-right: none;
+}
+
+.planner-day-column {
+    min-height: 200px;
+    padding: 8px;
+    border-right: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(0,0,0,0.06); /* For monthly grid */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    background: #ffffff;
+}
+
+.planner-day-column:last-child,
+.planner-day-column:nth-child(7n) {
+    border-right: none;
+}
+
+.planner-date-label {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.planner-day-column.today {
+    background: rgba(var(--primary-color-rgb, 52, 152, 219), 0.03);
+}
+
+.planner-day-column.today .planner-date-label {
+    color: var(--danger);
+    opacity: 1;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.planner-card {
+    background: #f1f5f9;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-left: 3px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 2;
+}
+
+.planner-card-title {
+    font-weight: 600;
+    color: var(--text-color);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.planner-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.planner-card .status {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+}
+
+/* Kanban Board Styles for Reports */
+.report-kanban-board {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+}
+
+.report-kanban-column {
+    flex: 0 0 320px;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.report-kanban-column h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 8px;
+    text-align: center;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .metrics-grid {
