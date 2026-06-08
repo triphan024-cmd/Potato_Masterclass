@@ -275,14 +275,17 @@ async function fetchDashboardData() {
             const leaderRows = leaderJson.table.rows;
             globalLeaderRows = leaderRows;
             
-            // Render for each role
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', monthStr);
+            const currentMonthVal = currentMonthIndex + 3;
+            const currentMonthStr = String(currentMonthVal).padStart(2, '0');
             
-            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', monthStr);
+            // Render for each role
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', currentMonthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', currentMonthStr);
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', currentMonthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', currentMonthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', currentMonthStr);
+            
+            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', currentMonthStr);
             
             console.log(`Retrieved leader data.`);
         } catch (err) {
@@ -796,42 +799,52 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     if (targetRows.length === 0) {
         listHtml = '<p style="color: var(--text-muted);">No tasks found.</p>';
     } else {
+        const groupedTasks = {};
         targetRows.forEach(row => {
-            const c = row.c;
-            const status = getVal(c[1]) || 'New';
-            let statusClass = 'neutral';
-            let borderColor = 'var(--text-muted)';
-            
-            if (status.includes('Completed')) {
-                statusClass = 'positive';
-                borderColor = 'var(--success)';
-            } else if (status.includes('Processing')) {
-                statusClass = 'warning';
-                borderColor = 'var(--warning)';
-            } else if (status.includes('New')) {
-                statusClass = 'neutral';
-                borderColor = 'var(--primary-color)';
-            }
-
-            const category = getVal(c[5]) || getVal(c[15]);
-            const plan = getVal(c[6]) || getVal(c[11]);
-            const deadline = getVal(c[9]);
-            
-            listHtml += `
-                <div class="planner-card" style="border-left-color: ${borderColor}; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <div class="planner-card-meta" style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <span class="status ${statusClass}">${status}</span>
-                            <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
-                        </div>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
-                    </div>
-                    <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark); border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px;">
-                        ${plan || 'No details provided'}
-                    </div>
-                </div>
-            `;
+            const dept = getVal(row.c[3]) || 'Other';
+            if (!groupedTasks[dept]) groupedTasks[dept] = [];
+            groupedTasks[dept].push(row);
         });
+
+        for (const [dept, rows] of Object.entries(groupedTasks)) {
+            listHtml += `<div style="margin-top: 16px; margin-bottom: 8px; font-weight: 700; color: var(--primary-dark); border-bottom: 2px solid var(--primary-light); padding-bottom: 4px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-building"></i> ${dept}</div>`;
+            rows.forEach(row => {
+                const c = row.c;
+                const status = getVal(c[1]) || 'New';
+                let statusClass = 'neutral';
+                let borderColor = 'var(--text-muted)';
+                
+                if (status.includes('Completed')) {
+                    statusClass = 'positive';
+                    borderColor = 'var(--success)';
+                } else if (status.includes('Processing')) {
+                    statusClass = 'warning';
+                    borderColor = 'var(--warning)';
+                } else if (status.includes('New')) {
+                    statusClass = 'neutral';
+                    borderColor = 'var(--primary-color)';
+                }
+
+                const category = getVal(c[5]) || getVal(c[15]);
+                const plan = getVal(c[6]) || getVal(c[11]);
+                const deadline = getVal(c[9]);
+                
+                listHtml += `
+                    <div class="planner-card" style="border-left-color: ${borderColor}; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div class="planner-card-meta" style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="status ${statusClass}">${status}</span>
+                                <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                        </div>
+                        <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark); border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px;">
+                            ${plan || 'No details provided'}
+                        </div>
+                    </div>
+                `;
+            });
+        }
     }
 
     detailPanel.innerHTML = titleHtml + `<div style="display: flex; flex-direction: column;">${listHtml}</div>`;
