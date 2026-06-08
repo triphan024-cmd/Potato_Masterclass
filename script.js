@@ -213,13 +213,14 @@ function changeMonth(diff) {
             renderHeadTable(filteredRows);
         }
 
-        // Re-render role tasks when month changes (if applicable, though currently showing all for PIC)
+        // Re-render role tasks when month changes
         if (globalLeaderRows.length > 0) {
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', monthStr);
+            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', monthStr);
         }
     }
 }
@@ -298,13 +299,13 @@ async function fetchDashboardData() {
             globalLeaderRows = leaderRows;
             
             // Render for each role
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid');
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', monthStr);
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', monthStr);
             
-            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid');
+            renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', monthStr);
             
             console.log(`Retrieved leader data.`);
         } catch (err) {
@@ -521,17 +522,22 @@ function renderOperationTable(classRows) {
     });
 }
 
-function renderRoleTasks(rows, picName, containerId) {
+function renderRoleTasks(rows, picName, containerId, monthStr) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
     
-    // Filter rows by PIC and Type === 'Task'
+    // Filter rows by PIC, Type === 'Task', and Month
     const validRows = rows.filter(row => {
         if(!row || !row.c) return false;
         const pic = getShortName(getVal(row.c[4]));
         const type = getVal(row.c[2]);
-        return pic === picName && type === 'Task' && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+        const rowMonth = getVal(row.c[20]);
+        let rMonthStr = rowMonth;
+        if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
+        
+        const monthMatches = !monthStr || rMonthStr === monthStr;
+        return pic === picName && type === 'Task' && monthMatches && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
     });
     
     if (validRows.length === 0) {
@@ -583,8 +589,14 @@ function renderRoleTasks(rows, picName, containerId) {
         tasksInWeek.forEach(row => {
             let status = getVal(row.c[1]) || 'New';
             let targetCol = 'New';
-            if (status.includes('Completed')) targetCol = 'Completed';
-            else if (status.includes('Processing')) targetCol = 'Processing';
+            let borderColor = 'var(--primary-color)';
+            if (status.includes('Completed')) {
+                targetCol = 'Completed';
+                borderColor = 'var(--success)';
+            } else if (status.includes('Processing')) {
+                targetCol = 'Processing';
+                borderColor = 'var(--warning)';
+            }
 
             const c = row.c;
             const fullStatus = getVal(c[1]);
@@ -594,6 +606,7 @@ function renderRoleTasks(rows, picName, containerId) {
 
             const card = document.createElement('div');
             card.className = 'compact-card';
+            card.style.borderLeft = `4px solid ${borderColor}`;
             card.innerHTML = `
                 <div class="compact-card-header">
                     <span class="compact-card-title">${category || 'N/A'}</span>
@@ -614,16 +627,21 @@ function renderRoleTasks(rows, picName, containerId) {
     });
 }
 
-function renderWeeklyReports(rows, containerId) {
+function renderWeeklyReports(rows, containerId, monthStr) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
     
-    // Filter rows by Type === 'Report'
+    // Filter rows by Type === 'Report' and Month
     const reportRows = rows.filter(row => {
         if(!row || !row.c) return false;
         const type = getVal(row.c[2]);
-        return type === 'Report' && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+        const rowMonth = getVal(row.c[20]);
+        let rMonthStr = rowMonth;
+        if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
+        
+        const monthMatches = !monthStr || rMonthStr === monthStr;
+        return type === 'Report' && monthMatches && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
     });
     
     if (reportRows.length === 0) {
