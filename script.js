@@ -570,8 +570,24 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     const month = refDate.getMonth();
     
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    // Blank top-left corner
+    // All button top-left
     const blankHeader = document.createElement('div');
+    blankHeader.className = 'planner-day-header';
+    blankHeader.style.padding = '8px 4px';
+    const allBtn = document.createElement('div');
+    allBtn.className = 'week-btn';
+    allBtn.innerText = 'All';
+    allBtn.title = 'View All Month Tasks';
+    allBtn.onclick = () => {
+        document.querySelectorAll(`#${containerId} .week-btn`).forEach(b => b.classList.remove('active'));
+        allBtn.classList.add('active');
+        document.querySelectorAll(`#${containerId} .cal-day-active`).forEach(el => {
+            el.style.backgroundColor = '';
+            el.style.color = 'var(--primary-color)';
+        });
+        showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
+    };
+    blankHeader.appendChild(allBtn);
     board.appendChild(blankHeader);
     
     daysOfWeek.forEach(day => {
@@ -584,6 +600,26 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
+    
+    let firstTuesdayDate = 1;
+    for (let day = 1; day <= 7; day++) {
+        let d = new Date(year, month, day);
+        if (d.getDay() === 2) {
+            firstTuesdayDate = day;
+            break;
+        }
+    }
+    
+    let w1RowIndex = 0;
+    for (let r = 0; r < totalCells / 7; r++) {
+        let rowStartCell = r * 7;
+        let rowEndCell = rowStartCell + 6;
+        let indexOfFirstTue = firstDayOfMonth + firstTuesdayDate - 1;
+        if (indexOfFirstTue >= rowStartCell && indexOfFirstTue <= rowEndCell) {
+            w1RowIndex = r;
+            break;
+        }
+    }
     
     const dayMap = {};
     validRows.forEach(row => {
@@ -599,12 +635,12 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     });
 
     let currentDate = 1;
-    let weekIndex = 1;
     window[`tmpValidRows_${containerId}`] = validRows;
 
     for (let i = 0; i < totalCells; i++) {
         // Start of a week row: inject week button
         if (i % 7 === 0) {
+            let rowIdx = i / 7;
             const btnCell = document.createElement('div');
             btnCell.className = 'planner-day-column';
             
@@ -612,23 +648,24 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
             let wEnd = new Date(wStart);
             wEnd.setDate(wStart.getDate() + 6);
             
-            const wBtn = document.createElement('div');
-            wBtn.className = 'week-btn';
-            wBtn.innerText = 'W' + weekIndex;
-            wBtn.title = `View Week ${weekIndex} Tasks`;
-            const currentWeekIndex = weekIndex;
-            wBtn.onclick = () => {
-                document.querySelectorAll(`#${containerId} .week-btn`).forEach(b => b.classList.remove('active'));
-                wBtn.classList.add('active');
-                document.querySelectorAll(`#${containerId} .cal-day-active`).forEach(el => {
-                    el.style.backgroundColor = '';
-                    el.style.color = 'var(--primary-color)';
-                });
-                showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentWeekIndex}, rightDiv.id, validRows);
-            };
-            btnCell.appendChild(wBtn);
+            if (rowIdx >= w1RowIndex) {
+                let currentW = rowIdx - w1RowIndex + 1;
+                const wBtn = document.createElement('div');
+                wBtn.className = 'week-btn';
+                wBtn.innerText = 'W' + currentW;
+                wBtn.title = `View Week ${currentW} Tasks`;
+                wBtn.onclick = () => {
+                    document.querySelectorAll(`#${containerId} .week-btn`).forEach(b => b.classList.remove('active'));
+                    wBtn.classList.add('active');
+                    document.querySelectorAll(`#${containerId} .cal-day-active`).forEach(el => {
+                        el.style.backgroundColor = '';
+                        el.style.color = 'var(--primary-color)';
+                    });
+                    showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentW}, rightDiv.id, validRows);
+                };
+                btnCell.appendChild(wBtn);
+            }
             board.appendChild(btnCell);
-            weekIndex++;
         }
         
         const cell = document.createElement('div');
@@ -725,6 +762,22 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             return dA - dB;
         });
         
+    } else if (date && typeof date === 'object' && date.type === 'all') {
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-layer-group"></i> All Month Tasks</h3>`;
+        targetRows = validRows.filter(row => {
+            const d = parseDateStr(getVal(row.c[9]));
+            return d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year;
+        });
+        
+        // Sort by deadline
+        targetRows.sort((a, b) => {
+            const dA = parseDateStr(getVal(a.c[9]));
+            const dB = parseDateStr(getVal(b.c[9]));
+            if (!dA) return 1;
+            if (!dB) return -1;
+            return dA - dB;
+        });
+        
     } else if (date) {
         titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
         targetRows = validRows.filter(row => {
@@ -766,15 +819,15 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             
             listHtml += `
                 <div class="planner-card" style="border-left-color: ${borderColor}; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <div class="planner-card-meta" style="margin-bottom: 8px;">
-                        <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
-                        <span class="status ${statusClass}">${status}</span>
-                    </div>
-                    <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark);">
-                        ${plan || 'No details provided'}
-                    </div>
-                    <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px; margin-top: 8px;">
+                    <div class="planner-card-meta" style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="status ${statusClass}">${status}</span>
+                            <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:4px;"></i>${category || 'Task'}</span>
+                        </div>
                         <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                    </div>
+                    <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.95rem; line-height: 1.5; color: var(--text-dark); border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px;">
+                        ${plan || 'No details provided'}
                     </div>
                 </div>
             `;

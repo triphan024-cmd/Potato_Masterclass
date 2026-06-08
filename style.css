@@ -997,7 +997,7 @@ body {
 }
 
 .task-split-left {
-    flex: 1.2;
+    flex: 4;
     min-width: 0;
 }
 
@@ -1048,7 +1048,7 @@ body {
 }
 
 .task-split-right {
-    flex: 1;
+    flex: 6;
     min-width: 0;
     background: #f8fafc;
     border: 1px solid rgba(0,0,0,0.06);
