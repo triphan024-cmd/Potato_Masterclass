@@ -720,10 +720,37 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     container.appendChild(splitWrapper);
     
     const today = new Date();
-    if (today.getMonth() === month && today.getFullYear() === year && dayMap[today.getDate()]) {
-        showTaskDetails(picName, year, month, today.getDate(), rightDiv.id, validRows);
+    if (today.getMonth() === month && today.getFullYear() === year) {
+        let firstDay = new Date(year, month, 1);
+        let dayOfWeek = firstDay.getDay();
+        let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
+        
+        const w1Start = new Date(year, month, firstTuesdayDate);
+        let currentWeek = 0;
+        
+        if (today < w1Start) {
+            const allBtn = Array.from(document.querySelectorAll(`#${containerId} .week-btn`)).find(b => b.innerText === 'All');
+            if (allBtn) allBtn.click();
+            else showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
+        } else {
+            // We set hours to 0 to compare dates accurately
+            today.setHours(0,0,0,0);
+            w1Start.setHours(0,0,0,0);
+            const diffDays = Math.floor((today - w1Start) / (1000 * 60 * 60 * 24));
+            currentWeek = Math.floor(diffDays / 7) + 1;
+            
+            const weekBtns = Array.from(document.querySelectorAll(`#${containerId} .week-btn`));
+            const targetBtn = weekBtns.find(b => b.innerText === 'W' + currentWeek);
+            if (targetBtn) {
+                targetBtn.click();
+            } else {
+                showTaskDetails(picName, year, month, {type: 'week', index: currentWeek}, rightDiv.id, validRows);
+            }
+        }
     } else if (dayMap['unscheduled'] && dayMap['unscheduled'].length > 0) {
         showTaskDetails(picName, null, null, null, rightDiv.id, validRows);
+    } else {
+        showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
     }
 }
 
