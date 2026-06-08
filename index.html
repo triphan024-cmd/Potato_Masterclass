@@ -154,23 +154,67 @@
 
                 <!-- ==================== HEAD VIEW ==================== -->
                 <div id="view-head" class="page-view" style="display: none;">
-                    <section class="classes-list panel" style="overflow-x: auto;">
+                    <section class="metrics-grid">
+                        <div class="metric-card card-purple panel">
+                            <div class="metric-data">
+                                <h3>Total Students</h3>
+                                <p class="value" id="head-total-students">0</p>
+                                <span class="trend positive">All Centers</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-blue panel">
+                            <div class="metric-data">
+                                <h3>Total Classes</h3>
+                                <p class="value" id="head-total-classes">0</p>
+                                <span class="trend positive">Active</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Task Completion</h3>
+                                <p class="value" id="head-task-completion">100%</p>
+                                <span class="trend neutral">Head Tasks</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Monthly Report: Head (Ms. Đào)</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1200px;">
+                        <div id="head-report-grid" class="task-grid">
+                            <!-- Dynamic Cards -->
+                        </div>
+                    </section>
+
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>All Classes Overview</h2>
+                        </div>
+                        <table class="modern-table" style="min-width: 1000px;">
                             <thead>
                                 <tr>
-                                    <th class="sticky-col">PIC</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th style="min-width:250px">Plan / Details</th>
-                                    <th style="min-width:250px">Result</th>
-                                    <th>Deadline</th>
+                                    <th class="sticky-col">Class Name</th>
+                                    <th>Teacher</th>
+                                    <th>TA</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
                                     <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
                                 </tr>
                             </thead>
-                            <tbody id="head-report-body">
+                            <tbody id="head-table-body">
+                                <!-- Dynamic data -->
                             </tbody>
                         </table>
                     </section>
@@ -212,25 +256,13 @@
                     </section>
 
                     <!-- Monthly Review -->
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                    <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Monthly Report: Teachers (Mr. Khôi)</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1200px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">PIC</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th style="min-width:250px">Plan / Details</th>
-                                    <th style="min-width:250px">Result</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="teacher-report-body">
-                            </tbody>
-                        </table>
+                        <div id="teacher-report-grid" class="task-grid">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -276,25 +308,13 @@
                             </div>
                         </div>
                     </section>
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                    <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Monthly Report: Academic (Ms. Khanh)</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1200px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">PIC</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th style="min-width:250px">Plan / Details</th>
-                                    <th style="min-width:250px">Result</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="academic-report-body">
-                            </tbody>
-                        </table>
+                        <div id="academic-report-grid" class="task-grid">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -341,25 +361,13 @@
                             </div>
                         </div>
                     </section>
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                    <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Monthly Report: Operation (Mr. Đạt)</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1200px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">PIC</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th style="min-width:250px">Plan / Details</th>
-                                    <th style="min-width:250px">Result</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="operation-report-body">
-                            </tbody>
-                        </table>
+                        <div id="operation-report-grid" class="task-grid">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -385,25 +393,13 @@
 
                 <!-- ==================== COO VIEW ==================== -->
                 <div id="view-coo" class="page-view" style="display: none;">
-                    <section class="classes-list panel" style="overflow-x: auto;">
+                    <section class="panel" style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Monthly Report: COO (Mr. Trí)</h2>
                         </div>
-                        <table class="modern-table" style="min-width: 1200px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">PIC</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th style="min-width:250px">Plan / Details</th>
-                                    <th style="min-width:250px">Result</th>
-                                    <th>Deadline</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="coo-report-body">
-                            </tbody>
-                        </table>
+                        <div id="coo-report-grid" class="task-grid">
+                            <!-- Dynamic Cards -->
+                        </div>
                     </section>
                 </div>
             </div>

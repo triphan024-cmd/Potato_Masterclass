@@ -187,15 +187,16 @@ function changeMonth(diff) {
             });
             updateMetricsCards(filteredRows, globalMetricsRow);
             renderDashboardTable(filteredRows);
+            renderHeadTable(filteredRows);
         }
 
         // Re-render role tasks when month changes (if applicable, though currently showing all for PIC)
         if (globalLeaderRows.length > 0) {
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-body');
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-body');
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid');
         }
     }
 }
@@ -274,11 +275,11 @@ async function fetchDashboardData() {
             globalLeaderRows = leaderRows;
             
             // Render for each role
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-body');
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-body');
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-body');
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid');
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid');
             
             console.log(`Retrieved leader data.`);
         } catch (err) {
@@ -495,10 +496,10 @@ function renderOperationTable(classRows) {
     });
 }
 
-function renderRoleTasks(rows, picName, tbodyId) {
-    const tbody = document.getElementById(tbodyId);
-    if (!tbody) return;
-    tbody.innerHTML = '';
+function renderRoleTasks(rows, picName, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
     
     // Filter rows by PIC
     const validRows = rows.filter(row => {
@@ -508,9 +509,7 @@ function renderRoleTasks(rows, picName, tbodyId) {
     });
     
     if (validRows.length === 0) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No tasks/reports found for ${picName} this month.</td>`;
-        tbody.appendChild(tr);
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks/reports found for ${picName} this month.</div>`;
         return;
     }
     
@@ -529,19 +528,90 @@ function renderRoleTasks(rows, picName, tbodyId) {
         else if (status.includes('Processing')) statusBadge = 'warning';
         else if (status.includes('New')) statusBadge = 'neutral';
         
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.innerHTML = `
+            <div class="task-header">
+                <div class="task-meta">
+                    <span class="task-category">${category || 'N/A'}</span>
+                    <span class="task-deadline"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                    <span class="task-badge ${statusBadge}">${status || 'N/A'}</span>
+                    <span class="task-badge ${type === 'Task' ? 'neutral' : 'success'}">${type || 'N/A'}</span>
+                </div>
+            </div>
+            <div class="task-body">
+                <div class="task-section">
+                    <h4>Plan / Details</h4>
+                    <p>${plan || 'No details provided.'}</p>
+                </div>
+                <div class="task-section" style="border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 12px;">
+                    <h4>Result</h4>
+                    <p>${result || 'Awaiting results.'}</p>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function renderHeadTable(classRows) {
+    const tbody = document.getElementById('head-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    // Calculate Head metrics based on globalLeaderRows and classRows
+    let totalClasses = classRows.length;
+    let totalStudents = 0;
+    classRows.forEach(row => {
+        const studentsStr = getVal(row.c[7]);
+        if(studentsStr) totalStudents += parseInt(studentsStr) || 0;
+        
+        const c = row.c;
+        const className = getVal(c[6]);
+        const teacher = getShortName(getVal(c[12]));
+        const ta = getShortName(getVal(c[16]));
+        const course = getVal(c[4]);
+        const status = getVal(c[2]) || '';
+        const start = getVal(c[9]);
+        const end = getVal(c[10]);
+
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.innerHTML = `
-            <td class="sticky-col"><strong>${picName}</strong></td>
-            <td><span class="stat-badge ${type === 'Task' ? 'neutral' : 'success'}">${type || 'N/A'}</span></td>
-            <td>${category || 'N/A'}</td>
-            <td><div style="white-space: pre-wrap; font-size: 0.9em; max-width: 400px;">${plan}</div></td>
-            <td><div style="white-space: pre-wrap; font-size: 0.9em; max-width: 400px;">${result}</div></td>
-            <td>${deadline || 'N/A'}</td>
-            <td><span class="trend ${statusBadge}">${status || 'N/A'}</span></td>
+            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
+            <td>${teacher}</td>
+            <td>${ta}</td>
+            <td>${course}</td>
+            <td>${getVal(c[7]) || '0'}</td>
+            <td><span class="trend ${status.includes('Teaching') ? 'positive' : 'neutral'}">${status}</span></td>
+            <td>${start}</td>
+            <td>${end}</td>
         `;
         tbody.appendChild(tr);
     });
+    
+    // Update Head Metrics DOM
+    const tsEl = document.getElementById('head-total-students');
+    if(tsEl) tsEl.innerText = totalStudents;
+    const tcEl = document.getElementById('head-total-classes');
+    if(tcEl) tcEl.innerText = totalClasses;
+    
+    // Calculate Completion Rate for Ms. Đào
+    const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');
+    let completedHeadTasks = 0;
+    headTasks.forEach(t => {
+        if(getVal(t.c[1]).includes('Completed')) completedHeadTasks++;
+    });
+    const completionEl = document.getElementById('head-task-completion');
+    if(completionEl) {
+        if(headTasks.length > 0) {
+            completionEl.innerText = Math.round((completedHeadTasks / headTasks.length) * 100) + '%';
+        } else {
+            completionEl.innerText = 'N/A';
+        }
+    }
 }
 
 let currentCalDate = new Date();

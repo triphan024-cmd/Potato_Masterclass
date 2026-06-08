@@ -800,6 +800,100 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Monthly Report Task Grid & Cards */
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.task-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+.task-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #fafafa;
+}
+
+.task-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.task-category {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.task-deadline {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.task-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.task-badge.neutral { background: rgba(0,0,0,0.05); color: var(--text-color); }
+.task-badge.positive { background: rgba(46, 204, 113, 0.1); color: var(--success); }
+.task-badge.warning { background: rgba(243, 156, 18, 0.1); color: var(--warning); }
+.task-badge.success { background: rgba(142, 68, 173, 0.1); color: #8e44ad; }
+
+.task-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-grow: 1;
+}
+
+.task-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.task-section h4 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.task-section p {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .metrics-grid {
