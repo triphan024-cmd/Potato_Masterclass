@@ -823,6 +823,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         for (const [dept, rows] of Object.entries(groupedTasks)) {
             const dStyle = getDeptStyle(dept);
             listHtml += `<div class="dept-header" style="background: ${dStyle.bg}; color: ${dStyle.color};"><i class="fa-solid ${dStyle.icon}"></i> ${dept}</div>`;
+            listHtml += `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">`;
             rows.forEach(row => {
                 const c = row.c;
                 const status = getVal(c[1]) || 'New';
@@ -846,7 +847,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const deadline = getVal(c[9]);
                 
                 listHtml += `
-                    <div class="modern-card" style="border-left: 4px solid ${statusColor};">
+                    <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0;">
                         <div class="modern-card-header">
                             <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
                             <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
@@ -858,6 +859,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     </div>
                 `;
             });
+            listHtml += `</div>`;
         }
     }
 
