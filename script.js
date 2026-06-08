@@ -523,11 +523,12 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         return;
     }
 
+    let roleTitle = `Weekly Planner: ${picName}`;
     const headerElement = container.previousElementSibling;
     if (headerElement && headerElement.classList.contains('weekly-header')) {
-        const controls = headerElement.querySelector('.planner-controls');
-        if (controls) controls.remove();
-        headerElement.style.display = '';
+        const h2 = headerElement.querySelector('h2');
+        if (h2) roleTitle = h2.innerText;
+        headerElement.style.display = 'none';
     }
 
     container.innerHTML = '';
@@ -539,6 +540,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     // Left: Calendar Board
     const leftDiv = document.createElement('div');
     leftDiv.className = 'task-split-left';
+    leftDiv.innerHTML = `<h3 style="margin-top: 0; margin-bottom: 16px; color: var(--text-dark);">${roleTitle}</h3>`;
     
     const board = document.createElement('div');
     board.className = 'planner-board';
@@ -548,10 +550,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     const rightDiv = document.createElement('div');
     rightDiv.className = 'task-split-right';
     rightDiv.id = `${containerId}-detail-panel`;
-    rightDiv.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
-    
-    const titleEl = document.getElementById(`${containerId}-title`);
-    if (titleEl) titleEl.innerHTML = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Tasks Overview</span>`;
+    rightDiv.innerHTML = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px;"><i class="fa-solid fa-inbox"></i> Tasks Overview</h3><p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -750,7 +749,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     if (date && typeof date === 'object') {
         const { type, weekNumber, year: y, month: m } = date;
         if (type === 'week') {
-            titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${weekNumber} Tasks</span>`;
+            titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${weekNumber} Tasks</h3>`;
             let firstDay = new Date(y, m, 1);
             let dayOfWeek = firstDay.getDay();
             let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
@@ -772,7 +771,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 return dA - dB;
             });
         } else if (type === 'all') {
-            titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-border-all"></i> All Month Tasks</span>`;
+            titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-border-all"></i> All Month Tasks</h3>`;
             targetRows = validRows.filter(row => {
                 const d = parseDateStr(getVal(row.c[9]));
                 return d && !isNaN(d);
@@ -785,13 +784,13 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             });
         }
     } else if (date) {
-        titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</span>`;
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
         targetRows = validRows.filter(row => {
             const d = parseDateStr(getVal(row.c[9]));
             return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
         });
     } else {
-        titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</span>`;
+        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
         targetRows = validRows.filter(row => {
             const d = parseDateStr(getVal(row.c[9]));
             return !d || isNaN(d);
@@ -801,76 +800,49 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     let listHtml = '';
     if (targetRows.length === 0) {
         listHtml = '<p style="color: var(--text-muted);">No tasks found.</p>';
-    } else {
-        const groupedTasks = {};
+        listHtml += `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">`;
         targetRows.forEach(row => {
-            const dept = getVal(row.c[3]) || 'Other';
-            if (!groupedTasks[dept]) groupedTasks[dept] = [];
-            groupedTasks[dept].push(row);
-        });
+            const c = row.c;
+            const status = getVal(c[1]) || 'New';
+            
+            let statusBg = 'var(--bg-color)';
+            let statusColor = 'var(--text-muted)';
+            
+            if (status.includes('Completed')) {
+                statusBg = 'rgba(46, 204, 113, 0.1)';
+                statusColor = 'var(--success)';
+            } else if (status.includes('Processing')) {
+                statusBg = 'rgba(243, 156, 18, 0.1)';
+                statusColor = 'var(--warning)';
+            } else if (status.includes('New')) {
+                statusBg = 'rgba(231, 76, 60, 0.1)';
+                statusColor = 'var(--danger)'; // Red for new
+            }
 
-        const getDeptStyle = (dept) => {
-            const colors = [
-                { bg: '#f3e8ff', color: '#9333ea', icon: 'fa-layer-group' },   // Purple
-                { bg: '#cffafe', color: '#0891b2', icon: 'fa-briefcase' },     // Cyan
-                { bg: '#e0e7ff', color: '#4f46e5', icon: 'fa-chart-pie' },     // Indigo
-                { bg: '#fce7f3', color: '#db2777', icon: 'fa-users' },         // Pink
-                { bg: '#f3f4f6', color: '#4b5563', icon: 'fa-laptop-code' },   // Gray
-                { bg: '#ffedd5', color: '#ea580c', icon: 'fa-lightbulb' }      // Orange
-            ];
-            let hash = 0;
-            for (let i = 0; i < dept.length; i++) hash = dept.charCodeAt(i) + ((hash << 5) - hash);
-            return colors[Math.abs(hash) % colors.length];
-        };
-
-        for (const [dept, rows] of Object.entries(groupedTasks)) {
-            const dStyle = getDeptStyle(dept);
-            listHtml += `<div class="dept-header" style="background: ${dStyle.bg}; color: ${dStyle.color};"><i class="fa-solid ${dStyle.icon}"></i> ${dept}</div>`;
-            listHtml += `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">`;
-            rows.forEach(row => {
-                const c = row.c;
-                const status = getVal(c[1]) || 'New';
-                
-                let statusBg = 'var(--bg-color)';
-                let statusColor = 'var(--text-muted)';
-                
-                if (status.includes('Completed')) {
-                    statusBg = 'rgba(46, 204, 113, 0.1)';
-                    statusColor = 'var(--success)';
-                } else if (status.includes('Processing')) {
-                    statusBg = 'rgba(243, 156, 18, 0.1)';
-                    statusColor = 'var(--warning)';
-                } else if (status.includes('New')) {
-                    statusBg = 'rgba(231, 76, 60, 0.1)';
-                    statusColor = 'var(--danger)'; // Red for new
-                }
-
-                const category = getVal(c[5]) || getVal(c[15]);
-                const plan = getVal(c[6]) || getVal(c[11]);
-                const deadline = getVal(c[9]);
-                
-                listHtml += `
-                    <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0;">
-                        <div class="modern-card-header">
-                            <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
-                            <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
-                            <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                        </div>
-                        <div class="modern-card-body">
-                            ${plan || 'No details provided'}
-                        </div>
+            const category = getVal(c[5]) || getVal(c[15]);
+            const plan = getVal(c[6]) || getVal(c[11]);
+            const deadline = getVal(c[9]);
+            
+            listHtml += `
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0;">
+                    <div class="modern-card-header">
+                        <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
+                        <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
+                        <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                     </div>
-                `;
-            });
-            listHtml += `</div>`;
-        }
+                    <div class="modern-card-body">
+                        ${plan || 'No details provided'}
+                    </div>
+                </div>
+            `;
+        });
+        listHtml += `</div>`;
     }
 
-    detailPanel.innerHTML = `<div style="display: flex; flex-direction: column;">${listHtml}</div>`;
-    
-    const titleElement = document.getElementById(containerId.replace('-detail-panel', '') + '-title');
-    if (titleElement) {
-        titleElement.innerHTML = titleHtml;
+    if (targetRows.length > 0) {
+        detailPanel.innerHTML = titleHtml + `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">${listHtml}</div>`;
+    } else {
+        detailPanel.innerHTML = titleHtml + listHtml;
     }
 }
 
