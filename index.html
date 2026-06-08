@@ -26,7 +26,7 @@
                     <a href="#"><i class="fa-solid fa-crown"></i> Head</a>
                 </li>
                 <li class="nav-item" data-target="view-teacher">
-                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teachers</a>
+                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teacher</a>
                 </li>
                 <li class="nav-item" data-target="view-academic">
                     <a href="#"><i class="fa-solid fa-book-open"></i> Academic</a>
@@ -249,6 +249,26 @@
                                 <div class="metric-icon alert"><i class="fa-solid fa-map-location-dot"></i></div>
                             </div>
                         </div>
+                        <div class="metric-card card-orange panel">
+                            <div class="metric-data">
+                                <h3>Task Pending</h3>
+                                <p class="value" id="teacher-task-pending">0</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-down"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Task Completion</h3>
+                                <p class="value" id="teacher-task-completion">100%</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-check-double"></i></div>
+                            </div>
+                        </div>
                     </section>
 
                     <!-- Monthly Review -->
@@ -261,24 +281,13 @@
                         </div>
                     </section>
                     
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
-                        <table class="modern-table" style="min-width: 1000px;">
-                            <thead>
-                                <tr>
-                                    <th class="sticky-col">Class ID</th>
-                                    <th>TA</th>
-                                    <th>Students</th>
-                                    <th>Homework</th>
-                                    <th>Attendance</th>
-                                    <th style="min-width:200px">Syllabus Tracking</th>
-                                    <th>Engagement</th>
-                                    <th style="min-width:200px">Behavior/Attitude</th>
-                                </tr>
-                            </thead>
-                            <tbody id="teacher-table-body">
-                                <!-- Dynamic data -->
-                            </tbody>
-                        </table>
+                    <section style="margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Teacher Performance</h2>
+                        </div>
+                        <div id="teacher-performance-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+                            <!-- Dynamic Teacher Performance Cards -->
+                        </div>
                     </section>
                 </div>
 
@@ -389,6 +398,28 @@
 
                 <!-- ==================== COO VIEW ==================== -->
                 <div id="view-coo" class="page-view" style="display: none;">
+                    <section class="metrics-grid">
+                        <div class="metric-card card-orange panel">
+                            <div class="metric-data">
+                                <h3>Task Pending</h3>
+                                <p class="value" id="coo-task-pending">0</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-down"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Task Completion</h3>
+                                <p class="value" id="coo-task-completion">100%</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-check-double"></i></div>
+                            </div>
+                        </div>
+                    </section>
                     <section style="margin-top: 24px;">
                         <div class="weekly-header" style="display: none;">
                             <h2>Weekly Planner: COO (Mr. Trí)</h2>
