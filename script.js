@@ -1770,18 +1770,19 @@ function renderAcademicPerformance(classRows) {
                                 
                                 const getBadgeHtml = (text) => {
                                     if (!text || text === '-') return text;
-                                    const lower = text.toLowerCase();
+                                    const cleanText = text.replace(/^\d+\.\s*/, '');
+                                    const lower = cleanText.toLowerCase();
                                     const style = 'style="font-weight: 400; white-space: nowrap;"';
-                                    if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) return `<span class="stat-badge success" ${style}>${text}</span>`;
-                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) return `<span class="stat-badge danger" ${style}>${text}</span>`;
-                                    if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) return `<span class="stat-badge warning" ${style}>${text}</span>`;
-                                    return `<span class="stat-badge primary" ${style}>${text}</span>`;
+                                    if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) return `<span class="stat-badge success" ${style}>${cleanText}</span>`;
+                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) return `<span class="stat-badge danger" ${style}>${cleanText}</span>`;
+                                    if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) return `<span class="stat-badge warning" ${style}>${cleanText}</span>`;
+                                    return `<span class="stat-badge primary" ${style}>${cleanText}</span>`;
                                 };
 
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color);">${className.split(' - ')[0]}</td>
-                                        <td style="padding: 14px 12px; text-align: center; color: var(--text-color);">${material}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(material)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam)}</td>
