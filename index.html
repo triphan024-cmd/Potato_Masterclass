@@ -19,8 +19,8 @@
                 <li class="nav-item active" data-target="view-dashboard">
                     <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
                 </li>
-                <li class="nav-item" data-target="view-leader">
-                    <a href="#"><i class="fa-solid fa-crown"></i> Leader</a>
+                <li class="nav-item" data-target="view-head">
+                    <a href="#"><i class="fa-solid fa-crown"></i> Head</a>
                 </li>
                 <li class="nav-item" data-target="view-teacher">
                     <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teachers</a>
@@ -30,6 +30,9 @@
                 </li>
                 <li class="nav-item" data-target="view-operation">
                     <a href="#"><i class="fa-solid fa-briefcase"></i> Operation</a>
+                </li>
+                <li class="nav-item" data-target="view-coo">
+                    <a href="#"><i class="fa-solid fa-star"></i> COO</a>
                 </li>
             </ul>
         </aside>
@@ -149,6 +152,30 @@
                 </div>
                 </div> <!-- End view-dashboard -->
 
+                <!-- ==================== HEAD VIEW ==================== -->
+                <div id="view-head" class="page-view" style="display: none;">
+                    <section class="classes-list panel" style="overflow-x: auto;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Monthly Report: Head (Ms. Đào)</h2>
+                        </div>
+                        <table class="modern-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">PIC</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th style="min-width:250px">Plan / Details</th>
+                                    <th style="min-width:250px">Result</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="head-report-body">
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
                 <!-- ==================== TEACHER VIEW ==================== -->
                 <div id="view-teacher" class="page-view" style="display: none;">
                     <section class="metrics-grid">
@@ -185,39 +212,25 @@
                     </section>
 
                     <!-- Monthly Review -->
-                    <section id="monthly-board-teacher" class="weekly-board panel">
-                        <div class="weekly-header">
-                            <h2>Monthly Report: Teachers</h2>
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Monthly Report: Teachers (Mr. Khôi)</h2>
                         </div>
-                        <div class="weekly-content">
-                            <div class="focus-one-thing">
-                                <span>MONTHLY FOCUS</span>
-                                <h3>Improve Student Engagement</h3>
-                            </div>
-                            <div class="pra-grid">
-                                <div class="pra-col plan-col">
-                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
-                                    <ul>
-                                        <li>Conduct 2 workshops on interactive teaching.</li>
-                                        <li>Review low engagement classes.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col result-col">
-                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
-                                    <ul>
-                                        <li>Workshop 1 completed.</li>
-                                        <li>Engagement up 5% in target classes.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col action-col">
-                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
-                                    <ul>
-                                        <li>Follow up with Teachers.</li>
-                                        <li>Schedule Workshop 2.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="modern-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">PIC</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th style="min-width:250px">Plan / Details</th>
+                                    <th style="min-width:250px">Result</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teacher-report-body">
+                            </tbody>
+                        </table>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -263,36 +276,25 @@
                             </div>
                         </div>
                     </section>
-                    <section class="weekly-board panel">
-                        <div class="weekly-header">
-                            <h2>Monthly Report: Academic</h2>
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Monthly Report: Academic (Ms. Khanh)</h2>
                         </div>
-                        <div class="weekly-content">
-                            <div class="focus-one-thing">
-                                <span>MONTHLY FOCUS</span>
-                                <h3>Finalize new IELTS Curriculum</h3>
-                            </div>
-                            <div class="pra-grid">
-                                <div class="pra-col plan-col">
-                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
-                                    <ul>
-                                        <li>Draft remaining 4 modules.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col result-col">
-                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
-                                    <ul>
-                                        <li>3 modules drafted.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col action-col">
-                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
-                                    <ul>
-                                        <li>Review with senior teachers.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="modern-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">PIC</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th style="min-width:250px">Plan / Details</th>
+                                    <th style="min-width:250px">Result</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="academic-report-body">
+                            </tbody>
+                        </table>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -339,37 +341,25 @@
                             </div>
                         </div>
                     </section>
-                    <section class="weekly-board panel">
-                        <div class="weekly-header">
-                            <h2>Monthly Report: Operation</h2>
+                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                        <div class="weekly-header" style="margin-bottom: 16px;">
+                            <h2>Monthly Report: Operation (Mr. Đạt)</h2>
                         </div>
-                        <div class="weekly-content">
-                            <div class="focus-one-thing">
-                                <span>MONTHLY FOCUS</span>
-                                <h3>Complete month-end fee collection</h3>
-                            </div>
-                            <div class="pra-grid">
-                                <div class="pra-col plan-col">
-                                    <h4><i class="fa-solid fa-bullseye"></i> Plan</h4>
-                                    <ul>
-                                        <li>Contact 15 overdue students.</li>
-                                        <li>Issue receipt batch #4.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col result-col">
-                                    <h4><i class="fa-solid fa-chart-line"></i> Result</h4>
-                                    <ul>
-                                        <li>10 paid. 5 pending response.</li>
-                                    </ul>
-                                </div>
-                                <div class="pra-col action-col">
-                                    <h4><i class="fa-solid fa-bolt"></i> Action</h4>
-                                    <ul>
-                                        <li>Call parents of 5 pending students.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="modern-table" style="min-width: 1200px;">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col">PIC</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th style="min-width:250px">Plan / Details</th>
+                                    <th style="min-width:250px">Result</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operation-report-body">
+                            </tbody>
+                        </table>
                     </section>
                     
                     <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
@@ -393,14 +383,11 @@
                     </section>
                 </div>
 
-                <!-- ==================== LEADER VIEW ==================== -->
-                <div id="view-leader" class="page-view" style="display: none;">
-                    <section class="metrics-grid" id="leader-metrics">
-                        <!-- metrics populated dynamically -->
-                    </section>
-                    <section class="classes-list panel" style="overflow-x: auto; margin-top: 24px;">
+                <!-- ==================== COO VIEW ==================== -->
+                <div id="view-coo" class="page-view" style="display: none;">
+                    <section class="classes-list panel" style="overflow-x: auto;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Leader Tasks & Reports</h2>
+                            <h2>Monthly Report: COO (Mr. Trí)</h2>
                         </div>
                         <table class="modern-table" style="min-width: 1200px;">
                             <thead>
@@ -414,8 +401,7 @@
                                     <th>Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="leader-table-body">
-                                <!-- Dynamic data -->
+                            <tbody id="coo-report-body">
                             </tbody>
                         </table>
                     </section>

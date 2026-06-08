@@ -164,6 +164,7 @@ const mockMonthlyData = {
 let currentMonthIndex = 3;
 let globalClassRows = [];
 let globalMetricsRow = [];
+let globalLeaderRows = [];
 
 function changeMonth(diff) {
     let newIndex = currentMonthIndex + diff;
@@ -188,34 +189,15 @@ function changeMonth(diff) {
             renderDashboardTable(filteredRows);
         }
 
-        // Update DOM boards safely
-        const boards = document.querySelectorAll('.weekly-board');
-        if(boards.length >= 3) {
-            boards.forEach(b => {
-                b.style.transition = 'opacity 0.2s';
-                b.style.opacity = '0.3';
-            });
-
-            setTimeout(() => {
-                updateBoard(boards[0], data.teacher);
-                updateBoard(boards[1], data.academic);
-                updateBoard(boards[2], data.operation);
-                boards.forEach(b => b.style.opacity = '1');
-            }, 200);
+        // Re-render role tasks when month changes (if applicable, though currently showing all for PIC)
+        if (globalLeaderRows.length > 0) {
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-body');
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-body');
         }
     }
-}
-
-function updateBoard(boardNode, deptData) {
-    const focusEl = boardNode.querySelector('.focus-one-thing h3');
-    const planEl = boardNode.querySelector('.plan-col ul');
-    const resultEl = boardNode.querySelector('.result-col ul');
-    const actionEl = boardNode.querySelector('.action-col ul');
-
-    if(focusEl) focusEl.innerText = deptData.focus;
-    if(planEl) planEl.innerHTML = deptData.plan.map(p => `<li>${p}</li>`).join('');
-    if(resultEl) resultEl.innerHTML = deptData.result.map(p => `<li>${p}</li>`).join('');
-    if(actionEl) actionEl.innerHTML = deptData.action.map(p => `<li>${p}</li>`).join('');
 }
 
 // ==========================================
@@ -289,7 +271,15 @@ async function fetchDashboardData() {
             const leaderJsonString = leaderText.substring(leaderText.indexOf('{'), leaderText.lastIndexOf('}') + 1);
             const leaderJson = JSON.parse(leaderJsonString);
             const leaderRows = leaderJson.table.rows;
-            renderLeaderTable(leaderRows);
+            globalLeaderRows = leaderRows;
+            
+            // Render for each role
+            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-body');
+            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-body');
+            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-body');
+            
             console.log(`Retrieved leader data.`);
         } catch (err) {
             console.error("Error fetching leader data:", err);
@@ -505,30 +495,33 @@ function renderOperationTable(classRows) {
     });
 }
 
-function renderLeaderTable(rows) {
-    const tbody = document.getElementById('leader-table-body');
+function renderRoleTasks(rows, picName, tbodyId) {
+    const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
     tbody.innerHTML = '';
     
-    const validRows = rows.filter(row => row && row.c && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== ''));
+    // Filter rows by PIC
+    const validRows = rows.filter(row => {
+        if(!row || !row.c) return false;
+        const pic = getShortName(getVal(row.c[4]));
+        return pic === picName && (getVal(row.c[4]) !== '' || getVal(row.c[6]) !== '');
+    });
     
-    let totalTasks = 0;
-    let completedTasks = 0;
+    if (validRows.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No tasks/reports found for ${picName} this month.</td>`;
+        tbody.appendChild(tr);
+        return;
+    }
     
     validRows.forEach(row => {
         const c = row.c;
         const status = getVal(c[1]);
         const type = getVal(c[2]); // Task, Report
-        const pic = getShortName(getVal(c[4])); // Name only
         const category = getVal(c[5]) || getVal(c[15]);
         const plan = getVal(c[6]) || getVal(c[11]); // Support report descriptions
         const result = getVal(c[7]) || getVal(c[12]);
         const deadline = getVal(c[9]);
-        
-        if (type === 'Task') {
-            totalTasks++;
-            if (status.includes('Completed')) completedTasks++;
-        }
         
         // Status styling
         let statusBadge = 'neutral';
@@ -539,7 +532,7 @@ function renderLeaderTable(rows) {
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.innerHTML = `
-            <td class="sticky-col"><strong>${pic || 'N/A'}</strong></td>
+            <td class="sticky-col"><strong>${picName}</strong></td>
             <td><span class="stat-badge ${type === 'Task' ? 'neutral' : 'success'}">${type || 'N/A'}</span></td>
             <td>${category || 'N/A'}</td>
             <td><div style="white-space: pre-wrap; font-size: 0.9em; max-width: 400px;">${plan}</div></td>
@@ -549,40 +542,6 @@ function renderLeaderTable(rows) {
         `;
         tbody.appendChild(tr);
     });
-    
-    // Render Leader Metrics
-    const metricsGrid = document.getElementById('leader-metrics');
-    if (metricsGrid) {
-        metricsGrid.innerHTML = `
-            <div class="metric-card card-blue panel">
-                <div class="metric-data">
-                    <h3>Total Tasks</h3>
-                    <p class="value">${totalTasks}</p>
-                </div>
-                <div class="metric-top">
-                    <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
-                </div>
-            </div>
-            <div class="metric-card card-green panel">
-                <div class="metric-data">
-                    <h3>Completed Tasks</h3>
-                    <p class="value">${completedTasks}</p>
-                </div>
-                <div class="metric-top">
-                    <div class="metric-icon highlight"><i class="fa-solid fa-check-double"></i></div>
-                </div>
-            </div>
-            <div class="metric-card card-orange panel">
-                <div class="metric-data">
-                    <h3>Completion Rate</h3>
-                    <p class="value">${totalTasks > 0 ? Math.round((completedTasks/totalTasks)*100) : 0}%</p>
-                </div>
-                <div class="metric-top">
-                    <div class="metric-icon alert"><i class="fa-solid fa-chart-pie"></i></div>
-                </div>
-            </div>
-        `;
-    }
 }
 
 let currentCalDate = new Date();
