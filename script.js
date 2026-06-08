@@ -502,8 +502,6 @@ function renderOperationTable(classRows) {
 function renderRoleTasks(rows, picName, containerId, monthStr) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
-    let viewMode = container.dataset.viewMode || 'weekly';
 
     const validRows = rows.filter(row => {
         if(!row || !row.c) return false;
@@ -524,35 +522,131 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
 
     const headerElement = container.previousElementSibling;
     if (headerElement && headerElement.classList.contains('weekly-header')) {
-        headerElement.style.display = 'flex';
-        headerElement.style.justifyContent = 'space-between';
-        headerElement.style.alignItems = 'center';
-        
-        let controls = headerElement.querySelector('.planner-controls');
-        if (!controls) {
-            controls = document.createElement('div');
-            controls.className = 'planner-controls';
-            controls.style.marginBottom = '0';
-            headerElement.appendChild(controls);
-        }
-        
-        controls.innerHTML = `
-            <button class="planner-toggle-btn ${viewMode === 'weekly' ? 'active' : ''}" data-mode="weekly">Weekly</button>
-            <button class="planner-toggle-btn ${viewMode === 'monthly' ? 'active' : ''}" data-mode="monthly">Monthly</button>
-        `;
-
-        const btns = controls.querySelectorAll('.planner-toggle-btn');
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                container.dataset.viewMode = e.target.dataset.mode;
-                renderRoleTasks(rows, picName, containerId, monthStr);
-            });
-        });
+        const controls = headerElement.querySelector('.planner-controls');
+        if (controls) controls.remove();
+        headerElement.style.display = '';
     }
 
-    container.innerHTML = `<div id="${containerId}-content"></div>`;
+    container.innerHTML = '';
+    
+    const board = document.createElement('div');
+    board.className = 'planner-board';
+    board.style.padding = '0';
+    
+    const parseDateStr = (dateStr) => {
+        if (!dateStr) return null;
+        const dStr = dateStr.split(' ')[0];
+        const parts = dStr.split('/');
+        if (parts.length === 3) {
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        return null;
+    };
 
-    const contentDiv = document.getElementById(`${containerId}-content`);
+    let refDate = new Date();
+    for (let row of validRows) {
+        let d = parseDateStr(getVal(row.c[9]));
+        if (d && !isNaN(d)) {
+            refDate = d;
+            break;
+        }
+    }
+    
+    const year = refDate.getFullYear();
+    const month = refDate.getMonth();
+    
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    daysOfWeek.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'planner-day-header';
+        header.innerText = day;
+        board.appendChild(header);
+    });
+
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
+    
+    const dayMap = {};
+    validRows.forEach(row => {
+        const d = parseDateStr(getVal(row.c[9]));
+        if (d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year) {
+            const dayNum = d.getDate();
+            if (!dayMap[dayNum]) dayMap[dayNum] = [];
+            dayMap[dayNum].push(row);
+        } else if (!d || isNaN(d)) {
+            if (!dayMap['unscheduled']) dayMap['unscheduled'] = [];
+            dayMap['unscheduled'].push(row);
+        }
+    });
+
+    let currentDate = 1;
+    for (let i = 0; i < totalCells; i++) {
+        const cell = document.createElement('div');
+        cell.style.padding = '4px';
+        cell.style.display = 'flex';
+        cell.style.justifyContent = 'center';
+        cell.style.alignItems = 'center';
+        cell.style.borderRight = '1px solid rgba(0,0,0,0.06)';
+        cell.style.borderBottom = '1px solid rgba(0,0,0,0.06)';
+        
+        if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
+            const today = new Date();
+            const isToday = currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            
+            let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
+            
+            if (isToday) {
+                style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
+            }
+            
+            if (dayMap[currentDate]) {
+                if (!isToday) {
+                    style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
+                }
+                style += ` cursor: pointer;`;
+                const dateNum = currentDate;
+                cell.innerHTML = `<div style="${style}" onclick="openTaskModal('${picName}', ${year}, ${month}, ${dateNum})">${dateNum}</div>`;
+            } else {
+                cell.innerHTML = `<div style="${style}">${currentDate}</div>`;
+            }
+            
+            currentDate++;
+        } else {
+            cell.style.background = '#fafafa';
+        }
+        board.appendChild(cell);
+    }
+    
+    container.appendChild(board);
+    
+    if (dayMap['unscheduled']) {
+        const unscheduledContainer = document.createElement('div');
+        unscheduledContainer.style.cssText = 'margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;';
+        unscheduledContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column;">
+                <h4 style="margin: 0; color: var(--primary-color);">No Deadline</h4>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">${dayMap['unscheduled'].length} tasks pending</span>
+            </div>
+            <button onclick="openTaskModal('${picName}', null, null, null)" style="background: var(--primary-light); color: var(--primary-dark); border-radius: 6px; padding: 6px 16px; font-size: 0.85rem; font-weight: bold; border: none; cursor: pointer; transition: all 0.2s;">View Tasks</button>
+        `;
+        container.appendChild(unscheduledContainer);
+    }
+}
+
+function openTaskModal(picName, year, month, date) {
+    const modal = document.getElementById('taskModal');
+    const title = document.getElementById('modalTaskTitle');
+    const list = document.getElementById('modalTaskList');
+    if (!modal || !list || !title) return;
+
+    list.innerHTML = '';
+    
+    if (date) {
+        title.innerText = `Tasks for ${picName} - ${date}/${month + 1}/${year}`;
+    } else {
+        title.innerText = `Unscheduled Tasks for ${picName}`;
+    }
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -563,194 +657,71 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         }
         return null;
     };
-    
-    const renderCard = (row) => {
-        let status = getVal(row.c[1]) || 'New';
-        let statusClass = 'neutral';
-        let borderColor = 'var(--text-muted)';
+
+    const validRows = globalLeaderRows.filter(row => {
+        if(!row || !row.c) return false;
+        const type = getVal(row.c[2]);
+        const pic = getShortName(getVal(row.c[4]));
+        if (type !== 'Task' || pic !== picName) return false;
         
-        if (status.includes('Completed')) {
-            statusClass = 'positive';
-            borderColor = 'var(--success)';
-        } else if (status.includes('Processing')) {
-            statusClass = 'warning';
-            borderColor = 'var(--warning)';
-        } else if (status.includes('New')) {
-            statusClass = 'neutral';
-            borderColor = 'var(--primary-color)';
+        const d = parseDateStr(getVal(row.c[9]));
+        if (date) {
+            return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
+        } else {
+            return !d || isNaN(d);
         }
+    });
 
-        const category = getVal(row.c[5]) || getVal(row.c[15]);
-        const plan = getVal(row.c[6]) || getVal(row.c[11]);
-        
-        const card = document.createElement('div');
-        card.className = 'planner-card';
-        card.style.borderLeftColor = borderColor;
-        card.innerHTML = `
-            <div class="planner-card-title">${plan || category || 'No details'}</div>
-            <div class="planner-card-meta">
-                <span style="font-weight:600; color:var(--text-muted); font-size:0.7rem;"><i class="fa-solid fa-tag" style="margin-right:2px;"></i>${category || 'Task'}</span>
-                <span class="status ${statusClass}">${status}</span>
-            </div>
-        `;
-        return card;
-    };
-
-    if (viewMode === 'weekly') {
-        const groupedByWeek = {};
-        validRows.forEach(row => {
-            const week = getVal(row.c[19]) || 'Unassigned Week';
-            if (!groupedByWeek[week]) groupedByWeek[week] = [];
-            groupedByWeek[week].push(row);
-        });
-
-        const weeks = Object.keys(groupedByWeek).sort();
-
-        weeks.forEach(week => {
-            const weekContainer = document.createElement('div');
-            weekContainer.style.cssText = 'margin-bottom: 32px;';
-            
-            const weekHeader = document.createElement('h3');
-            weekHeader.innerText = week;
-            weekHeader.style.cssText = 'color: var(--primary-color); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px; margin-bottom: 16px; font-size: 1.25rem;';
-            weekContainer.appendChild(weekHeader);
-
-            const board = document.createElement('div');
-            board.className = 'planner-board weekly';
-
-            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const columns = [];
-
-            daysOfWeek.forEach((day, idx) => {
-                const col = document.createElement('div');
-                col.className = 'planner-day-column';
-                col.innerHTML = `<div class="planner-day-header">${day}</div>`;
-                board.appendChild(col);
-                columns.push(col);
-            });
-
-            const unscheduledCol = document.createElement('div');
-            unscheduledCol.className = 'planner-day-column';
-            unscheduledCol.style.background = '#fcfcfc';
-            unscheduledCol.innerHTML = `<div class="planner-day-header">No Deadline</div>`;
-            board.appendChild(unscheduledCol);
-
-            groupedByWeek[week].forEach(row => {
-                const deadline = getVal(row.c[9]);
-                const d = parseDateStr(deadline);
-                const card = renderCard(row);
-                
-                if (d && !isNaN(d)) {
-                    const dayIdx = d.getDay(); // 0 for Sunday
-                    columns[dayIdx].appendChild(card);
-                    
-                    // Add date label to column if not already added
-                    if (!columns[dayIdx].querySelector('.planner-date-label')) {
-                        const dateLabel = document.createElement('div');
-                        dateLabel.className = 'planner-date-label';
-                        dateLabel.innerText = d.getDate();
-                        columns[dayIdx].appendChild(dateLabel);
-                        
-                        // Check if today
-                        const today = new Date();
-                        if (d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()) {
-                            columns[dayIdx].classList.add('today');
-                        }
-                    }
-                } else {
-                    unscheduledCol.appendChild(card);
-                }
-            });
-
-            weekContainer.appendChild(board);
-            contentDiv.appendChild(weekContainer);
-        });
+    if (validRows.length === 0) {
+        list.innerHTML = '<p>No tasks found.</p>';
     } else {
-        // Monthly view
-        // Generate a standard monthly calendar grid for tasks
-        const board = document.createElement('div');
-        board.className = 'planner-board';
-        
-        // Find reference month from rows
-        let refDate = new Date();
-        for (let row of validRows) {
-            let d = parseDateStr(getVal(row.c[9]));
-            if (d && !isNaN(d)) {
-                refDate = d;
-                break;
-            }
-        }
-        
-        const year = refDate.getFullYear();
-        const month = refDate.getMonth();
-        
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        daysOfWeek.forEach(day => {
-            const header = document.createElement('div');
-            header.className = 'planner-day-header';
-            header.innerText = day;
-            board.appendChild(header);
-        });
-
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        let currentDate = 1;
-        const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
-        
-        const dayColumns = {};
-        
-        for (let i = 0; i < totalCells; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'planner-day-column';
-            
-            if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
-                const dateLabel = document.createElement('div');
-                dateLabel.className = 'planner-date-label';
-                dateLabel.innerText = currentDate;
-                cell.appendChild(dateLabel);
-                
-                dayColumns[currentDate] = cell;
-                
-                const today = new Date();
-                if (currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                    cell.classList.add('today');
-                }
-                
-                currentDate++;
-            } else {
-                cell.style.background = '#fafafa';
-            }
-            board.appendChild(cell);
-        }
-        
-        // Place tasks
-        const unscheduledContainer = document.createElement('div');
-        unscheduledContainer.style.cssText = 'margin-top: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid rgba(0,0,0,0.06);';
-        unscheduledContainer.innerHTML = '<h4 style="margin-top: 0; color: var(--primary-color);">No Deadline</h4><div class="unscheduled-grid" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>';
-        const unscheduledGrid = unscheduledContainer.querySelector('.unscheduled-grid');
-        let hasUnscheduled = false;
-
         validRows.forEach(row => {
-            const d = parseDateStr(getVal(row.c[9]));
-            const card = renderCard(row);
+            const c = row.c;
+            const status = getVal(c[1]) || 'New';
+            let statusClass = 'neutral';
+            let borderColor = 'var(--text-muted)';
             
-            if (d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year) {
-                if (dayColumns[d.getDate()]) {
-                    dayColumns[d.getDate()].appendChild(card);
-                }
-            } else {
-                card.style.flex = '0 0 300px';
-                unscheduledGrid.appendChild(card);
-                hasUnscheduled = true;
+            if (status.includes('Completed')) {
+                statusClass = 'positive';
+                borderColor = 'var(--success)';
+            } else if (status.includes('Processing')) {
+                statusClass = 'warning';
+                borderColor = 'var(--warning)';
+            } else if (status.includes('New')) {
+                statusClass = 'neutral';
+                borderColor = 'var(--primary-color)';
             }
-        });
 
-        contentDiv.appendChild(board);
-        if (hasUnscheduled) {
-            contentDiv.appendChild(unscheduledContainer);
-        }
+            const category = getVal(c[5]) || getVal(c[15]);
+            const plan = getVal(c[6]) || getVal(c[11]);
+            const deadline = getVal(c[9]);
+            
+            const card = document.createElement('div');
+            card.className = 'planner-card';
+            card.style.borderLeftColor = borderColor;
+            card.style.padding = '12px';
+            card.innerHTML = `
+                <div class="planner-card-meta" style="margin-bottom: 8px;">
+                    <span style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;"><i class="fa-solid fa-tag" style="margin-right:2px;"></i>${category || 'Task'}</span>
+                    <span class="status ${statusClass}">${status}</span>
+                </div>
+                <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.9rem;">
+                    ${plan || 'No details provided'}
+                </div>
+                <div class="planner-card-meta" style="border-top: 1px dashed rgba(0,0,0,0.06); padding-top: 8px; margin-top: 8px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${deadline || 'No Deadline'}</span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
     }
+
+    modal.classList.add('show');
+}
+
+function closeTaskModal() {
+    const modal = document.getElementById('taskModal');
+    if (modal) modal.classList.remove('show');
 }
 
 function renderWeeklyReports(rows, containerId, monthStr) {
@@ -775,68 +746,41 @@ function renderWeeklyReports(rows, containerId, monthStr) {
         return;
     }
     
-    // Group by Label (e.g. "2026 - 05 - 2") -> "Week 2"
-    const groupedByWeek = {};
+    // Group by PIC
+    const groupedByPic = {};
     reportRows.forEach(row => {
-        const label = getVal(row.c[15]); 
-        let weekStr = 'Unknown Week';
-        if (label && label.includes('-')) {
-            const parts = label.split('-');
-            if (parts.length >= 3) {
-                weekStr = 'Week ' + parts[2].trim();
-            } else {
-                weekStr = label;
-            }
-        } else if (label) {
-            weekStr = label;
-        }
-
-        if (!groupedByWeek[weekStr]) groupedByWeek[weekStr] = [];
-        groupedByWeek[weekStr].push(row);
+        const pic = getShortName(getVal(row.c[4])) || 'Unknown';
+        if (!groupedByPic[pic]) groupedByPic[pic] = [];
+        groupedByPic[pic].push(row);
     });
 
-    const weeks = Object.keys(groupedByWeek).sort();
+    const pics = Object.keys(groupedByPic).sort();
 
     const board = document.createElement('div');
     board.className = 'report-kanban-board';
     container.appendChild(board);
 
-    weeks.forEach(week => {
+    pics.forEach(pic => {
         const col = document.createElement('div');
         col.className = 'report-kanban-column';
         
         const colHeader = document.createElement('h3');
-        colHeader.innerText = week;
+        colHeader.innerText = pic;
         col.appendChild(colHeader);
 
-        groupedByWeek[week].forEach(row => {
+        groupedByPic[pic].forEach(row => {
             const c = row.c;
-            const status = getVal(c[1]);
-            const pic = getShortName(getVal(c[4])) || 'Unknown';
+            const category = getVal(c[5]) || getVal(c[15]) || 'Report';
             const plan = getVal(c[6]) || getVal(c[11]);
             const result = getVal(c[7]) || getVal(c[12]);
             const deadline = getVal(c[9]);
             
-            let statusClass = 'neutral';
-            let borderColor = 'var(--text-muted)';
-            if (status.includes('Completed')) {
-                statusClass = 'positive';
-                borderColor = 'var(--success)';
-            } else if (status.includes('Processing')) {
-                statusClass = 'warning';
-                borderColor = 'var(--warning)';
-            } else if (status.includes('New')) {
-                statusClass = 'neutral';
-                borderColor = 'var(--primary-color)';
-            }
-            
             const card = document.createElement('div');
             card.className = 'planner-card';
-            card.style.borderLeftColor = borderColor;
+            card.style.borderLeftColor = 'var(--primary-color)';
             card.innerHTML = `
-                <div class="planner-card-meta" style="margin-bottom: 4px;">
-                    <span style="font-weight: 700; color: var(--primary-color); font-size: 0.85rem;"><i class="fa-solid fa-user" style="margin-right: 4px;"></i>${pic}</span>
-                    <span class="status ${statusClass}">${status || 'N/A'}</span>
+                <div class="planner-card-meta" style="margin-bottom: 8px;">
+                    <span style="font-weight: 700; color: var(--primary-color); font-size: 0.85rem;"><i class="fa-solid fa-tag" style="margin-right: 4px;"></i>${category}</span>
                 </div>
                 <div class="planner-card-title" style="-webkit-line-clamp: unset; font-size: 0.8rem; font-weight: normal; margin-bottom: 8px;">
                     <strong>Plan:</strong> ${plan || 'No details'}
