@@ -339,22 +339,6 @@ function updateMetricsCards(classRows, metricsRow) {
     const totalTeachers = new Set(classRows.map(row => getVal(row.c[8]))).size;
     const totalClasses = classRows.length;
     
-    let upcomingExams = 0;
-    let lateProgress = 0;
-    
-    classRows.forEach(row => {
-        const c = row.c;
-        const examDate = getVal(c[38]) || '';
-        const progress = (getVal(c[33]) || getVal(c[11]) || '').toLowerCase();
-        
-        if (examDate && examDate !== '-' && examDate.trim() !== '') {
-            upcomingExams++;
-        }
-        if (progress.includes('late') || progress.includes('trễ') || progress.includes('chậm') || progress.includes('behind')) {
-            lateProgress++;
-        }
-    });
-    
     // Tìm thẻ dựa trên text của h3
     document.querySelectorAll('.metric-data').forEach(div => {
         const title = div.querySelector('h3').textContent.trim().toLowerCase();
@@ -365,8 +349,6 @@ function updateMetricsCards(classRows, metricsRow) {
         if (title === 'total classes') valEl.innerText = totalClasses.toLocaleString();
         if (title === 'total teachers') valEl.innerText = totalTeachers.toLocaleString();
         if (title === 'active courses') valEl.innerText = totalClasses.toLocaleString();
-        if (title === 'upcoming exams') valEl.innerText = upcomingExams.toLocaleString();
-        if (title === 'late progress') valEl.innerText = lateProgress.toLocaleString();
     });
 }
 
@@ -1524,6 +1506,13 @@ function updateAllRolesTasksMetrics() {
     updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
 }
 
+function renderTeacherPerformance(classRows) {
+    const grid = document.getElementById('teacher-performance-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const teacherMap = {};
+    classRows.forEach(row => {
 function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     if (!globalLeaderRows || globalLeaderRows.length === 0) return;
 
@@ -1768,21 +1757,12 @@ function renderAcademicPerformance(classRows) {
                                 const roadmap = getVal(c[36]) || '-';
                                 const exam = getVal(c[37]) || '-';
                                 
-                                const getBadgeHtml = (text) => {
-                                    if (!text || text === '-') return text;
-                                    const lower = text.toLowerCase();
-                                    if (lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass')) return `<span class="badge success">${text}</span>`;
-                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail')) return `<span class="badge danger">${text}</span>`;
-                                    if (lower.includes('doing') || lower.includes('in progress')) return `<span class="badge warning">${text}</span>`;
-                                    return `<span class="badge primary">${text}</span>`;
-                                };
-
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                                         <td style="padding: 12px 8px; font-weight: 500;">${className.split(' - ')[0]}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${material}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${getBadgeHtml(aid)}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${getBadgeHtml(roadmap)}</td>
+                                        <td style="padding: 12px 8px; text-align: center;">${aid}</td>
+                                        <td style="padding: 12px 8px; text-align: center;">${roadmap}</td>
                                         <td style="padding: 12px 8px; text-align: center;"><span class="badge ${exam !== '-' ? 'primary' : ''}">${exam}</span></td>
                                     </tr>
                                 `;
