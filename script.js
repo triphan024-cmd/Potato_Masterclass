@@ -392,29 +392,57 @@ function renderTeacherTable(classRows) {
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    classRows.forEach((row) => {
+    // Group by teacher
+    const groupedByTeacher = new Map();
+    classRows.forEach(row => {
         const c = row.c;
-        const className = getVal(c[6]);
-        const students = getVal(c[7]);
-        const teacher = getShortName(getVal(c[8]));
-        const lesson = getVal(c[27]);
-        const evaluation = getVal(c[24]);
-
-        const tr = document.createElement('tr');
-        tr.className = 'clickable-row';
-        tr.innerHTML = `
-            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
-            <td>${teacher}</td>
-            <td>-</td>
-            <td>${students}</td>
-            <td><span class="trend neutral">90%</span></td>
-            <td><span class="trend positive">95%</span></td>
-            <td>${lesson || 'Updating'}</td>
-            <td>${evaluation ? 'Reported' : 'None'}</td>
-            <td>Good</td>
-        `;
-        tbody.appendChild(tr);
+        const teacherName = getShortName(getVal(c[8])) || 'Unknown';
+        if (!groupedByTeacher.has(teacherName)) {
+            groupedByTeacher.set(teacherName, []);
+        }
+        groupedByTeacher.get(teacherName).push(row);
     });
+
+    for (let [teacher, rows] of groupedByTeacher) {
+        // Teacher Group Header
+        const headerTr = document.createElement('tr');
+        headerTr.style.background = 'var(--bg-color)';
+        headerTr.innerHTML = `
+            <td colspan="8" style="padding: 16px; border-bottom: 2px solid rgba(0,0,0,0.05); position: sticky; left: 0; z-index: 2;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary-dark); display: flex; justify-content: center; align-items: center; font-weight: bold;">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <span style="font-size: 1.05rem; font-weight: 700; color: var(--primary-dark); text-transform: uppercase;">Teacher: ${teacher}</span>
+                    <span class="stat-badge neutral" style="margin-left: auto;">${rows.length} Classes</span>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(headerTr);
+
+        // Render Classes for this teacher
+        rows.forEach((row) => {
+            const c = row.c;
+            const className = getVal(c[6]);
+            const students = getVal(c[7]);
+            const lesson = getVal(c[27]);
+            const evaluation = getVal(c[24]);
+
+            const tr = document.createElement('tr');
+            tr.className = 'clickable-row';
+            tr.innerHTML = `
+                <td class="sticky-col" style="padding-left: 24px;"><strong>${className.split(' - ')[0]}</strong></td>
+                <td>-</td>
+                <td class="text-center font-bold">${students}</td>
+                <td><span class="trend neutral">90%</span></td>
+                <td><span class="trend positive">95%</span></td>
+                <td>${lesson || 'Updating'}</td>
+                <td><span class="status ${evaluation ? 'active' : 'pending'}">${evaluation ? 'Reported' : 'None'}</span></td>
+                <td>Good</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 }
 
 function renderAcademicTable(classRows) {
