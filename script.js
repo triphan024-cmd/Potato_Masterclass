@@ -522,23 +522,37 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         return;
     }
 
-    container.innerHTML = `
-        <div class="planner-controls">
+    const headerElement = container.previousElementSibling;
+    if (headerElement && headerElement.classList.contains('weekly-header')) {
+        headerElement.style.display = 'flex';
+        headerElement.style.justifyContent = 'space-between';
+        headerElement.style.alignItems = 'center';
+        
+        let controls = headerElement.querySelector('.planner-controls');
+        if (!controls) {
+            controls = document.createElement('div');
+            controls.className = 'planner-controls';
+            controls.style.marginBottom = '0';
+            headerElement.appendChild(controls);
+        }
+        
+        controls.innerHTML = `
             <button class="planner-toggle-btn ${viewMode === 'weekly' ? 'active' : ''}" data-mode="weekly">Weekly</button>
             <button class="planner-toggle-btn ${viewMode === 'monthly' ? 'active' : ''}" data-mode="monthly">Monthly</button>
-        </div>
-        <div id="${containerId}-content"></div>
-    `;
+        `;
+
+        const btns = controls.querySelectorAll('.planner-toggle-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                container.dataset.viewMode = e.target.dataset.mode;
+                renderRoleTasks(rows, picName, containerId, monthStr);
+            });
+        });
+    }
+
+    container.innerHTML = `<div id="${containerId}-content"></div>`;
 
     const contentDiv = document.getElementById(`${containerId}-content`);
-
-    const btns = container.querySelectorAll('.planner-toggle-btn');
-    btns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            container.dataset.viewMode = e.target.dataset.mode;
-            renderRoleTasks(rows, picName, containerId, monthStr);
-        });
-    });
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -836,6 +850,8 @@ function renderWeeklyReports(rows, containerId, monthStr) {
             `;
             col.appendChild(card);
         });
+        
+        board.appendChild(col);
     });
 }
 
