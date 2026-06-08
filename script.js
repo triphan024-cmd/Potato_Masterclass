@@ -548,7 +548,10 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     const rightDiv = document.createElement('div');
     rightDiv.className = 'task-split-right';
     rightDiv.id = `${containerId}-detail-panel`;
-    rightDiv.innerHTML = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px;">Tasks Overview</h3><p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
+    rightDiv.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
+    
+    const titleEl = document.getElementById(`${containerId}-title`);
+    if (titleEl) titleEl.innerHTML = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Tasks Overview</span>`;
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -744,51 +747,51 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         return null;
     };
     
-    if (date && typeof date === 'object' && date.type === 'week') {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${date.index} Tasks</h3>`;
-        targetRows = validRows.filter(row => {
-            const d = parseDateStr(getVal(row.c[9]));
-            if (!d || isNaN(d)) return false;
-            // set time to 0 to compare dates easily
-            d.setHours(0,0,0,0);
-            const s = new Date(date.start); s.setHours(0,0,0,0);
-            const e = new Date(date.end); e.setHours(23,59,59,999);
-            return d >= s && d <= e;
-        });
-        
-        // Sort by deadline
-        targetRows.sort((a, b) => {
-            const dA = parseDateStr(getVal(a.c[9]));
-            const dB = parseDateStr(getVal(b.c[9]));
-            if (!dA) return 1;
-            if (!dB) return -1;
-            return dA - dB;
-        });
-        
-    } else if (date && typeof date === 'object' && date.type === 'all') {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-layer-group"></i> All Month Tasks</h3>`;
-        targetRows = validRows.filter(row => {
-            const d = parseDateStr(getVal(row.c[9]));
-            return d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year;
-        });
-        
-        // Sort by deadline
-        targetRows.sort((a, b) => {
-            const dA = parseDateStr(getVal(a.c[9]));
-            const dB = parseDateStr(getVal(b.c[9]));
-            if (!dA) return 1;
-            if (!dB) return -1;
-            return dA - dB;
-        });
-        
+    if (date && typeof date === 'object') {
+        const { type, weekNumber, year: y, month: m } = date;
+        if (type === 'week') {
+            titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${weekNumber} Tasks</span>`;
+            let firstDay = new Date(y, m, 1);
+            let dayOfWeek = firstDay.getDay();
+            let firstTuesdayDate = dayOfWeek <= 2 ? 1 + (2 - dayOfWeek) : 1 + (9 - dayOfWeek);
+            
+            const w1Start = new Date(y, m, firstTuesdayDate);
+            const weekStart = new Date(w1Start);
+            weekStart.setDate(w1Start.getDate() + (weekNumber - 1) * 7);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            targetRows = validRows.filter(row => {
+                const d = parseDateStr(getVal(row.c[9]));
+                return d && !isNaN(d) && d >= weekStart && d <= weekEnd;
+            }).sort((a, b) => {
+                const dA = parseDateStr(getVal(a.c[9]));
+                const dB = parseDateStr(getVal(b.c[9]));
+                if (!dA) return 1;
+                if (!dB) return -1;
+                return dA - dB;
+            });
+        } else if (type === 'all') {
+            titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-border-all"></i> All Month Tasks</span>`;
+            targetRows = validRows.filter(row => {
+                const d = parseDateStr(getVal(row.c[9]));
+                return d && !isNaN(d);
+            }).sort((a, b) => {
+                const dA = parseDateStr(getVal(a.c[9]));
+                const dB = parseDateStr(getVal(b.c[9]));
+                if (!dA) return 1;
+                if (!dB) return -1;
+                return dA - dB;
+            });
+        }
     } else if (date) {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
+        titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</span>`;
         targetRows = validRows.filter(row => {
             const d = parseDateStr(getVal(row.c[9]));
             return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
         });
     } else {
-        titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
+        titleHtml = `<span style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</span>`;
         targetRows = validRows.filter(row => {
             const d = parseDateStr(getVal(row.c[9]));
             return !d || isNaN(d);
@@ -808,12 +811,12 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
 
         const getDeptStyle = (dept) => {
             const colors = [
-                { bg: '#e0e7ff', color: '#4f46e5', icon: 'fa-layer-group' },
-                { bg: '#dcfce7', color: '#16a34a', icon: 'fa-briefcase' },
-                { bg: '#ffedd5', color: '#ea580c', icon: 'fa-chart-pie' },
-                { bg: '#fce7f3', color: '#db2777', icon: 'fa-users' },
-                { bg: '#e0f2fe', color: '#0284c7', icon: 'fa-laptop-code' },
-                { bg: '#fef9c3', color: '#ca8a04', icon: 'fa-lightbulb' }
+                { bg: '#f3e8ff', color: '#9333ea', icon: 'fa-layer-group' },   // Purple
+                { bg: '#cffafe', color: '#0891b2', icon: 'fa-briefcase' },     // Cyan
+                { bg: '#e0e7ff', color: '#4f46e5', icon: 'fa-chart-pie' },     // Indigo
+                { bg: '#fce7f3', color: '#db2777', icon: 'fa-users' },         // Pink
+                { bg: '#f3f4f6', color: '#4b5563', icon: 'fa-laptop-code' },   // Gray
+                { bg: '#ffedd5', color: '#ea580c', icon: 'fa-lightbulb' }      // Orange
             ];
             let hash = 0;
             for (let i = 0; i < dept.length; i++) hash = dept.charCodeAt(i) + ((hash << 5) - hash);
@@ -863,7 +866,12 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         }
     }
 
-    detailPanel.innerHTML = titleHtml + `<div style="display: flex; flex-direction: column;">${listHtml}</div>`;
+    detailPanel.innerHTML = `<div style="display: flex; flex-direction: column;">${listHtml}</div>`;
+    
+    const titleElement = document.getElementById(containerId.replace('-detail-panel', '') + '-title');
+    if (titleElement) {
+        titleElement.innerHTML = titleHtml;
+    }
 }
 
 function renderWeeklyReports(rows, containerId, monthStr) {
