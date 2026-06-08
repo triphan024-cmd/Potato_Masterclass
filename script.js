@@ -851,7 +851,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
 
             const category = getVal(c[5]) || getVal(c[15]);
             const plan = getVal(c[6]) || getVal(c[11]);
-            const deadline = getVal(c[9]);
+            let deadline = getVal(c[9]);
+            if (deadline) {
+                const parts = deadline.split('/');
+                if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
+            }
             
             listHtml += `
                 <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0;">
@@ -1025,17 +1029,33 @@ function renderHeadTable(classRows) {
     });
     
     // Update Head Metrics DOM
-    const tsEl = document.getElementById('head-total-students');
-    if(tsEl) tsEl.innerText = totalStudents;
-    const tcEl = document.getElementById('head-total-classes');
-    if(tcEl) tcEl.innerText = totalClasses;
-    
-    // Calculate Completion Rate for Ms. Đào
     const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');
+    let completedObs = 0;
+    let pendingObs = 0;
+    let taskPending = 0;
     let completedHeadTasks = 0;
+
     headTasks.forEach(t => {
-        if(getVal(t.c[1]).includes('Completed')) completedHeadTasks++;
+        const c = t.c;
+        const status = getVal(c[1]) || '';
+        const category = (getVal(c[5]) || getVal(c[15]) || '').toLowerCase();
+        
+        if (category.includes('observation')) {
+            if (status.includes('Completed')) completedObs++;
+            else pendingObs++;
+        }
+        
+        if (!status.includes('Completed')) taskPending++;
+        else completedHeadTasks++;
     });
+
+    const obsEl1 = document.getElementById('head-completed-obs');
+    if(obsEl1) obsEl1.innerText = completedObs;
+    const obsEl2 = document.getElementById('head-pending-obs');
+    if(obsEl2) obsEl2.innerText = pendingObs;
+    const pendEl = document.getElementById('head-task-pending');
+    if(pendEl) pendEl.innerText = taskPending;
+    
     const completionEl = document.getElementById('head-task-completion');
     if(completionEl) {
         if(headTasks.length > 0) {
