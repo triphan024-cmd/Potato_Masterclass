@@ -997,8 +997,17 @@ body {
 }
 
 .task-split-left {
-    flex: 1;
+    flex: 1.2;
     min-width: 0;
+}
+
+.task-split-left .planner-board {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    overflow-x: hidden;
+}
+
+.task-split-left .planner-day-column {
+    min-height: 120px;
 }
 
 .task-split-right {
