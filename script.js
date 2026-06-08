@@ -1094,7 +1094,6 @@ function renderTeacherObservations(classRows) {
         `;
         grid.appendChild(card);
     });
-}
     
     // Update Head Metrics DOM
     const headTasks = globalLeaderRows.filter(row => row && row.c && getShortName(getVal(row.c[4])) === 'Ms. Đào' && getVal(row.c[2]) === 'Task');
