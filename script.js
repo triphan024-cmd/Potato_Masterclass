@@ -1172,44 +1172,40 @@ function renderTeacherObservations(classRows) {
     if (!grid) return;
     grid.innerHTML = '';
     
-    // Group by teacher
-    const teacherMap = {};
+    // Group by department (Khối)
+    const departmentMap = {};
     let totalCompletedObs = 0;
     let totalPendingObs = 0;
     classRows.forEach(row => {
         const c = row.c;
-        const teacher = getShortName(getVal(c[9])) || 'Unknown Teacher';
-        if (!teacherMap[teacher]) {
-            teacherMap[teacher] = {
+        const department = getVal(c[5]) || 'Unknown Department';
+        if (!departmentMap[department]) {
+            departmentMap[department] = {
                 rows: [],
                 observed: 0,
                 pending: 0
             };
         }
-        teacherMap[teacher].rows.push(row);
+        departmentMap[department].rows.push(row);
         
         const obs = getVal(c[13]) || '';
         if (obs && String(obs).trim() !== '') {
-            teacherMap[teacher].observed++;
+            departmentMap[department].observed++;
             totalCompletedObs++;
         } else {
-            teacherMap[teacher].pending++;
+            departmentMap[department].pending++;
             totalPendingObs++;
         }
     });
 
-    const teachers = Object.keys(teacherMap).sort((a, b) => {
-        const totalA = teacherMap[a].observed + teacherMap[a].pending;
-        const totalB = teacherMap[b].observed + teacherMap[b].pending;
-        return totalB - totalA;
-    });
-    if (teachers.length === 0) {
+    const departments = Object.keys(departmentMap).sort((a, b) => a.localeCompare(b));
+    if (departments.length === 0) {
         grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
         return;
     }
 
-    teachers.forEach(teacher => {
-        const data = teacherMap[teacher];
+    departments.forEach(department => {
+        const data = departmentMap[department];
         const sortedRows = data.rows.sort((a, b) => {
             const obsA = getVal(a.c[13]) ? 1 : 0;
             const obsB = getVal(b.c[13]) ? 1 : 0;
@@ -1220,6 +1216,7 @@ function renderTeacherObservations(classRows) {
         sortedRows.forEach(row => {
             const c = row.c;
             const className = getVal(c[6]) || 'Unknown';
+            const teacherName = getShortName(getVal(c[9])) || getShortName(getVal(c[8])) || 'Unknown';
             const obs = getVal(c[13]) || '';
             const tScore = getVal(c[24]) || '-';
             const sEval = getVal(c[25]) || '-';
@@ -1261,6 +1258,7 @@ function renderTeacherObservations(classRows) {
             rowsHtml += `
                 <tr>
                     <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
+                    <td style="padding: 8px;">${teacherName}</td>
                     <td style="padding: 8px;">${statusBadge}</td>
                     <td style="padding: 8px;">${tScore}</td>
                     <td style="padding: 8px; text-align: center;">${headIcon}</td>
@@ -1274,7 +1272,7 @@ function renderTeacherObservations(classRows) {
         card.innerHTML = `
             <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
                 <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-chalkboard-user"></i> ${teacher}
+                    <i class="fa-solid fa-layer-group"></i> ${department}
                 </h3>
                 <div style="display: flex; gap: 8px;">
                     <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);"><i class="fa-solid fa-check"></i> ${data.observed} Observed</span>
@@ -1283,10 +1281,11 @@ function renderTeacherObservations(classRows) {
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 400px;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
                         <thead>
                             <tr>
                                 <th style="padding: 8px;">Class</th>
+                                <th style="padding: 8px;">Teacher</th>
                                 <th style="padding: 8px;">Observation</th>
                                 <th style="padding: 8px;">T.Score</th>
                                 <th style="padding: 8px; text-align: center;">Head</th>
