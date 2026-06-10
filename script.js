@@ -815,7 +815,28 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     if (date && typeof date === 'object') {
         const { type, index } = date;
         if (type === 'week') {
-            titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>`;
+            let weekOneThing = '';
+            if (typeof globalLeaderRows !== 'undefined' && globalLeaderRows) {
+                const targetWeekStr = 'W' + index;
+                const monthStr = String(month + 1).padStart(2, '0');
+                const otRow = globalLeaderRows.find(r => {
+                    if(!r || !r.c) return false;
+                    const rType = getVal(r.c[2]);
+                    const rPic = getShortName(getVal(r.c[4]));
+                    let rMonthStr = getVal(r.c[22]);
+                    if (rMonthStr && String(rMonthStr).length === 1) rMonthStr = '0' + rMonthStr;
+                    const rWeek = getVal(r.c[21]);
+                    return rType === 'Onething' && rPic === picName && rMonthStr === monthStr && rWeek === targetWeekStr;
+                });
+                if (otRow) {
+                    const otContent = getVal(otRow.c[5]);
+                    if (otContent) {
+                        weekOneThing = `<span class="category-badge" style="background: rgba(155, 89, 182, 0.1); color: #9b59b6; margin-left: 4px; font-size: 0.95rem; font-weight: 500; text-transform: none;"><i class="fa-solid fa-bullseye"></i> ${otContent}</span>`;
+                    }
+                }
+            }
+            
+            titleHtml = `<div style="display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;"><h3 style="color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>${weekOneThing}</div>`;
             const { start, end } = date;
             const weekStart = new Date(start);
             weekStart.setHours(0, 0, 0, 0);
