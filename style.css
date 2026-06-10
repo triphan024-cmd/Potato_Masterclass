@@ -1288,3 +1288,38 @@ body {
     align-items: center;
     gap: 8px;
 }
+
+/* Calendar Day Styles */
+.cal-day-item {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.cal-day-item.has-events {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-light);
+}
+.cal-day-item.has-events:hover {
+    background: var(--primary-light);
+    transform: scale(1.1);
+}
+.cal-day-item.is-today {
+    background: var(--primary-color) !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);
+    border: none !important;
+}
+.cal-day-item.is-selected {
+    background: var(--warning) !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+    border: none !important;
+    transform: scale(1.1);
+}

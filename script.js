@@ -325,6 +325,8 @@ async function fetchDashboardData() {
             });
             console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
             renderCalendar(0); // Re-render with data
+            const today = new Date();
+            selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
         } catch (err) {
             console.error("Error fetching calendar data:", err);
         }
@@ -1250,23 +1252,18 @@ function renderCalendar(monthOffset = 0) {
     for(let i=1; i<=daysInMonth; i++) {
         const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
         
-        let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
-        let tooltip = '';
+        let classList = ['cal-day-item'];
+        if (isToday) classList.push('is-today');
         
-        if (isToday) {
-            style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
-        }
+        let tooltip = '';
         
         if (dayMap[i]) {
             // Day has events
-            if (!isToday) {
-                style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
-            }
+            classList.push('has-events', 'cal-day-active');
             tooltip = dayMap[i].map(e => `${e.time} - ${e.className.split(' - ')[0]}`).join('&#10;');
-            style += ` cursor: pointer; position: relative;`;
-            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i})"><div style="${style}" class="cal-day-active" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i})"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
-            html += `<div style="padding: 4px;"><div style="${style}">${i}</div></div>`;
+            html += `<div style="padding: 4px;"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
         }
     }
     grid.innerHTML = html;
@@ -1274,17 +1271,14 @@ function renderCalendar(monthOffset = 0) {
 
 function selectCalendarDate(year, month, day) {
     // Reset all day styles to remove active selection
-    document.querySelectorAll('.cal-day-active').forEach(el => {
-        el.style.backgroundColor = '';
-        el.style.color = '';
-        if (el.style.border) el.style.color = 'var(--primary-color)'; // restore text color
+    document.querySelectorAll('.cal-day-item').forEach(el => {
+        el.classList.remove('is-selected');
     });
     
     // Highlight selected day
     const selectedEl = document.getElementById(`cal-day-${year}-${month}-${day}`);
     if (selectedEl) {
-        selectedEl.style.backgroundColor = 'var(--primary-light)';
-        selectedEl.style.color = 'var(--primary-dark)';
+        selectedEl.classList.add('is-selected');
     }
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
