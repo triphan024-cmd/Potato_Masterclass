@@ -911,16 +911,16 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             
             const combinedHTML = `
                 <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
-                    <div style="margin-bottom: 12px;">
-                        <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
-                        <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                    <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
+                    <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                        <span class="status-badge" style="background: ${statusBg}; color: ${statusColor}; margin: 0;">${status}</span>
+                        <span class="category-badge" style="margin: 0;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                        <span class="deadline-badge" style="margin-left: auto; margin-right: 0;"><i class="fa-regular fa-clock"></i> ${safeDeadline}</span>
                     </div>
                     <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                     <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
                     <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
-                    <p style="margin-top: 0; margin-bottom: 15px;">${safePending}</p>
-                    <strong style="color: var(--danger); display: block; margin-bottom: 5px;">Deadline:</strong>
-                    <p style="margin-top: 0; margin-bottom: 0;">${safeDeadline}</p>
+                    <p style="margin-top: 0; margin-bottom: 0;">${safePending}</p>
                 </div>
             `;
             
@@ -932,7 +932,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 .replace(/'/g, "\\'");
             
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('${safeTittle}', \`${safeHTML}\`)" title="Click to view details">
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
                         <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
@@ -985,16 +985,16 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 
                 const combinedHTML = `
                     <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
-                        <div style="margin-bottom: 12px;">
-                            <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span>
-                            <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                        <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                            <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); margin: 0;">3. Completed</span>
+                            <span class="category-badge" style="margin: 0;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                            <span class="deadline-badge" style="margin-left: auto; margin-right: 0;"><i class="fa-regular fa-clock"></i> ${safeDeadline}</span>
                         </div>
                         <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                         <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
                         <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
-                        <p style="margin-top: 0; margin-bottom: 15px;">${safePending}</p>
-                        <strong style="color: var(--danger); display: block; margin-bottom: 5px;">Deadline:</strong>
-                        <p style="margin-top: 0; margin-bottom: 0;">${safeDeadline}</p>
+                        <p style="margin-top: 0; margin-bottom: 0;">${safePending}</p>
                     </div>
                 `;
                 
@@ -1005,7 +1005,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     .replace(/\r/g, ' ')
                     .replace(/'/g, "\\'");
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('${safeTittle}', \`${safeHTML}\`)" title="Click to view details"><del>${shortPlan}</del></li>`;
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del>${shortPlan}</del></li>`;
             });
             compHtml += `</ul></div>`;
             completedPanel.innerHTML = compHtml;
