@@ -1397,21 +1397,23 @@ function selectCalendarDate(year, month, day) {
         nqEvents.push(...otherEvents); // Fallback for other classes
 
         if (groupBadgeTime) {
-            // Always Central Badge
-            html += `
-                <div style="margin-top: 16px; margin-bottom: 16px; position: relative; height: 24px; display: flex; justify-content: center; align-items: center;">
-                    <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(0,0,0,0.1); z-index: 1;"></div>
-                    <span style="position: relative; z-index: 2; background: white; padding: 2px 16px; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
-                        <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${groupBadgeTime}
-                    </span>
-                </div>
-            `;
+            // Nothing here, we render time in the column below
         }
 
         const showTimeInCard = !hasSameTime;
 
         html += `
-            <div style="display: flex; gap: 20px; margin-bottom: 24px;">
+            <div style="display: flex; gap: 20px; margin-bottom: 24px; align-items: stretch;">
+                <!-- Time Column -->
+                <div style="flex: 0 0 150px; padding-right: 16px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center;">
+                    ${groupBadgeTime ? `
+                    <div style="background: rgba(99,102,241,0.05); padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--primary-color);">
+                        <span style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
+                            <i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${groupBadgeTime}
+                        </span>
+                    </div>` : ''}
+                </div>
+                
                 <!-- NQ Column -->
                 <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
