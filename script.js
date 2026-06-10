@@ -826,7 +826,8 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     let rMonthStr = getVal(r.c[22]);
                     if (rMonthStr && String(rMonthStr).length === 1) rMonthStr = '0' + rMonthStr;
                     const rWeek = getVal(r.c[21]);
-                    return rType === 'Onething' && rPic === picName && rMonthStr === monthStr && rWeek === targetWeekStr;
+                    const parsedWeek = parseFloat(String(rWeek).toUpperCase().replace('W', '').trim());
+                    return rType === 'Onething' && rPic === picName && rMonthStr === monthStr && parsedWeek === index;
                 });
                 if (otRow) {
                     const otContent = getVal(otRow.c[5]);
