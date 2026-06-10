@@ -1172,134 +1172,161 @@ function renderTeacherObservations(classRows) {
     if (!grid) return;
     grid.innerHTML = '';
     
-    // Group by department (Khối)
-    const departmentMap = {};
+    // Group by branch then department
+    const branchMap = {
+        'Ngô Quyền (NQ)': {},
+        'Hưng Định (HD)': {}
+    };
+    
     let totalCompletedObs = 0;
     let totalPendingObs = 0;
     classRows.forEach(row => {
         const c = row.c;
+        let rawBranch = getVal(c[3]) || '';
+        let branch = '';
+        if (rawBranch.includes('HD') || rawBranch.includes('Hưng Định')) {
+            branch = 'Hưng Định (HD)';
+        } else {
+            branch = 'Ngô Quyền (NQ)';
+        }
+        
         const department = getVal(c[5]) || 'Unknown Department';
-        if (!departmentMap[department]) {
-            departmentMap[department] = {
+        if (!branchMap[branch][department]) {
+            branchMap[branch][department] = {
                 rows: [],
                 observed: 0,
                 pending: 0
             };
         }
-        departmentMap[department].rows.push(row);
+        branchMap[branch][department].rows.push(row);
         
         const obs = getVal(c[13]) || '';
         if (obs && String(obs).trim() !== '') {
-            departmentMap[department].observed++;
+            branchMap[branch][department].observed++;
             totalCompletedObs++;
         } else {
-            departmentMap[department].pending++;
+            branchMap[branch][department].pending++;
             totalPendingObs++;
         }
     });
 
-    const departments = Object.keys(departmentMap).sort((a, b) => a.localeCompare(b));
-    if (departments.length === 0) {
-        grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
-        return;
-    }
+    const branches = ['Ngô Quyền (NQ)', 'Hưng Định (HD)'];
+    let hasAnyData = false;
+    
+    branches.forEach(branch => {
+        const departments = Object.keys(branchMap[branch]).sort((a, b) => a.localeCompare(b));
+        if (departments.length === 0) return;
+        hasAnyData = true;
 
-    departments.forEach(department => {
-        const data = departmentMap[department];
-        const sortedRows = data.rows.sort((a, b) => {
-            const obsA = getVal(a.c[13]) ? 1 : 0;
-            const obsB = getVal(b.c[13]) ? 1 : 0;
-            return obsA - obsB;
-        });
+        const branchHeader = document.createElement('div');
+        branchHeader.style.gridColumn = '1 / -1';
+        branchHeader.style.marginTop = '16px';
+        branchHeader.style.paddingBottom = '8px';
+        branchHeader.style.borderBottom = '2px solid rgba(0,0,0,0.1)';
+        branchHeader.innerHTML = `<h3 style="color: var(--primary-dark); margin: 0; font-size: 1.2rem;"><i class="fa-solid fa-building"></i> ${branch}</h3>`;
+        grid.appendChild(branchHeader);
 
-        let rowsHtml = '';
-        sortedRows.forEach(row => {
-            const c = row.c;
-            const className = getVal(c[6]) || 'Unknown';
-            const teacherName = getShortName(getVal(c[9])) || getShortName(getVal(c[8])) || 'Unknown';
-            const obs = getVal(c[13]) || '';
-            const tScore = getVal(c[24]) || '-';
-            const sEval = getVal(c[25]) || '-';
-            const headComment = getVal(c[26]) || '-';
-            
-            let statusBadge = '';
-            if (obs && String(obs).trim() !== '') {
-                statusBadge = `<span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); font-size: 0.75rem;">Observed</span>`;
-            } else {
-                statusBadge = `<span class="status-badge" style="background: rgba(243, 156, 18, 0.1); color: var(--warning); font-size: 0.75rem;">Pending</span>`;
-            }
+        departments.forEach(department => {
+            const data = branchMap[branch][department];
+            const sortedRows = data.rows.sort((a, b) => {
+                const obsA = getVal(a.c[13]) ? 1 : 0;
+                const obsB = getVal(b.c[13]) ? 1 : 0;
+                return obsA - obsB;
+            });
 
-            let hasEval = sEval !== '-' && sEval !== '';
-            let hasComment = headComment !== '-' && headComment !== '';
-            
-            let formattedEval = hasEval ? sEval.replace(/\n/g, '<br>') : 'No evaluation';
-            let formattedComment = hasComment ? headComment.replace(/\n/g, '<br>') : 'No comment';
-            
-            let combinedHTML = `
-                <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${className.split(' - ')[0]}</h3>
-                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
-                    <p style="margin-top: 0; margin-bottom: 15px;">${formattedEval}</p>
-                    <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
-                    <p style="margin-top: 0; margin-bottom: 0;">${formattedComment}</p>
-                </div>
-            `;
-            
-            let safeHTML = combinedHTML
-                .replace(/"/g, '&quot;')
-                .replace(/`/g, '\\`')
-                .replace(/\n/g, ' ')
-                .replace(/\r/g, ' ');
+            let rowsHtml = '';
+            sortedRows.forEach(row => {
+                const c = row.c;
+                const className = getVal(c[6]) || 'Unknown';
+                const teacherName = getShortName(getVal(c[9])) || '-';
+                const obs = getVal(c[13]) || '';
+                const tScore = getVal(c[24]) || '-';
+                const sEval = getVal(c[25]) || '-';
+                const headComment = getVal(c[26]) || '-';
                 
-            let headIcon = (hasEval || hasComment)
-                ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', \`${safeHTML}\`)"></i>`
-                : '-';
+                let statusBadge = '';
+                if (obs && String(obs).trim() !== '') {
+                    statusBadge = `<span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); font-size: 0.75rem;">Observed</span>`;
+                } else {
+                    statusBadge = `<span class="status-badge" style="background: rgba(243, 156, 18, 0.1); color: var(--warning); font-size: 0.75rem;">Pending</span>`;
+                }
 
-            rowsHtml += `
-                <tr>
-                    <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
-                    <td style="padding: 8px;">${teacherName}</td>
-                    <td style="padding: 8px;">${statusBadge}</td>
-                    <td style="padding: 8px;">${tScore}</td>
-                    <td style="padding: 8px; text-align: center;">${headIcon}</td>
-                </tr>
+                let hasEval = sEval !== '-' && sEval !== '';
+                let hasComment = headComment !== '-' && headComment !== '';
+                
+                let formattedEval = hasEval ? sEval.replace(/\n/g, '<br>') : 'No evaluation';
+                let formattedComment = hasComment ? headComment.replace(/\n/g, '<br>') : 'No comment';
+                
+                let combinedHTML = `
+                    <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                        <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${className.split(' - ')[0]}</h3>
+                        <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
+                        <p style="margin-top: 0; margin-bottom: 15px;">${formattedEval}</p>
+                        <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
+                        <p style="margin-top: 0; margin-bottom: 0;">${formattedComment}</p>
+                    </div>
+                `;
+                
+                let safeHTML = combinedHTML
+                    .replace(/"/g, '&quot;')
+                    .replace(/`/g, '\\`')
+                    .replace(/\n/g, ' ')
+                    .replace(/\r/g, ' ');
+                    
+                let headIcon = (hasEval || hasComment)
+                    ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', \`${safeHTML}\`)"></i>`
+                    : '-';
+
+                rowsHtml += `
+                    <tr>
+                        <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
+                        <td style="padding: 8px;">${teacherName}</td>
+                        <td style="padding: 8px;">${statusBadge}</td>
+                        <td style="padding: 8px;">${tScore}</td>
+                        <td style="padding: 8px; text-align: center;">${headIcon}</td>
+                    </tr>
+                `;
+            });
+
+            const card = document.createElement('div');
+            card.className = 'modern-card panel';
+            card.style.margin = '0';
+            card.innerHTML = `
+                <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-layer-group"></i> ${department}
+                    </h3>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);"><i class="fa-solid fa-check"></i> ${data.observed} Observed</span>
+                        <span class="status-badge" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);"><i class="fa-solid fa-clock"></i> ${data.pending} Pending</span>
+                    </div>
+                </div>
+                <div class="modern-card-body" style="padding: 0;">
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px;">Class</th>
+                                    <th style="padding: 8px;">Teacher</th>
+                                    <th style="padding: 8px;">Observation</th>
+                                    <th style="padding: 8px;">T.Score</th>
+                                    <th style="padding: 8px; text-align: center;">Head</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             `;
+            grid.appendChild(card);
         });
-
-        const card = document.createElement('div');
-        card.className = 'modern-card panel';
-        card.style.margin = '0';
-        card.innerHTML = `
-            <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
-                <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-layer-group"></i> ${department}
-                </h3>
-                <div style="display: flex; gap: 8px;">
-                    <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);"><i class="fa-solid fa-check"></i> ${data.observed} Observed</span>
-                    <span class="status-badge" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);"><i class="fa-solid fa-clock"></i> ${data.pending} Pending</span>
-                </div>
-            </div>
-            <div class="modern-card-body" style="padding: 0;">
-                <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
-                        <thead>
-                            <tr>
-                                <th style="padding: 8px;">Class</th>
-                                <th style="padding: 8px;">Teacher</th>
-                                <th style="padding: 8px;">Observation</th>
-                                <th style="padding: 8px;">T.Score</th>
-                                <th style="padding: 8px; text-align: center;">Head</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-        grid.appendChild(card);
     });
+
+    if (!hasAnyData) {
+        grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
+    }
     
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
     const monthStr = String(monthVal).padStart(2, '0');
