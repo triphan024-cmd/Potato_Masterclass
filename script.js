@@ -888,14 +888,14 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             }
 
             const category = getVal(c[5]) || getVal(c[15]);
-            const safeCategory = (category || 'Task').replace(/'/g, "\\'");
+            const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
             const plan = getVal(c[6]) || getVal(c[11]) || 'No details provided';
-            const shortPlan = plan.length > 80 ? plan.substring(0, 80) + '...' : plan;
-            const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+            const shortPlan = String(plan).length > 80 ? String(plan).substring(0, 80) + '...' : String(plan);
+            const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
             
             let deadline = getVal(c[9]);
             if (deadline) {
-                const parts = deadline.split('/');
+                const parts = String(deadline).split('/');
                 if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
             }
             
@@ -933,10 +933,10 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             completedTasks.forEach(row => {
                 const c = row.c;
                 const plan = getVal(c[6]) || getVal(c[11]) || 'Completed Task';
-                const shortPlan = plan.length > 50 ? plan.substring(0, 50) + '...' : plan;
-                const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+                const shortPlan = String(plan).length > 50 ? String(plan).substring(0, 50) + '...' : String(plan);
+                const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
                 const category = getVal(c[5]) || getVal(c[15]);
-                const safeCategory = (category || 'Task').replace(/'/g, "\\'");
+                const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
                 const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
                 const escapedModalContent = modalContent.replace(/"/g, '&quot;');
                 
