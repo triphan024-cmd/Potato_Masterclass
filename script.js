@@ -537,7 +537,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         if(!row || !row.c) return false;
         const type = getVal(row.c[2]);
         const pic = getShortName(getVal(row.c[4]));
-        const rowMonth = getVal(row.c[20]);
+        const rowMonth = getVal(row.c[22]);
         let rMonthStr = rowMonth;
         if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
         
@@ -589,7 +589,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
 
     let refDate = new Date();
     for (let row of validRows) {
-        let d = parseDateStr(getVal(row.c[9]));
+        let d = parseDateStr(getVal(row.c[12]));
         if (d && !isNaN(d)) {
             refDate = d;
             break;
@@ -653,7 +653,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     
     const dayMap = {};
     validRows.forEach(row => {
-        const d = parseDateStr(getVal(row.c[9]));
+        const d = parseDateStr(getVal(row.c[11]));
         if (d && !isNaN(d) && d.getMonth() === month && d.getFullYear() === year) {
             const dayNum = d.getDate();
             if (!dayMap[dayNum]) dayMap[dayNum] = [];
@@ -823,11 +823,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             weekEnd.setHours(23, 59, 59, 999);
             
             targetRows = validRows.filter(row => {
-                const d = parseDateStr(getVal(row.c[9]));
+                const d = parseDateStr(getVal(row.c[11]));
                 return d && !isNaN(d) && d >= weekStart && d <= weekEnd;
             }).sort((a, b) => {
-                const dA = parseDateStr(getVal(a.c[9]));
-                const dB = parseDateStr(getVal(b.c[9]));
+                const dA = parseDateStr(getVal(a.c[11]));
+                const dB = parseDateStr(getVal(b.c[11]));
                 if (!dA) return 1;
                 if (!dB) return -1;
                 return dA - dB;
@@ -835,11 +835,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         } else if (type === 'all') {
             titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-border-all"></i> All Month Tasks</h3>`;
             targetRows = validRows.filter(row => {
-                const d = parseDateStr(getVal(row.c[9]));
+                const d = parseDateStr(getVal(row.c[11]));
                 return d && !isNaN(d);
             }).sort((a, b) => {
-                const dA = parseDateStr(getVal(a.c[9]));
-                const dB = parseDateStr(getVal(b.c[9]));
+                const dA = parseDateStr(getVal(a.c[11]));
+                const dB = parseDateStr(getVal(b.c[11]));
                 if (!dA) return 1;
                 if (!dB) return -1;
                 return dA - dB;
@@ -848,13 +848,13 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     } else if (date) {
         titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-regular fa-calendar"></i> ${date}/${month + 1}/${year} Tasks</h3>`;
         targetRows = validRows.filter(row => {
-            const d = parseDateStr(getVal(row.c[9]));
+            const d = parseDateStr(getVal(row.c[11]));
             return d && !isNaN(d) && d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
         });
     } else {
         titleHtml = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-inbox"></i> Unscheduled Tasks</h3>`;
         targetRows = validRows.filter(row => {
-            const d = parseDateStr(getVal(row.c[9]));
+            const d = parseDateStr(getVal(row.c[11]));
             return !d || isNaN(d);
         });
     }
@@ -887,13 +887,18 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 statusColor = 'var(--danger)'; // Red for new
             }
 
-            const category = getVal(c[5]) || getVal(c[15]);
+            const category = getVal(c[17]) || getVal(c[5]);
             const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
-            const plan = getVal(c[6]) || getVal(c[11]) || 'No details provided';
-            const shortPlan = String(plan).length > 80 ? String(plan).substring(0, 80) + '...' : String(plan);
+            
+            const tittle = getVal(c[7]) || 'Untitled Task';
+            const issue = getVal(c[6]) ? `<br/><strong>Issue:</strong> ${getVal(c[6])}` : '';
+            const planDetail = getVal(c[8]) ? `<br/><strong>Plan Detail:</strong> ${getVal(c[8])}` : '';
+            
+            const plan = tittle + issue + planDetail;
+            const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
             const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
             
-            let deadline = getVal(c[9]);
+            let deadline = getVal(c[11]);
             if (deadline) {
                 const parts = String(deadline).split('/');
                 if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
@@ -932,11 +937,17 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             compHtml += `<ul style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">`;
             completedTasks.forEach(row => {
                 const c = row.c;
-                const plan = getVal(c[6]) || getVal(c[11]) || 'Completed Task';
-                const shortPlan = String(plan).length > 50 ? String(plan).substring(0, 50) + '...' : String(plan);
-                const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
-                const category = getVal(c[5]) || getVal(c[15]);
+                const category = getVal(c[17]) || getVal(c[5]);
                 const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
+                
+                const tittle = getVal(c[7]) || 'Untitled Task';
+                const issue = getVal(c[6]) ? `<br/><strong>Issue:</strong> ${getVal(c[6])}` : '';
+                const planDetail = getVal(c[8]) ? `<br/><strong>Plan Detail:</strong> ${getVal(c[8])}` : '';
+                
+                const plan = tittle + issue + planDetail;
+                const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
+                const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+                
                 const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
                 const escapedModalContent = modalContent.replace(/"/g, '&quot;');
                 
@@ -959,7 +970,7 @@ function renderWeeklyReports(rows, containerId, monthStr) {
     const reportRows = rows.filter(row => {
         if(!row || !row.c) return false;
         const type = getVal(row.c[2]);
-        const rowMonth = getVal(row.c[20]);
+        const rowMonth = getVal(row.c[22]);
         let rMonthStr = rowMonth;
         if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
         
@@ -979,7 +990,7 @@ function renderWeeklyReports(rows, containerId, monthStr) {
     
     reportRows.forEach(row => {
         const pic = getShortName(getVal(row.c[4])) || 'Unknown';
-        let week = getVal(row.c[19]) || 'W1';
+        let week = getVal(row.c[21]) || 'W1';
         // Normalize week name (e.g. "1" -> "Week 1")
         if (!week.toLowerCase().includes('week') && !week.toLowerCase().includes('w')) {
             week = 'Week ' + week;
@@ -1024,9 +1035,9 @@ function renderWeeklyReports(rows, containerId, monthStr) {
                 
                 dataMap[pic][week].forEach(row => {
                     const c = row.c;
-                    const win = getVal(c[12]);
-                    const redFlag = getVal(c[13]);
-                    const top5 = getVal(c[14]);
+                    const win = getVal(c[14]);
+                    const redFlag = getVal(c[15]);
+                    const top5 = getVal(c[16]);
                     
                     const formatText = (text) => {
                         if (!text) return '';
@@ -1497,7 +1508,7 @@ function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     // 1. Current Month Data
     const currentTasks = globalLeaderRows.filter(row => {
         if (!row || !row.c || getShortName(getVal(row.c[4])) !== roleName || getVal(row.c[2]) !== 'Task') return false;
-        const deadline = getVal(row.c[9]) || '';
+        const deadline = getVal(row.c[11]) || '';
         const parts = deadline.split('/');
         return parts.length >= 2 && parts[1] === monthStr;
     });
@@ -1518,7 +1529,7 @@ function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     if (prevMonthStr) {
         const prevTasks = globalLeaderRows.filter(row => {
             if (!row || !row.c || getShortName(getVal(row.c[4])) !== roleName || getVal(row.c[2]) !== 'Task') return false;
-            const deadline = getVal(row.c[9]) || '';
+            const deadline = getVal(row.c[11]) || '';
             const parts = deadline.split('/');
             return parts.length >= 2 && parts[1] === prevMonthStr;
         });
@@ -1590,7 +1601,7 @@ function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     // 1. Current Month Data
     const currentTasks = globalLeaderRows.filter(row => {
         if (!row || !row.c || getShortName(getVal(row.c[4])) !== roleName || getVal(row.c[2]) !== 'Task') return false;
-        const deadline = getVal(row.c[9]) || '';
+        const deadline = getVal(row.c[11]) || '';
         const parts = deadline.split('/');
         return parts.length >= 2 && parts[1] === monthStr;
     });
@@ -1611,7 +1622,7 @@ function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
     if (prevMonthStr) {
         const prevTasks = globalLeaderRows.filter(row => {
             if (!row || !row.c || getShortName(getVal(row.c[4])) !== roleName || getVal(row.c[2]) !== 'Task') return false;
-            const deadline = getVal(row.c[9]) || '';
+            const deadline = getVal(row.c[11]) || '';
             const parts = deadline.split('/');
             return parts.length >= 2 && parts[1] === prevMonthStr;
         });
