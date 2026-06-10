@@ -916,7 +916,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             const safeTittle = String(tittle).replace(/'/g, "\\'");
             
             const rawPlanDetail = getVal(c[8]) || 'No detail provided';
-            const rawPending = getVal(c[10]) || 'No pending';
+            const rawResult = getVal(c[9]) || 'No result provided';
             
             let deadline = getVal(c[11]);
             if (deadline) {
@@ -926,7 +926,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             const rawDeadline = deadline || 'No deadline';
             
             const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
-            const safePending = String(rawPending).replace(/\n/g, '<br/>');
+            const safeResult = String(rawResult).replace(/\n/g, '<br/>');
             const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
 
             const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
@@ -941,8 +941,8 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     </div>
                     <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                     <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
-                    <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
-                    <p style="margin-top: 0; margin-bottom: 0;">${safePending}</p>
+                    <strong style="color: var(--info); display: block; margin-bottom: 5px;">Result:</strong>
+                    <p style="margin-top: 0; margin-bottom: 0;">${safeResult}</p>
                 </div>
             `;
             
@@ -990,7 +990,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const safeTittle = String(tittle).replace(/'/g, "\\'");
                 
                 const rawPlanDetail = getVal(c[8]) || 'No detail provided';
-                const rawPending = getVal(c[10]) || 'No pending';
+                const rawResult = getVal(c[9]) || 'No result provided';
                 
                 let deadline = getVal(c[11]);
                 if (deadline) {
@@ -1000,7 +1000,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const rawDeadline = deadline || 'No deadline';
                 
                 const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
-                const safePending = String(rawPending).replace(/\n/g, '<br/>');
+                const safeResult = String(rawResult).replace(/\n/g, '<br/>');
                 const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
 
                 const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
@@ -1015,8 +1015,8 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                         </div>
                         <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                         <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
-                        <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
-                        <p style="margin-top: 0; margin-bottom: 0;">${safePending}</p>
+                        <strong style="color: var(--info); display: block; margin-bottom: 5px;">Result:</strong>
+                        <p style="margin-top: 0; margin-bottom: 0;">${safeResult}</p>
                     </div>
                 `;
                 
@@ -1027,7 +1027,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     .replace(/\r/g, ' ')
                     .replace(/'/g, "\\'");
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del>${shortPlan}</del></li>`;
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s; display: flex; align-items: flex-start; justify-content: space-between;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del style="flex: 1; margin-right: 8px;">${shortPlan}</del> <span style="font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span></li>`;
             });
             compHtml += `</ul></div>`;
             completedPanel.innerHTML = compHtml;
