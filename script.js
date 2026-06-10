@@ -1218,20 +1218,34 @@ function renderTeacherObservations(classRows) {
         if (departments.length === 0) return;
         hasAnyData = true;
 
+        let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
+        let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+        const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
+
         const branchHeader = document.createElement('div');
         branchHeader.style.gridColumn = '1 / -1';
         branchHeader.style.marginTop = '16px';
         branchHeader.style.paddingBottom = '8px';
-        branchHeader.style.borderBottom = '2px solid rgba(0,0,0,0.1)';
-        branchHeader.innerHTML = `<h3 style="color: var(--primary-dark); margin: 0; font-size: 1.2rem;"><i class="fa-solid fa-building"></i> ${branch}</h3>`;
+        branchHeader.style.borderBottom = `2px solid ${colorStr}`;
+        branchHeader.style.display = 'flex';
+        branchHeader.style.alignItems = 'center';
+        branchHeader.style.justifyContent = 'space-between';
+        branchHeader.innerHTML = `
+            <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
+                <i class="fa-solid fa-building"></i> ${branch}
+            </h3>
+            <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem;">
+                ${totalClasses} Classes
+            </span>
+        `;
         grid.appendChild(branchHeader);
 
         departments.forEach(department => {
             const data = branchMap[branch][department];
             const sortedRows = data.rows.sort((a, b) => {
-                const obsA = getVal(a.c[13]) ? 1 : 0;
-                const obsB = getVal(b.c[13]) ? 1 : 0;
-                return obsA - obsB;
+                const classA = String(getVal(a.c[6]) || '');
+                const classB = String(getVal(b.c[6]) || '');
+                return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
             });
 
             let rowsHtml = '';
