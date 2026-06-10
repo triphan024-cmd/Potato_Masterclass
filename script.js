@@ -970,7 +970,7 @@ function renderWeeklyReports(rows, containerId, monthStr) {
     const tbody = document.createElement('tbody');
     pics.forEach(pic => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td style="font-weight: 600; color: var(--primary-color); vertical-align: middle; text-align: center;">${pic}</td>`;
+        tr.innerHTML = `<td style="font-weight: 700; color: #0284c7; vertical-align: middle; text-align: center; font-size: 1.05rem;">${pic}</td>`;
         
         weeks.forEach(week => {
             const cell = document.createElement('td');
@@ -989,23 +989,20 @@ function renderWeeklyReports(rows, containerId, monthStr) {
                         let formatted = text.replace(/\n/g, '<br/>');
                         formatted = formatted.replace(/(?:^|<br\/>)\s*-\s+(.*?)(?=(?:<br\/>|$))/g, '<br/>• $1');
                         if (formatted.startsWith('<br/>')) formatted = formatted.substring(5);
-                        return `<div style="margin-top: 6px; padding-left: 4px; color: var(--text-dark); line-height: 1.5;">${formatted}</div>`;
+                        return `<div style="margin-top: 2px; padding-left: 4px; color: var(--text-dark); line-height: 1.5;">${formatted}</div>`;
                     };
 
                     let html = '';
                     if (win) html += `
-                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 3px solid var(--success); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                            <div style="color: var(--success); font-weight: bold; font-size: 1.1rem;" title="Win"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 4px solid var(--success); box-shadow: 0 1px 3px rgba(0,0,0,0.05);" title="Win">
                             ${formatText(win)}
                         </div>`;
                     if (redFlag) html += `
-                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 3px solid var(--danger); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                            <div style="color: var(--danger); font-weight: bold; font-size: 1.1rem;" title="Red Flag"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 4px solid var(--danger); box-shadow: 0 1px 3px rgba(0,0,0,0.05);" title="Red Flag">
                             ${formatText(redFlag)}
                         </div>`;
                     if (top5) html += `
-                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 3px solid var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                            <div style="color: var(--primary-color); font-weight: bold; font-size: 1.1rem;" title="Top 5 Things"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="report-item" style="margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 4px solid var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);" title="Top 5 Things">
                             ${formatText(top5)}
                         </div>`;
                     

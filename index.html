@@ -427,8 +427,13 @@
                     </section>
                     
                     <section class="panel" style="margin-top: 24px; padding: 24px;">
-                        <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>All Weekly Reports</h2>
+                        <div class="weekly-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="margin: 0;">All Weekly Reports</h2>
+                            <div style="display: flex; gap: 16px; font-size: 0.85rem; font-weight: 600;">
+                                <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: var(--success); border-radius: 50%;"></span> Win</div>
+                                <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: var(--danger); border-radius: 50%;"></span> Red Flag</div>
+                                <div style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 12px; height: 12px; background: var(--primary-color); border-radius: 50%;"></span> Top 5</div>
+                            </div>
                         </div>
                         <div id="weekly-report-grid" >
                             <!-- Dynamic Cards -->
