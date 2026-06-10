@@ -742,6 +742,11 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         leftDiv.appendChild(unscheduledBtn);
     }
     
+    const completedTasksContainer = document.createElement('div');
+    completedTasksContainer.id = `${containerId}-completed-panel`;
+    completedTasksContainer.style.marginTop = '24px';
+    leftDiv.appendChild(completedTasksContainer);
+    
     splitWrapper.appendChild(leftDiv);
     splitWrapper.appendChild(rightDiv);
     container.appendChild(splitWrapper);
@@ -854,55 +859,90 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         });
     }
 
+    const activeTasks = targetRows.filter(r => {
+        const st = getVal(r.c[1]) || '';
+        return !st.includes('Completed') && (st.includes('New') || st.includes('Processing') || st === '');
+    });
+    const completedTasks = targetRows.filter(r => {
+        const st = getVal(r.c[1]) || '';
+        return st.includes('Completed');
+    });
+
     let listHtml = '';
-    if (targetRows.length === 0) {
-        listHtml = '<p style="color: var(--text-muted);">No tasks found.</p>';
+    if (activeTasks.length === 0) {
+        listHtml = '<p style="color: var(--text-muted);">No active tasks found.</p>';
     } else {
-        targetRows.forEach(row => {
+        activeTasks.forEach(row => {
             const c = row.c;
             const status = getVal(c[1]) || 'New';
             
             let statusBg = 'var(--bg-color)';
             let statusColor = 'var(--text-muted)';
             
-            if (status.includes('Completed')) {
-                statusBg = 'rgba(46, 204, 113, 0.1)';
-                statusColor = 'var(--success)';
-            } else if (status.includes('Processing')) {
+            if (status.includes('Processing')) {
                 statusBg = 'rgba(243, 156, 18, 0.1)';
                 statusColor = 'var(--warning)';
-            } else if (status.includes('New')) {
+            } else {
                 statusBg = 'rgba(231, 76, 60, 0.1)';
                 statusColor = 'var(--danger)'; // Red for new
             }
 
             const category = getVal(c[5]) || getVal(c[15]);
-            const plan = getVal(c[6]) || getVal(c[11]);
+            const plan = getVal(c[6]) || getVal(c[11]) || 'No details provided';
+            const shortPlan = plan.length > 80 ? plan.substring(0, 80) + '...' : plan;
+            const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+            
             let deadline = getVal(c[9]);
             if (deadline) {
                 const parts = deadline.split('/');
                 if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
             }
             
+            const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+            
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0;">
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('Task Details', '${modalContent}')" title="Click to view details">
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
-                        <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
+                        <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
                         <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                     </div>
-                    <div class="modern-card-body">
-                        ${plan || 'No details provided'}
+                    <div class="modern-card-body" style="font-size: 0.9rem;">
+                        ${shortPlan}
                     </div>
                 </div>
             `;
         });
     }
 
-    if (targetRows.length > 0) {
+    if (activeTasks.length > 0) {
         detailPanel.innerHTML = titleHtml + `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">${listHtml}</div>`;
     } else {
         detailPanel.innerHTML = titleHtml + listHtml;
+    }
+    
+    // Update completed panel
+    const completedPanel = document.getElementById(`${containerId.replace('-detail-panel', '-completed-panel')}`);
+    if (completedPanel) {
+        if (completedTasks.length > 0) {
+            let compHtml = `<div style="background: #f8fafc; border: 1px dashed rgba(0,0,0,0.1); border-radius: 8px; padding: 16px;">`;
+            compHtml += `<h4 style="margin-top: 0; margin-bottom: 12px; color: var(--success); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-circle-check"></i> Completed Tasks (${completedTasks.length})</h4>`;
+            compHtml += `<ul style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">`;
+            completedTasks.forEach(row => {
+                const c = row.c;
+                const plan = getVal(c[6]) || getVal(c[11]) || 'Completed Task';
+                const shortPlan = plan.length > 50 ? plan.substring(0, 50) + '...' : plan;
+                const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+                const category = getVal(c[5]) || getVal(c[15]);
+                const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+                
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('Task Details', '${modalContent}')" title="Click to view details"><del>${shortPlan}</del></li>`;
+            });
+            compHtml += `</ul></div>`;
+            completedPanel.innerHTML = compHtml;
+        } else {
+            completedPanel.innerHTML = '';
+        }
     }
 }
 
