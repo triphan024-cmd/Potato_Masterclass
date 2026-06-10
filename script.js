@@ -887,31 +887,55 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 statusColor = 'var(--danger)'; // Red for new
             }
 
-            const category = getVal(c[17]) || getVal(c[5]);
-            const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
+            const category = getVal(c[6]) || 'Task';
+            const safeCategory = String(category).replace(/'/g, "\\'");
             
             const tittle = getVal(c[7]) || 'Untitled Task';
-            const issue = getVal(c[6]) ? `<br/><strong>Issue:</strong> ${getVal(c[6])}` : '';
-            const planDetail = getVal(c[8]) ? `<br/><strong>Plan Detail:</strong> ${getVal(c[8])}` : '';
+            const safeTittle = String(tittle).replace(/'/g, "\\'");
             
-            const plan = tittle + issue + planDetail;
-            const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
-            const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
+            const rawPlanDetail = getVal(c[8]) || 'No detail provided';
+            const rawPending = getVal(c[10]) || 'No pending';
             
             let deadline = getVal(c[11]);
             if (deadline) {
                 const parts = String(deadline).split('/');
                 if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
             }
+            const rawDeadline = deadline || 'No deadline';
             
-            const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
-            const escapedModalContent = modalContent.replace(/"/g, '&quot;');
+            const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
+            const safePending = String(rawPending).replace(/\n/g, '<br/>');
+            const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
+
+            const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
+            
+            const combinedHTML = `
+                <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                    <div style="margin-bottom: 12px;">
+                        <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
+                        <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                    </div>
+                    <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
+                    <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
+                    <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
+                    <p style="margin-top: 0; margin-bottom: 15px;">${safePending}</p>
+                    <strong style="color: var(--danger); display: block; margin-bottom: 5px;">Deadline:</strong>
+                    <p style="margin-top: 0; margin-bottom: 0;">${safeDeadline}</p>
+                </div>
+            `;
+            
+            const safeHTML = combinedHTML
+                .replace(/"/g, '&quot;')
+                .replace(/`/g, '\\`')
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, ' ')
+                .replace(/'/g, "\\'");
             
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('Task Details', '${escapedModalContent}')" title="Click to view details">
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('${safeTittle}', \`${safeHTML}\`)" title="Click to view details">
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
-                        <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
+                        <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
                         <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                     </div>
                     <div class="modern-card-body" style="font-size: 0.9rem;">
@@ -937,21 +961,51 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             compHtml += `<ul style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">`;
             completedTasks.forEach(row => {
                 const c = row.c;
-                const category = getVal(c[17]) || getVal(c[5]);
-                const safeCategory = String(category || 'Task').replace(/'/g, "\\'");
+                const category = getVal(c[6]) || 'Task';
+                const safeCategory = String(category).replace(/'/g, "\\'");
                 
                 const tittle = getVal(c[7]) || 'Untitled Task';
-                const issue = getVal(c[6]) ? `<br/><strong>Issue:</strong> ${getVal(c[6])}` : '';
-                const planDetail = getVal(c[8]) ? `<br/><strong>Plan Detail:</strong> ${getVal(c[8])}` : '';
+                const safeTittle = String(tittle).replace(/'/g, "\\'");
                 
-                const plan = tittle + issue + planDetail;
+                const rawPlanDetail = getVal(c[8]) || 'No detail provided';
+                const rawPending = getVal(c[10]) || 'No pending';
+                
+                let deadline = getVal(c[11]);
+                if (deadline) {
+                    const parts = String(deadline).split('/');
+                    if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
+                }
+                const rawDeadline = deadline || 'No deadline';
+                
+                const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
+                const safePending = String(rawPending).replace(/\n/g, '<br/>');
+                const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
+
                 const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
-                const safePlanForModal = String(plan).replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
                 
-                const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
-                const escapedModalContent = modalContent.replace(/"/g, '&quot;');
+                const combinedHTML = `
+                    <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                        <div style="margin-bottom: 12px;">
+                            <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span>
+                            <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
+                        </div>
+                        <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
+                        <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
+                        <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Pending:</strong>
+                        <p style="margin-top: 0; margin-bottom: 15px;">${safePending}</p>
+                        <strong style="color: var(--danger); display: block; margin-bottom: 5px;">Deadline:</strong>
+                        <p style="margin-top: 0; margin-bottom: 0;">${safeDeadline}</p>
+                    </div>
+                `;
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('Task Details', '${escapedModalContent}')" title="Click to view details"><del>${shortPlan}</del></li>`;
+                const safeHTML = combinedHTML
+                    .replace(/"/g, '&quot;')
+                    .replace(/`/g, '\\`')
+                    .replace(/\n/g, ' ')
+                    .replace(/\r/g, ' ')
+                    .replace(/'/g, "\\'");
+                
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('${safeTittle}', \`${safeHTML}\`)" title="Click to view details"><del>${shortPlan}</del></li>`;
             });
             compHtml += `</ul></div>`;
             completedPanel.innerHTML = compHtml;
