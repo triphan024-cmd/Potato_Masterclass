@@ -185,8 +185,8 @@ function changeMonth(diff) {
         const monthStr = String(monthVal).padStart(2, '0');
         if (globalClassRows.length > 0) {
             const filteredRows = globalClassRows.filter(row => {
-                // The user clarified that the Month column (c[56]) correctly represents the month's snapshot data.
-                return row.c[56] && String(row.c[56].v).padStart(2, '0') === monthStr;
+                // The user clarified that the Month column (c[57]) correctly represents the month's snapshot data.
+                return row.c[57] && String(row.c[57].v).padStart(2, '0') === monthStr;
             });
             updateMetricsCards(filteredRows, globalMetricsRow);
             renderDashboardTable(filteredRows);
@@ -338,7 +338,7 @@ async function fetchDashboardData() {
 
 function updateMetricsCards(classRows, metricsRow) {
     const totalStudents = classRows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0);
-    const totalTeachers = new Set(classRows.map(row => getVal(row.c[8]))).size;
+    const totalTeachers = new Set(classRows.map(row => getVal(row.c[9]))).size;
     const totalClasses = classRows.length;
     
     let upcomingExams = 0;
@@ -346,8 +346,8 @@ function updateMetricsCards(classRows, metricsRow) {
     
     classRows.forEach(row => {
         const c = row.c;
-        const examDate = getVal(c[38]) || '';
-        const progress = (getVal(c[33]) || getVal(c[11]) || '').toLowerCase();
+        const examDate = getVal(c[39]) || '';
+        const progress = (getVal(c[34]) || getVal(c[12]) || '').toLowerCase();
         
         if (examDate && examDate !== '-' && examDate.trim() !== '') {
             upcomingExams++;
@@ -381,11 +381,11 @@ function renderDashboardTable(classRows) {
         const c = row.c;
         const className = getVal(c[6]) || getVal(c[1]);
         const students = getVal(c[7]);
-        const teacher = getShortName(getVal(c[8]));
-        const testDate = getVal(c[38]);
-        const score = getVal(c[39]) || 'N/A';
-        const progress = getVal(c[11]);
-        const behavior = getVal(c[28]) || 'Good';
+        const teacher = getShortName(getVal(c[9]));
+        const testDate = getVal(c[39]);
+        const score = getVal(c[40]) || 'N/A';
+        const progress = getVal(c[12]);
+        const behavior = getVal(c[29]) || 'Good';
 
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
@@ -420,7 +420,7 @@ function renderTeacherTable(classRows) {
     const groupedByTeacher = new Map();
     classRows.forEach(row => {
         const c = row.c;
-        const teacherName = getShortName(getVal(c[8])) || 'Unknown';
+        const teacherName = getShortName(getVal(c[9])) || 'Unknown';
         if (!groupedByTeacher.has(teacherName)) {
             groupedByTeacher.set(teacherName, []);
         }
@@ -449,8 +449,8 @@ function renderTeacherTable(classRows) {
             const c = row.c;
             const className = getVal(c[6]);
             const students = getVal(c[7]);
-            const lesson = getVal(c[27]);
-            const evaluation = getVal(c[24]);
+            const lesson = getVal(c[28]);
+            const evaluation = getVal(c[25]);
 
             const tr = document.createElement('tr');
             tr.className = 'clickable-row';
@@ -477,11 +477,11 @@ function renderAcademicTable(classRows) {
     classRows.forEach((row) => {
         const c = row.c;
         const className = getVal(c[6]);
-        const start = getVal(c[9]);
-        const end = getVal(c[10]);
+        const start = getVal(c[10]);
+        const end = getVal(c[11]);
         const status = getVal(c[2]) || '';
         const course = getVal(c[4]);
-        const testDate = getVal(c[38]);
+        const testDate = getVal(c[39]);
 
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
@@ -509,9 +509,9 @@ function renderOperationTable(classRows) {
         const c = row.c;
         const className = getVal(c[6]);
         const students = getVal(c[7]);
-        const doanhThu = getVal(c[42]);
-        const daThu = getVal(c[43]);
-        const congNo = getVal(c[44]);
+        const doanhThu = getVal(c[43]);
+        const daThu = getVal(c[44]);
+        const congNo = getVal(c[45]);
 
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
@@ -1102,7 +1102,7 @@ function renderTeacherObservations(classRows) {
     let totalPendingObs = 0;
     classRows.forEach(row => {
         const c = row.c;
-        const teacher = getShortName(getVal(c[8])) || 'Unknown Teacher';
+        const teacher = getShortName(getVal(c[9])) || 'Unknown Teacher';
         if (!teacherMap[teacher]) {
             teacherMap[teacher] = {
                 rows: [],
@@ -1112,7 +1112,7 @@ function renderTeacherObservations(classRows) {
         }
         teacherMap[teacher].rows.push(row);
         
-        const obs = getVal(c[12]) || '';
+        const obs = getVal(c[13]) || '';
         if (obs && String(obs).trim() !== '') {
             teacherMap[teacher].observed++;
             totalCompletedObs++;
@@ -1135,8 +1135,8 @@ function renderTeacherObservations(classRows) {
     teachers.forEach(teacher => {
         const data = teacherMap[teacher];
         const sortedRows = data.rows.sort((a, b) => {
-            const obsA = getVal(a.c[12]) ? 1 : 0;
-            const obsB = getVal(b.c[12]) ? 1 : 0;
+            const obsA = getVal(a.c[13]) ? 1 : 0;
+            const obsB = getVal(b.c[13]) ? 1 : 0;
             return obsA - obsB;
         });
 
@@ -1144,10 +1144,10 @@ function renderTeacherObservations(classRows) {
         sortedRows.forEach(row => {
             const c = row.c;
             const className = getVal(c[6]) || 'Unknown';
-            const obs = getVal(c[12]) || '';
-            const tScore = getVal(c[23]) || '-';
-            const sEval = getVal(c[24]) || '-';
-            const headComment = getVal(c[25]) || '-';
+            const obs = getVal(c[13]) || '';
+            const tScore = getVal(c[24]) || '-';
+            const sEval = getVal(c[25]) || '-';
+            const headComment = getVal(c[26]) || '-';
             
             let statusBadge = '';
             if (obs && String(obs).trim() !== '') {
@@ -1234,9 +1234,9 @@ function renderTeacherObservations(classRows) {
     let prevPendingObs = 0;
 
     if (prevMonthStr) {
-        const prevClassRows = globalClassRows.filter(row => row.c[56] && String(row.c[56].v).padStart(2, '0') === prevMonthStr);
+        const prevClassRows = globalClassRows.filter(row => row.c[57] && String(row.c[57].v).padStart(2, '0') === prevMonthStr);
         prevClassRows.forEach(row => {
-            const obs = getVal(row.c[12]) || '';
+            const obs = getVal(row.c[13]) || '';
             if (obs && String(obs).trim() !== '') prevCompletedObs++;
             else prevPendingObs++;
         });
