@@ -888,6 +888,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             }
 
             const category = getVal(c[5]) || getVal(c[15]);
+            const safeCategory = (category || 'Task').replace(/'/g, "\\'");
             const plan = getVal(c[6]) || getVal(c[11]) || 'No details provided';
             const shortPlan = plan.length > 80 ? plan.substring(0, 80) + '...' : plan;
             const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
@@ -898,10 +899,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 if (parts.length >= 2) deadline = `${parts[0]}/${parts[1]}`;
             }
             
-            const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+            const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+            const escapedModalContent = modalContent.replace(/"/g, '&quot;');
             
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('Task Details', '${modalContent}')" title="Click to view details">
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('Task Details', '${escapedModalContent}')" title="Click to view details">
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
                         <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span>
@@ -934,9 +936,11 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const shortPlan = plan.length > 50 ? plan.substring(0, 50) + '...' : plan;
                 const safePlanForModal = plan.replace(/"/g, '&quot;').replace(/\n/g, '<br/>').replace(/'/g, "\\'");
                 const category = getVal(c[5]) || getVal(c[15]);
-                const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${category || 'Task'}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+                const safeCategory = (category || 'Task').replace(/'/g, "\\'");
+                const modalContent = `<div style="line-height: 1.6; color: var(--text-dark);"><div style="margin-bottom: 12px;"><span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">3. Completed</span> <span class="category-badge"><i class="fa-solid fa-tag"></i> ${safeCategory}</span></div><div><strong>Plan / Details:</strong><br/>${safePlanForModal}</div></div>`;
+                const escapedModalContent = modalContent.replace(/"/g, '&quot;');
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('Task Details', '${modalContent}')" title="Click to view details"><del>${shortPlan}</del></li>`;
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('Task Details', '${escapedModalContent}')" title="Click to view details"><del>${shortPlan}</del></li>`;
             });
             compHtml += `</ul></div>`;
             completedPanel.innerHTML = compHtml;
