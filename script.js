@@ -125,6 +125,8 @@ function openTaskDetailModal(task, safeHTML) {
     document.getElementById('tdmTaskId').value = task.id;
     document.getElementById('tdmTaskPic').value = task.pic;
     document.getElementById('tdmTaskMonth').value = task.month;
+    document.getElementById('tdmTaskCategory').value = task.category || '';
+    document.getElementById('tdmTaskTitle').value = task.title || '';
     document.getElementById('tdmTaskStatus').value = task.status;
     document.getElementById('tdmTaskDetail').value = task.detail;
     document.getElementById('tdmOriginalDeadline').value = task.deadline;
@@ -259,10 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const [y, m, d] = rawDate.split('-');
                 formattedDate = `${d}/${m}/${y}`; // DD/MM/YYYY
                 
-                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 const mIndex = parseInt(m, 10) - 1;
                 if (mIndex >= 0 && mIndex < 12) {
-                    payloadMonth = `${m} = ${monthNames[mIndex]}`;
+                    payloadMonth = m;
                 }
                 payloadYear = y;
             }
@@ -283,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 status: document.getElementById('taskStatus').value || '1. New',
                 deadline: formattedDate,
                 result: document.getElementById('taskResult').value,
-                pending: document.getElementById('taskDetail').value,
                 createdDate: document.getElementById('taskCreatedDate').value
             };
 
@@ -358,10 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (dateToParse) {
                 const [y, m, d] = dateToParse.split('-');
-                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 const mIndex = parseInt(m, 10) - 1;
                 if (mIndex >= 0 && mIndex < 12) {
-                    payloadMonth = `${m} = ${monthNames[mIndex]}`;
+                    payloadMonth = m;
                 }
                 payloadYear = y;
             }
@@ -372,11 +371,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pic: document.getElementById('tdmTaskPic').value,
                 month: payloadMonth,
                 year: payloadYear,
+                category: document.getElementById('tdmTaskCategory').value,
+                title: document.getElementById('tdmTaskTitle').value,
                 detail: document.getElementById('tdmTaskDetail').value,
                 status: newStatus,
                 deadline: formattedDate,
-                result: action === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value,
-                pending: action === 'process' ? document.getElementById('tdmInputPending').value : document.getElementById('tdmOriginalPending').value
+                result: action === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value
             };
 
             try {
