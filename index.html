@@ -480,6 +480,39 @@
         </div>
     </div>
 
+    <!-- Modal for Onething Add/Edit -->
+    <div id="onethingModal" class="modal-backdrop">
+        <div class="modal-content glass-panel" style="max-width: 500px; padding: 0;">
+            <div class="modal-body" style="padding: 24px;">
+                <form id="onethingForm" style="display: flex; flex-direction: column; gap: 16px;">
+                    <input type="hidden" id="onethingAction">
+                    <input type="hidden" id="onethingId">
+                    <input type="hidden" id="onethingMonth">
+                    <input type="hidden" id="onethingYear">
+                    <input type="hidden" id="onethingPic">
+                    <input type="hidden" id="onethingWeek">
+                    
+                    <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px; margin-bottom: 10px;">
+                            <h3 id="onethingModalTitle" style="margin: 0; color: var(--primary-dark); font-size: 1.3rem;">Add / Edit Onething</h3>
+                            <button type="button" class="close-btn" onclick="closeOnethingModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="onethingContent" style="font-weight: 600; color: var(--text-dark);">Onething *</label>
+                            <textarea id="onethingContent" required rows="3" placeholder="Enter your One Thing for this week" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px;">
+                            <button type="button" class="btn btn-secondary" onclick="closeOnethingModal()" style="padding: 10px 20px; border-radius: 6px; border: none; background: #e0e0e0; color: #333; cursor: pointer; font-weight: 600;">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveOnethingBtn" style="padding: 10px 20px; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; font-weight: 600;">Save <i class="fa-solid fa-spinner fa-spin" id="onethingSpinner" style="display: none; margin-left: 8px;"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for Task Add/Edit -->
     <div id="taskModal" class="modal-backdrop">
         <div class="modal-content glass-panel" style="max-width: 600px; padding: 0;">
@@ -616,6 +649,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=16"></script>
+    <script src="script.js?v=17"></script>
 </body>
 </html>

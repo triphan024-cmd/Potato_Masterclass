@@ -145,6 +145,38 @@ function closeTaskDetailModal() {
     modal.classList.remove('show');
 }
 
+function openOnethingModal(action, id, week, month, year, pic, existingContent) {
+    document.getElementById('onethingAction').value = action;
+    document.getElementById('onethingId').value = id;
+    document.getElementById('onethingWeek').value = week;
+    document.getElementById('onethingMonth').value = month;
+    document.getElementById('onethingYear').value = year;
+    document.getElementById('onethingPic').value = hrReverseMap[pic] || pic;
+    
+    document.getElementById('onethingContent').value = existingContent || '';
+    
+    if (action === 'edit') {
+        document.getElementById('onethingModalTitle').innerText = 'Edit Onething - Week ' + week;
+    } else {
+        document.getElementById('onethingModalTitle').innerText = 'Add Onething - Week ' + week;
+    }
+    
+    const modal = document.getElementById('onethingModal');
+    modal.style.display = 'flex';
+    // Trigger reflow
+    void modal.offsetWidth;
+    modal.classList.add('show');
+}
+
+function closeOnethingModal() {
+    const modal = document.getElementById('onethingModal');
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.getElementById('onethingForm').reset();
+    }, 300);
+}
+
 function showTaskQuickUpdate(action) {
     const form = document.getElementById('tdmQuickUpdateForm');
     const processFields = document.getElementById('tdmProcessFields');
@@ -410,6 +442,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("Failed to update task. Check console for details.", "error");
             } finally {
                 btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
+    const onethingForm = document.getElementById('onethingForm');
+    if (onethingForm) {
+        onethingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const spinner = document.getElementById('onethingSpinner');
+            const saveBtn = document.getElementById('saveOnethingBtn');
+            saveBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            let mStr = document.getElementById('onethingMonth').value;
+            if (mStr && mStr.length === 2 && !mStr.startsWith("'")) {
+                mStr = "'" + mStr;
+            }
+            
+            const payload = {
+                action: document.getElementById('onethingAction').value,
+                id: document.getElementById('onethingId').value,
+                pic: document.getElementById('onethingPic').value,
+                type: 'Onething',
+                week: document.getElementById('onethingWeek').value,
+                month: mStr,
+                year: document.getElementById('onethingYear').value,
+                onething: document.getElementById('onethingContent').value,
+                status: 'New',
+                category: '',
+                title: '',
+                detail: '',
+                deadline: '',
+                result: '',
+                createdDate: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch(window.GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                closeOnethingModal();
+                showToast("Onething saved! Dashboard will reload.", "success");
+                if (typeof fetchDashboardData === 'function') {
+                    await fetchDashboardData();
+                } else {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error("Error saving onething:", err);
+                showToast("Error saving. Check console.", "error");
+            } finally {
+                saveBtn.disabled = false;
                 spinner.style.display = 'none';
             }
         });
@@ -1248,9 +1338,19 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         const { type, index } = date;
         if (type === 'week') {
             let weekOneThing = '';
+            let otAction = 'add';
+            let otId = '';
+            let otContentRaw = '';
+            const { start, end } = date;
+            const weekStart = new Date(start);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(end);
+            weekEnd.setHours(23, 59, 59, 999);
+            const yearStr = weekStart.getFullYear().toString();
+            const monthStr = String(month + 1).padStart(2, '0');
+            
             if (typeof globalLeaderRows !== 'undefined' && globalLeaderRows) {
                 const targetWeekStr = 'W' + index;
-                const monthStr = String(month + 1).padStart(2, '0');
                 const otRow = globalLeaderRows.find(r => {
                     if(!r || !r.c) return false;
                     const rType = getVal(r.c[2]);
@@ -1262,19 +1362,21 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     return rType === 'Onething' && rPic === picName && rMonthStr === monthStr && parsedWeek === index;
                 });
                 if (otRow) {
+                    otId = getVal(otRow.c[0]) || '';
+                    otAction = 'edit';
                     const otContent = getVal(otRow.c[5]);
                     if (otContent) {
+                        otContentRaw = otContent;
                         weekOneThing = `<span class="category-badge" style="background: rgba(155, 89, 182, 0.1); color: #9b59b6; margin-left: 4px; font-size: 0.95rem; font-weight: 500; text-transform: none;"><i class="fa-solid fa-bullseye"></i> ${otContent}</span>`;
                     }
                 }
             }
             
-            titleHtml = `<div style="display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;"><h3 style="color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>${weekOneThing}</div>`;
-            const { start, end } = date;
-            const weekStart = new Date(start);
-            weekStart.setHours(0, 0, 0, 0);
-            const weekEnd = new Date(end);
-            weekEnd.setHours(23, 59, 59, 999);
+            const btnIcon = otAction === 'edit' ? '<i class="fa-solid fa-pen"></i> Edit' : '<i class="fa-solid fa-plus"></i> Add';
+            const escapedContent = otContentRaw.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const otBtn = `<button class="btn btn-secondary" style="margin-left: auto; font-size: 0.8rem; padding: 4px 8px; border: 1px solid #ccc; background: #fff; color: #333; border-radius: 4px; cursor: pointer;" onclick="openOnethingModal('${otAction}', '${otId}', '${index}', '${monthStr}', '${yearStr}', '${picName}', '${escapedContent}')">${btnIcon}</button>`;
+            
+            titleHtml = `<div style="display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;"><h3 style="color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>${weekOneThing}${otBtn}</div>`;
             
             targetRows = validRows.filter(row => {
                 const d = parseDateStr(getVal(row.c[11]));
