@@ -1107,10 +1107,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         return type === 'Task' && pic === picName && monthMatches;
     });
 
-    if (validRows.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: #fff; border-radius: 12px; border: 1px dashed rgba(0,0,0,0.1);">No tasks found for ${picName} this month.</div>`;
-        return;
-    }
+    // Render an empty calendar board if no tasks, but allow user to add tasks.
 
     let roleTitle = `Weekly Planner - ${picName}`;
     const headerElement = container.previousElementSibling;
@@ -1157,11 +1154,15 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     };
 
     let refDate = new Date();
-    for (let row of validRows) {
-        let d = parseDateStr(getVal(row.c[12]));
-        if (d && !isNaN(d)) {
-            refDate = d;
-            break;
+    if (typeof currentYearStr !== 'undefined' && typeof currentMonthStr !== 'undefined') {
+        refDate = new Date(parseInt(currentYearStr), parseInt(monthStr || currentMonthStr) - 1, 1);
+    } else {
+        for (let row of validRows) {
+            let d = parseDateStr(getVal(row.c[12]));
+            if (d && !isNaN(d)) {
+                refDate = d;
+                break;
+            }
         }
     }
     
@@ -1561,8 +1562,10 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
                         <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
-                        <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                        <button onclick="openTaskModal(${taskObjStr})" style="margin-left: auto; border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
+                        <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+                            <span class="deadline-badge" style="margin: 0;"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                            <button onclick="openTaskModal(${taskObjStr})" style="border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
+                        </div>
                     </div>
                     <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskDetailModal(${taskObjStr}, \`${safeHTML}\`)' title="Click to view details and quick update">
                         ${shortPlan}
