@@ -507,15 +507,9 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label for="taskTitle" style="font-weight: 600; color: var(--text-dark);">Title *</label>
-                                <input type="text" id="taskTitle" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <label for="taskWeek" style="font-weight: 600; color: var(--text-dark);">Week *</label>
-                                <input type="text" id="taskWeek" readonly placeholder="Auto-calculated" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #f5f5f5; color: #666; cursor: not-allowed;">
-                            </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="taskTitle" style="font-weight: 600; color: var(--text-dark);">Title *</label>
+                            <input type="text" id="taskTitle" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -524,6 +518,14 @@
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div id="taskDeadlineContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                                <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
+                                <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label for="taskWeek" style="font-weight: 600; color: var(--text-dark);">Week *</label>
+                                <input type="text" id="taskWeek" readonly placeholder="Auto-calculated" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #f5f5f5; color: #666; cursor: not-allowed;">
+                            </div>
                             <div id="taskStatusContainer" style="display: none; flex-direction: column; gap: 8px;">
                                 <label for="taskStatus" style="font-weight: 600; color: var(--text-dark);">Status</label>
                                 <select id="taskStatus" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
@@ -534,15 +536,6 @@
                                     <option value="5. Cancel">5. Cancel</option>
                                 </select>
                             </div>
-                            <div id="taskDeadlineContainer" style="display: flex; flex-direction: column; gap: 8px;">
-                                <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
-                                <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
-                            </div>
-                        </div>
-                        
-                        <div id="taskPlanDetailContainer" style="display: none; flex-direction: column; gap: 8px;">
-                            <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Plan Detail</label>
-                            <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
                         </div>
 
                         <div id="taskResultContainer" style="display: none; flex-direction: column; gap: 8px;">
