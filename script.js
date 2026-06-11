@@ -1188,7 +1188,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                         <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                         <button onclick="openTaskModal(${taskObjStr})" style="margin-left: auto; border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
                     </div>
-                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
+                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskModal(${taskObjStr})' title="Click to view and edit details">
                         ${shortPlan}
                     </div>
                 </div>
