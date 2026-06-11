@@ -66,7 +66,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         document.getElementById('taskDetail').value = task.taskDetail || '';
         document.getElementById('taskWeek').value = task.week || '';
         
-        document.getElementById('taskStatus').value = task.status || '1. New';
+        document.getElementById('taskStatus').value = task.status || 'New';
         if (task.deadline) {
             const parts = String(task.deadline).split('/');
             if (parts.length === 3) {
@@ -98,7 +98,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         document.getElementById('taskWeek').value = '';
         document.getElementById('taskDeadline').value = '';
         
-        document.getElementById('taskStatus').value = '1. New';
+        document.getElementById('taskStatus').value = 'New';
         
         // Enable fields for Add mode
         document.getElementById('taskInputPic').disabled = false;
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             spinner.style.display = 'inline-block';
             
             const action = tdmQuickUpdateForm.getAttribute('data-action');
-            let newStatus = action === 'process' ? '2. Processing' : '3. Completed';
+            let newStatus = action === 'process' ? 'Processing' : 'Completed';
             
             let formattedDate = document.getElementById('tdmOriginalDeadline').value; // Default to existing
             let payloadMonth = document.getElementById('tdmTaskMonth').value;
