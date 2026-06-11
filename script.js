@@ -57,18 +57,15 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
             document.getElementById('taskDeadline').value = '';
         }
         document.getElementById('taskResult').value = task.result || '';
-        document.getElementById('taskPending').value = task.pending || '';
         
-        // Disable fields for Edit mode
+        // Disable fields for Edit mode (except Task Detail which replaces Plan Detail, and Deadline)
         document.getElementById('taskInputPic').disabled = true;
         document.getElementById('taskCategory').disabled = true;
         document.getElementById('taskTitle').disabled = true;
-        document.getElementById('taskDetail').disabled = true;
         document.getElementById('taskWeek').disabled = true;
         
-        // Show Plan Detail for Edit
-        document.getElementById('taskPlanDetailContainer').style.display = 'flex';
-        document.getElementById('taskPending').disabled = false;
+        // Enable fields for Edit
+        document.getElementById('taskDetail').disabled = false;
         document.getElementById('taskDeadline').disabled = false;
     } else {
         document.getElementById('innerModalTaskTitle').innerText = 'Add New Task';
@@ -88,55 +85,15 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         document.getElementById('taskTitle').disabled = false;
         document.getElementById('taskDetail').disabled = false;
         document.getElementById('taskWeek').disabled = false;
-        
-        // Hide Plan Detail for Add
-        document.getElementById('taskPlanDetailContainer').style.display = 'none';
-        document.getElementById('taskPending').value = '';
         document.getElementById('taskDeadline').disabled = false;
     }
-    
-    toggleTaskFields();
+
     modal.classList.add('show');
 }
 
 function closeTaskModal() {
     const modal = document.getElementById('taskModal');
     modal.classList.remove('show');
-}
-
-function toggleTaskFields() {
-    const status = document.getElementById('taskStatus').value;
-    const planDetailContainer = document.getElementById('taskPlanDetailContainer');
-    const deadlineContainer = document.getElementById('taskDeadlineContainer');
-    const resultContainer = document.getElementById('taskResultContainer');
-    const deadlineInput = document.getElementById('taskDeadline');
-
-    if (planDetailContainer) planDetailContainer.style.display = 'none';
-    if (resultContainer) resultContainer.style.display = 'none';
-    if (deadlineInput) deadlineInput.required = false;
-    if (deadlineContainer) deadlineContainer.style.visibility = 'hidden';
-
-    if (status.includes('Processing')) {
-        if (planDetailContainer) planDetailContainer.style.display = 'flex';
-        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
-        if (deadlineInput) deadlineInput.required = true;
-    } else if (status.includes('Completed')) {
-        if (resultContainer) resultContainer.style.display = 'flex';
-        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
-    } else if (status.includes('New')) {
-        if (planDetailContainer) planDetailContainer.style.display = 'flex';
-        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
-        if (deadlineInput) deadlineInput.required = true;
-    } else {
-        if (planDetailContainer) planDetailContainer.style.display = 'flex';
-        if (resultContainer) resultContainer.style.display = 'flex';
-        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
-    }
-}
-
-function setTaskStatus(statusStr) {
-    document.getElementById('taskStatus').value = statusStr;
-    toggleTaskFields();
 }
 
 function openTaskDetailModal(task, safeHTML) {
@@ -291,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 status: document.getElementById('taskStatus').value || '1. New',
                 deadline: formattedDate,
                 result: document.getElementById('taskResult').value,
-                pending: document.getElementById('taskPending').value,
+                pending: document.getElementById('taskDetail').value,
                 createdDate: document.getElementById('taskCreatedDate').value
             };
 
