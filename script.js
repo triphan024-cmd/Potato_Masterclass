@@ -19,6 +19,27 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
+// Toast Notification
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast-msg toast-${type}`;
+    
+    const icon = type === 'success' ? '<i class="fa-solid fa-circle-check success-icon"></i>' : '<i class="fa-solid fa-circle-exclamation error-icon"></i>';
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('toast-fadeout');
+        toast.addEventListener('animationend', () => {
+            toast.remove();
+        });
+    }, 3000);
+}
+
 // Task Modal Logic
 function openTaskModal(task = null, picName = '', monthStr = '') {
     if (event) event.stopPropagation();
@@ -220,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             if (window.GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
-                alert("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!");
+                showToast("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!", "error");
                 return;
             }
 
@@ -279,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // no-cors doesn't allow reading response, assume success if no throw
                 closeTaskModal();
-                alert("Task saved! Dashboard will reload.");
+                showToast("Task saved! Dashboard will reload.", "success");
                 // Reload dashboard to fetch new data
                 if (typeof fetchDashboardData === 'function') {
                     await fetchDashboardData();
@@ -288,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error("Error saving task:", err);
-                alert("Failed to save task. Check console for details.");
+                showToast("Failed to save task. Check console for details.", "error");
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
@@ -302,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             if (window.GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
-                alert("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!");
+                showToast("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!", "error");
                 return;
             }
 
@@ -368,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 closeTaskDetailModal();
-                alert("Task updated! Dashboard will reload.");
+                showToast("Task updated! Dashboard will reload.", "success");
                 if (typeof fetchDashboardData === 'function') {
                     await fetchDashboardData();
                 } else {
@@ -376,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 console.error("Error updating task:", err);
-                alert("Failed to update task. Check console for details.");
+                showToast("Failed to update task. Check console for details.", "error");
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
