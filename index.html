@@ -493,50 +493,102 @@
                     <input type="hidden" id="taskPic">
                     <input type="hidden" id="taskMonth">
                     
-                    <div style="display: flex; gap: 12px; margin-bottom: 8px;">
-                        <button type="button" onclick="setTaskStatus('2. Processing')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                            <i class="fa-solid fa-spinner"></i> Mark Processing
-                        </button>
-                        <button type="button" onclick="setTaskStatus('3. Completed')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                            <i class="fa-solid fa-check"></i> Mark Completed
-                        </button>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label for="taskDetail" style="font-weight: 600; color: var(--text-dark);">Task Detail *</label>
-                        <textarea id="taskDetail" required rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 16px;">
                         <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <label for="taskStatus" style="font-weight: 600; color: var(--text-dark);">Status</label>
-                            <select id="taskStatus" onchange="toggleTaskFields()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
-                                <option value="1. New">1. New</option>
-                                <option value="2. Processing">2. Processing</option>
-                                <option value="3. Completed">3. Completed</option>
-                                <option value="4. Delay">4. Delay</option>
-                                <option value="5. Cancel">5. Cancel</option>
-                            </select>
+                            <label for="taskDetail" style="font-weight: 600; color: var(--text-dark);">Task Detail *</label>
+                            <textarea id="taskDetail" required rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
                         </div>
-                        <div id="taskDeadlineContainer" style="display: flex; flex-direction: column; gap: 8px;">
-                            <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
-                            <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label for="taskStatus" style="font-weight: 600; color: var(--text-dark);">Status</label>
+                                <select id="taskStatus" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                                    <option value="1. New">1. New</option>
+                                    <option value="2. Processing">2. Processing</option>
+                                    <option value="3. Completed">3. Completed</option>
+                                    <option value="4. Delay">4. Delay</option>
+                                    <option value="5. Cancel">5. Cancel</option>
+                                </select>
+                            </div>
+                            <div id="taskDeadlineContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                                <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
+                                <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div id="taskPlanDetailContainer" style="display: flex; flex-direction: column; gap: 8px;">
-                        <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Plan Detail / Pending Issues</label>
-                        <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
-                    </div>
+                        
+                        <div id="taskPlanDetailContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Plan Detail</label>
+                            <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        </div>
 
-                    <div id="taskResultContainer" style="display: flex; flex-direction: column; gap: 8px;">
-                        <label for="taskResult" style="font-weight: 600; color: var(--text-dark);">Result / Output</label>
-                        <textarea id="taskResult" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        <div id="taskResultContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="taskResult" style="font-weight: 600; color: var(--text-dark);">Result / Output</label>
+                            <textarea id="taskResult" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        </div>
                     </div>
 
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
                         <button type="button" class="btn btn-secondary" onclick="closeTaskModal()" style="padding: 10px 20px; border-radius: 6px; border: none; background: #e0e0e0; color: #333; cursor: pointer; font-weight: 600;">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="saveTaskBtn" style="padding: 10px 20px; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; font-weight: 600;">Save Task <i class="fa-solid fa-spinner fa-spin" id="taskSpinner" style="display: none; margin-left: 8px;"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Task Details with Quick Actions -->
+    <div id="taskDetailModal" class="modal-backdrop">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="tdmTitle">Task Details</h3>
+                <button class="close-btn" onclick="closeTaskDetailModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 24px; max-height: 80vh; overflow-y: auto;">
+                <div id="tdmContent">
+                    <!-- readonly details rendered here -->
+                </div>
+                
+                <div id="tdmActionButtons" style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button type="button" onclick="showTaskQuickUpdate('process')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fa-solid fa-spinner"></i> Process
+                    </button>
+                    <button type="button" onclick="showTaskQuickUpdate('complete')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                        <i class="fa-solid fa-check"></i> Completed
+                    </button>
+                </div>
+
+                <form id="tdmQuickUpdateForm" style="display: none; margin-top: 20px; background: rgba(255,255,255,0.95); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); flex-direction: column; gap: 12px;">
+                    <h4 id="tdmQuickUpdateTitle" style="margin: 0; margin-bottom: 8px; color: var(--primary-dark); font-size: 1.1rem;">Update Task</h4>
+                    <input type="hidden" id="tdmTaskId">
+                    <input type="hidden" id="tdmTaskPic">
+                    <input type="hidden" id="tdmTaskMonth">
+                    <input type="hidden" id="tdmTaskStatus">
+                    <input type="hidden" id="tdmTaskDetail">
+                    <input type="hidden" id="tdmOriginalDeadline">
+                    <input type="hidden" id="tdmOriginalResult">
+                    <input type="hidden" id="tdmOriginalPending">
+                    
+                    <div id="tdmProcessFields" style="display: none; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-weight: 600; color: var(--text-dark);">Plan Detail</label>
+                            <textarea id="tdmInputPending" rows="2" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
+                            <input type="date" id="tdmInputDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                        </div>
+                    </div>
+
+                    <div id="tdmCompleteFields" style="display: none; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-weight: 600; color: var(--text-dark);">Result / Output *</label>
+                            <textarea id="tdmInputResult" rows="2" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="hideTaskQuickUpdate()" style="padding: 8px 16px; border-radius: 6px; border: none; background: #e0e0e0; color: #333; cursor: pointer; font-weight: 600;">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="tdmSaveBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; font-weight: 600;">Update <i class="fa-solid fa-spinner fa-spin" id="tdmSpinner" style="display: none; margin-left: 8px;"></i></button>
                     </div>
                 </form>
             </div>

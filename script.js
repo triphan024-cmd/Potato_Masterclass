@@ -44,9 +44,23 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         }
         document.getElementById('taskResult').value = task.result || '';
         document.getElementById('taskPending').value = task.pending || '';
+        
+        document.getElementById('taskDetail').disabled = true;
+        document.getElementById('taskStatus').disabled = true;
+        document.getElementById('taskResult').disabled = true;
+        
+        document.getElementById('taskPending').disabled = false;
+        document.getElementById('taskDeadline').disabled = false;
     } else {
         document.getElementById('modalTaskTitle').innerText = 'Add New Task';
         document.getElementById('taskStatus').value = '1. New';
+        
+        document.getElementById('taskDetail').disabled = false;
+        document.getElementById('taskStatus').disabled = false;
+        document.getElementById('taskResult').disabled = false;
+        
+        document.getElementById('taskPending').disabled = false;
+        document.getElementById('taskDeadline').disabled = false;
     }
     
     toggleTaskFields();
@@ -91,6 +105,71 @@ function toggleTaskFields() {
 function setTaskStatus(statusStr) {
     document.getElementById('taskStatus').value = statusStr;
     toggleTaskFields();
+}
+
+function openTaskDetailModal(task, safeHTML) {
+    const modal = document.getElementById('taskDetailModal');
+    document.getElementById('tdmContent').innerHTML = safeHTML;
+    
+    // Store task info for quick update
+    document.getElementById('tdmTaskId').value = task.id;
+    document.getElementById('tdmTaskPic').value = task.pic;
+    document.getElementById('tdmTaskMonth').value = task.month;
+    document.getElementById('tdmTaskStatus').value = task.status;
+    document.getElementById('tdmTaskDetail').value = task.detail;
+    document.getElementById('tdmOriginalDeadline').value = task.deadline;
+    document.getElementById('tdmOriginalResult').value = task.result;
+    document.getElementById('tdmOriginalPending').value = task.pending;
+    
+    // Reset quick update form
+    hideTaskQuickUpdate();
+    
+    modal.classList.add('show');
+    if (event) event.stopPropagation();
+}
+
+function closeTaskDetailModal() {
+    const modal = document.getElementById('taskDetailModal');
+    modal.classList.remove('show');
+}
+
+function showTaskQuickUpdate(action) {
+    const form = document.getElementById('tdmQuickUpdateForm');
+    const processFields = document.getElementById('tdmProcessFields');
+    const completeFields = document.getElementById('tdmCompleteFields');
+    const title = document.getElementById('tdmQuickUpdateTitle');
+    const btn = document.getElementById('tdmActionButtons');
+    
+    btn.style.display = 'none';
+    form.style.display = 'flex';
+    form.setAttribute('data-action', action);
+    
+    if (action === 'process') {
+        title.innerText = 'Mark Processing - Please enter details';
+        processFields.style.display = 'flex';
+        completeFields.style.display = 'none';
+        
+        // Pre-fill existing data
+        document.getElementById('tdmInputPending').value = document.getElementById('tdmOriginalPending').value || '';
+        const rawDeadline = document.getElementById('tdmOriginalDeadline').value;
+        if (rawDeadline) {
+            const parts = rawDeadline.split('/');
+            if (parts.length === 3) {
+                document.getElementById('tdmInputDeadline').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+        }
+    } else {
+        title.innerText = 'Mark Completed - Please enter result';
+        processFields.style.display = 'none';
+        completeFields.style.display = 'flex';
+        
+        document.getElementById('tdmInputResult').value = document.getElementById('tdmOriginalResult').value || '';
+    }
+}
+
+function hideTaskQuickUpdate() {
+    document.getElementById('tdmQuickUpdateForm').style.display = 'none';
+    document.getElementById('tdmActionButtons').style.display = 'flex';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -151,6 +230,71 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error("Error saving task:", err);
                 alert("Failed to save task. Check console for details.");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
+
+    const tdmQuickUpdateForm = document.getElementById('tdmQuickUpdateForm');
+    if (tdmQuickUpdateForm) {
+        tdmQuickUpdateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (window.GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                alert("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!");
+                return;
+            }
+
+            const btn = document.getElementById('tdmSaveBtn');
+            const spinner = document.getElementById('tdmSpinner');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            const action = tdmQuickUpdateForm.getAttribute('data-action');
+            let newStatus = action === 'process' ? '2. Processing' : '3. Completed';
+            
+            let formattedDate = document.getElementById('tdmOriginalDeadline').value; // Default to existing
+            if (action === 'process') {
+                const rawDate = document.getElementById('tdmInputDeadline').value;
+                if (rawDate) {
+                    const [y, m, d] = rawDate.split('-');
+                    formattedDate = `${d}/${m}/${y}`;
+                }
+            }
+            
+            const payload = {
+                action: 'edit',
+                id: document.getElementById('tdmTaskId').value,
+                pic: document.getElementById('tdmTaskPic').value,
+                month: document.getElementById('tdmTaskMonth').value,
+                detail: document.getElementById('tdmTaskDetail').value,
+                status: newStatus,
+                deadline: formattedDate,
+                result: action === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value,
+                pending: action === 'process' ? document.getElementById('tdmInputPending').value : document.getElementById('tdmOriginalPending').value
+            };
+
+            try {
+                const response = await fetch(window.GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                closeTaskDetailModal();
+                alert("Task updated! Dashboard will reload.");
+                if (typeof fetchDashboardData === 'function') {
+                    await fetchDashboardData();
+                } else {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error("Error updating task:", err);
+                alert("Failed to update task. Check console for details.");
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
@@ -1188,7 +1332,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                         <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
                         <button onclick="openTaskModal(${taskObjStr})" style="margin-left: auto; border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
                     </div>
-                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskModal(${taskObjStr})' title="Click to view and edit details">
+                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskDetailModal(${taskObjStr}, \`${safeHTML}\`)' title="Click to view details and quick update">
                         ${shortPlan}
                     </div>
                 </div>
