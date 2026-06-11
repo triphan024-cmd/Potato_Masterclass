@@ -325,7 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            const fullPic = document.getElementById('taskInputPic').value;
             const historyLine = `${getShortName(fullPic)} - ${actionName} (${getFormattedHistoryTime()})`;
             
             const payload = {
