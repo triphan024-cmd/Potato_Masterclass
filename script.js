@@ -1411,7 +1411,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 month: getVal(c[22]) || '',
                 category: getVal(c[6]) || '',
                 title: getVal(c[7]) || '',
-                taskDetail: getVal(c[7]) || '',
+                taskDetail: getVal(c[8]) || '',
                 week: getVal(c[21]) || '',
                 status: status,
                 deadline: getVal(c[11]) || '',
