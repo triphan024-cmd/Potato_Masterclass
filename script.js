@@ -270,9 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const rowIdx = Math.floor(cellIndex / 7);
             
             if (rowIdx >= w1RowIndex) {
-                taskWeekInput.value = 'W' + (rowIdx - w1RowIndex + 1);
+                taskWeekInput.value = (rowIdx - w1RowIndex + 1);
             } else {
-                taskWeekInput.value = 'W4 (Prev)';
+                taskWeekInput.value = '4';
             }
         });
     }
