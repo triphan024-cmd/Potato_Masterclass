@@ -205,6 +205,58 @@ function hideTaskQuickUpdate() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    const taskDeadlineInput = document.getElementById('taskDeadline');
+    const taskWeekInput = document.getElementById('taskWeek');
+    
+    if (taskDeadlineInput && taskWeekInput) {
+        taskDeadlineInput.addEventListener('change', () => {
+            const dateStr = taskDeadlineInput.value;
+            if (!dateStr) {
+                taskWeekInput.value = '';
+                return;
+            }
+            const d = new Date(dateStr);
+            if (isNaN(d)) return;
+            
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const date = d.getDate();
+            
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const totalCells = Math.ceil((firstDayOfMonth + daysInMonth) / 7) * 7;
+            
+            let firstTuesdayDate = 1;
+            for (let day = 1; day <= 7; day++) {
+                let tempD = new Date(year, month, day);
+                if (tempD.getDay() === 2) {
+                    firstTuesdayDate = day;
+                    break;
+                }
+            }
+            
+            let w1RowIndex = 0;
+            for (let r = 0; r < totalCells / 7; r++) {
+                let rowStartCell = r * 7;
+                let rowEndCell = rowStartCell + 6;
+                let indexOfFirstTue = firstDayOfMonth + firstTuesdayDate - 1;
+                if (indexOfFirstTue >= rowStartCell && indexOfFirstTue <= rowEndCell) {
+                    w1RowIndex = r;
+                    break;
+                }
+            }
+            
+            const cellIndex = firstDayOfMonth + date - 1;
+            const rowIdx = Math.floor(cellIndex / 7);
+            
+            if (rowIdx >= w1RowIndex) {
+                taskWeekInput.value = 'W' + (rowIdx - w1RowIndex + 1);
+            } else {
+                taskWeekInput.value = 'W4 (Prev)';
+            }
+        });
+    }
+
     const taskForm = document.getElementById('taskForm');
     if (taskForm) {
         taskForm.addEventListener('submit', async (e) => {
@@ -681,6 +733,17 @@ async function fetchDashboardData() {
             updateAllRolesTasksMetrics();
             
             renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', currentMonthStr);
+            
+            // Populate category list for Task Modal
+            const categoryList = document.getElementById('categoryList');
+            if (categoryList) {
+                const uniqueCategories = new Set();
+                globalLeaderRows.forEach(row => {
+                    const cat = getVal(row.c[6]);
+                    if (cat) uniqueCategories.add(cat.trim());
+                });
+                categoryList.innerHTML = Array.from(uniqueCategories).sort().map(cat => `<option value="${cat}">`).join('');
+            }
             
             console.log(`Retrieved leader data.`);
         } catch (err) {
