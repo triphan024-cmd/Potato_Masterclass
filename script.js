@@ -161,6 +161,10 @@ function showTaskQuickUpdate(action) {
         processFields.style.display = 'flex';
         completeFields.style.display = 'none';
         
+        document.getElementById('tdmInputPending').setAttribute('required', 'true');
+        document.getElementById('tdmInputDeadline').setAttribute('required', 'true');
+        document.getElementById('tdmInputResult').removeAttribute('required');
+        
         // Pre-fill existing data
         document.getElementById('tdmInputPending').value = document.getElementById('tdmOriginalPending').value || '';
         const rawDeadline = document.getElementById('tdmOriginalDeadline').value;
@@ -174,6 +178,10 @@ function showTaskQuickUpdate(action) {
         title.innerText = 'Mark Completed - Please enter result';
         processFields.style.display = 'none';
         completeFields.style.display = 'flex';
+        
+        document.getElementById('tdmInputPending').removeAttribute('required');
+        document.getElementById('tdmInputDeadline').removeAttribute('required');
+        document.getElementById('tdmInputResult').setAttribute('required', 'true');
         
         document.getElementById('tdmInputResult').value = document.getElementById('tdmOriginalResult').value || '';
     }
