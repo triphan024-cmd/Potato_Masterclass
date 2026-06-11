@@ -1612,13 +1612,15 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const rawHistory = getVal(c[18]) || 'No history recorded';
                 const safeHistory = String(rawHistory).replace(/\n/g, '<br/>');
 
+                const rawStatus = getVal(c[10]) || 'Completed';
+                const safeStatus = String(rawStatus).replace(/'/g, "&#39;");
                 const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
                 
                 const combinedHTML = `
                     <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
                         <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
                         <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                            <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); margin: 0;">3. Completed</span>
+                            <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); margin: 0;">${safeStatus}</span>
                             <span class="category-badge" style="margin: 0;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
                             <span class="deadline-badge" style="margin-left: auto; margin-right: 0;"><i class="fa-regular fa-clock"></i> ${safeDeadline}</span>
                         </div>
