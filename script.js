@@ -1,5 +1,5 @@
 // Google Apps Script Web App URL for updating tasks
-window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymylWdVfvRG7feEoBefjDdg4fq7aHtnFePiO2mXBR3NJOXCz_v0VLef_XsnwMIdOB-JQ/exec';
+window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyUpPBhYBLvwyKhTk-7bNAC2rr5PE0dnN7T4lizrNNcIyJkDM_Z5PPw1v75-zWG0DQPCg/exec';
 
 // Function to open the detailed view of a class
 function openClassDetail(titleStr, contentStr) {
