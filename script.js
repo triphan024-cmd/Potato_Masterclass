@@ -1484,10 +1484,10 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             }
 
             const category = getVal(c[6]) || 'Task';
-            const safeCategory = String(category).replace(/'/g, "\\'");
+            const safeCategory = String(category).replace(/'/g, "&#39;");
             
             const tittle = getVal(c[7]) || 'Untitled Task';
-            const safeTittle = String(tittle).replace(/'/g, "\\'");
+            const safeTittle = String(tittle).replace(/'/g, "&#39;");
             
             const rawPlanDetail = getVal(c[8]) || 'No detail provided';
             const rawResult = getVal(c[9]) || 'No result provided';
@@ -1544,7 +1544,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 .replace(/`/g, '\\`')
                 .replace(/\n/g, ' ')
                 .replace(/\r/g, ' ')
-                .replace(/'/g, "\\'");
+                .replace(/'/g, "&#39;");
             
             listHtml += `
                 <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; transition: transform 0.2s, box-shadow 0.2s; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''">
@@ -1578,10 +1578,10 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             completedTasks.forEach(row => {
                 const c = row.c;
                 const category = getVal(c[6]) || 'Task';
-                const safeCategory = String(category).replace(/'/g, "\\'");
+                const safeCategory = String(category).replace(/'/g, "&#39;");
                 
                 const tittle = getVal(c[7]) || 'Untitled Task';
-                const safeTittle = String(tittle).replace(/'/g, "\\'");
+                const safeTittle = String(tittle).replace(/'/g, "&#39;");
                 
                 const rawPlanDetail = getVal(c[8]) || 'No detail provided';
                 const rawResult = getVal(c[9]) || 'No result provided';
@@ -1619,7 +1619,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     .replace(/`/g, '\\`')
                     .replace(/\n/g, ' ')
                     .replace(/\r/g, ' ')
-                    .replace(/'/g, "\\'");
+                    .replace(/'/g, "&#39;");
                 
                 compHtml += `<li style="cursor: pointer; transition: color 0.2s; display: flex; align-items: flex-start; justify-content: space-between;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del style="flex: 1; margin-right: 8px;">${shortPlan}</del> <span style="font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span></li>`;
             });
