@@ -240,6 +240,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize month selector
     changeMonth(0);
+
+    // Initialize task form listener
+    const taskForm = document.getElementById('taskForm');
+    if (taskForm) {
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (window.GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                alert("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!");
+                return;
+            }
+
+            const btn = document.getElementById('saveTaskBtn');
+            const spinner = document.getElementById('taskSpinner');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            const rawDate = document.getElementById('taskDeadline').value; // YYYY-MM-DD
+            let formattedDate = '';
+            if (rawDate) {
+                const [y, m, d] = rawDate.split('-');
+                formattedDate = `${d}/${m}/${y}`; // DD/MM/YYYY
+            }
+
+            const payload = {
+                action: document.getElementById('taskId').value ? 'edit' : 'add',
+                id: document.getElementById('taskId').value,
+                pic: document.getElementById('taskPic').value,
+                month: document.getElementById('taskMonth').value,
+                detail: document.getElementById('taskDetail').value,
+                status: document.getElementById('taskStatus').value,
+                deadline: formattedDate,
+                result: document.getElementById('taskResult').value,
+                pending: document.getElementById('taskPending').value
+            };
+
+            try {
+                const response = await fetch(window.GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // no-cors doesn't allow reading response, assume success if no throw
+                closeTaskModal();
+                alert("Task saved! Dashboard will reload.");
+                // Reload dashboard to fetch new data
+                if (typeof fetchDashboardData === 'function') {
+                    await fetchDashboardData();
+                } else {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error("Error saving task:", err);
+                alert("Failed to save task. Check console for details.");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
 });
 
 
