@@ -1491,6 +1491,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             
             const rawPlanDetail = getVal(c[8]) || 'No detail provided';
             const rawResult = getVal(c[9]) || 'No result provided';
+            const rawHistory = getVal(c[18]) || 'No history recorded';
             
             let deadline = getVal(c[11]);
             if (deadline) {
@@ -1502,6 +1503,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
             const safeResult = String(rawResult).replace(/\n/g, '<br/>');
             const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
+            const safeHistory = String(rawHistory).replace(/\n/g, '<br/>');
 
             const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
             
@@ -1516,7 +1518,9 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                     <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
                     <strong style="color: var(--info); display: block; margin-bottom: 5px;">Result:</strong>
-                    <p style="margin-top: 0; margin-bottom: 0;">${safeResult}</p>
+                    <p style="margin-top: 0; margin-bottom: 15px;">${safeResult}</p>
+                    <strong style="color: #64748b; display: block; margin-bottom: 5px;">History:</strong>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; font-size: 0.95rem; font-family: 'Consolas', monospace; color: #475569; max-height: 150px; overflow-y: auto;">${safeHistory}</div>
                 </div>
             `;
             
