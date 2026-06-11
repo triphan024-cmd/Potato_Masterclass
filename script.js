@@ -1372,12 +1372,14 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 }
             }
             
-            const btnIcon = otAction === 'edit' ? '<i class="fa-solid fa-pen"></i> Edit Onething' : '<i class="fa-solid fa-plus"></i> Add Onething';
-            const btnStyle = otAction === 'edit' ? 'background: rgba(155, 89, 182, 0.1); color: #9b59b6; border: 1px solid rgba(155, 89, 182, 0.3);' : 'background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; box-shadow: 0 2px 6px rgba(155, 89, 182, 0.3);';
+            const btnIcon = otAction === 'edit' ? '<i class="fa-solid fa-pen"></i>' : '<i class="fa-solid fa-plus"></i>';
+            const btnTitle = otAction === 'edit' ? 'Edit Onething' : 'Add Onething';
+            const hoverColor = otAction === 'edit' ? '#9b59b6' : '#10b981'; // Purple for edit, Green for add
             const escapedContent = otContentRaw.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-            const otBtn = `<button class="btn" style="padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform 0.2s; ${btnStyle}" onclick="openOnethingModal('${otAction}', '${otId}', '${index}', '${monthStr}', '${yearStr}', '${picName}', '${escapedContent}')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">${btnIcon}</button>`;
             
-            titleHtml = `<div style="display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;"><h3 style="color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 12px;">${otBtn} Week ${index} Tasks</h3>${weekOneThing}</div>`;
+            const otBtn = `<button title="${btnTitle}" style="background: none; border: none; color: #a0aec0; font-size: 1.1rem; padding: 4px 8px; border-radius: 50%; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;" onclick="openOnethingModal('${otAction}', '${otId}', '${index}', '${monthStr}', '${yearStr}', '${picName}', '${escapedContent}')" onmouseover="this.style.color='${hoverColor}'; this.style.background='rgba(0,0,0,0.05)';" onmouseout="this.style.color='#a0aec0'; this.style.background='none';">${btnIcon}</button>`;
+            
+            titleHtml = `<div style="display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;"><h3 style="color: var(--primary-color); margin: 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-list-check"></i> Week ${index} Tasks</h3>${weekOneThing}${otBtn}</div>`;
             
             targetRows = validRows.filter(row => {
                 const d = parseDateStr(getVal(row.c[11]));
