@@ -493,15 +493,24 @@
                     <input type="hidden" id="taskPic">
                     <input type="hidden" id="taskMonth">
                     
+                    <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                        <button type="button" onclick="setTaskStatus('2. Processing')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            <i class="fa-solid fa-spinner"></i> Mark Processing
+                        </button>
+                        <button type="button" onclick="setTaskStatus('3. Completed')" class="btn" style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                            <i class="fa-solid fa-check"></i> Mark Completed
+                        </button>
+                    </div>
+
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label for="taskDetail" style="font-weight: 600; color: var(--text-dark);">Task Detail *</label>
-                        <textarea id="taskDetail" required rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                        <textarea id="taskDetail" required rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <label for="taskStatus" style="font-weight: 600; color: var(--text-dark);">Status</label>
-                            <select id="taskStatus" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem;">
+                            <select id="taskStatus" onchange="toggleTaskFields()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
                                 <option value="1. New">1. New</option>
                                 <option value="2. Processing">2. Processing</option>
                                 <option value="3. Completed">3. Completed</option>
@@ -509,20 +518,20 @@
                                 <option value="5. Cancel">5. Cancel</option>
                             </select>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div id="taskDeadlineContainer" style="display: flex; flex-direction: column; gap: 8px;">
                             <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
-                            <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem;">
+                            <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
                         </div>
                     </div>
                     
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label for="taskResult" style="font-weight: 600; color: var(--text-dark);">Result / Output</label>
-                        <textarea id="taskResult" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    <div id="taskPlanDetailContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Plan Detail / Pending Issues</label>
+                        <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
                     </div>
 
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Pending Issues / Feedback</label>
-                        <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    <div id="taskResultContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="taskResult" style="font-weight: 600; color: var(--text-dark);">Result / Output</label>
+                        <textarea id="taskResult" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem; background: #fff;"></textarea>
                     </div>
 
                     <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">

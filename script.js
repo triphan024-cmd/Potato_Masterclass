@@ -49,12 +49,48 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         document.getElementById('taskStatus').value = '1. New';
     }
     
+    toggleTaskFields();
     modal.classList.add('show');
 }
 
 function closeTaskModal() {
     const modal = document.getElementById('taskModal');
     modal.classList.remove('show');
+}
+
+function toggleTaskFields() {
+    const status = document.getElementById('taskStatus').value;
+    const planDetailContainer = document.getElementById('taskPlanDetailContainer');
+    const deadlineContainer = document.getElementById('taskDeadlineContainer');
+    const resultContainer = document.getElementById('taskResultContainer');
+    const deadlineInput = document.getElementById('taskDeadline');
+
+    if (planDetailContainer) planDetailContainer.style.display = 'none';
+    if (resultContainer) resultContainer.style.display = 'none';
+    if (deadlineInput) deadlineInput.required = false;
+    if (deadlineContainer) deadlineContainer.style.visibility = 'hidden';
+
+    if (status.includes('Processing')) {
+        if (planDetailContainer) planDetailContainer.style.display = 'flex';
+        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
+        if (deadlineInput) deadlineInput.required = true;
+    } else if (status.includes('Completed')) {
+        if (resultContainer) resultContainer.style.display = 'flex';
+        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
+    } else if (status.includes('New')) {
+        if (planDetailContainer) planDetailContainer.style.display = 'flex';
+        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
+        if (deadlineInput) deadlineInput.required = true;
+    } else {
+        if (planDetailContainer) planDetailContainer.style.display = 'flex';
+        if (resultContainer) resultContainer.style.display = 'flex';
+        if (deadlineContainer) deadlineContainer.style.visibility = 'visible';
+    }
+}
+
+function setTaskStatus(statusStr) {
+    document.getElementById('taskStatus').value = statusStr;
+    toggleTaskFields();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
