@@ -128,7 +128,7 @@ function openTaskDetailModal(task, safeHTML) {
     document.getElementById('tdmTaskCategory').value = task.category || '';
     document.getElementById('tdmTaskTitle').value = task.title || '';
     document.getElementById('tdmTaskStatus').value = task.status;
-    document.getElementById('tdmTaskDetail').value = task.detail;
+    document.getElementById('tdmTaskDetail').value = task.taskDetail || task.detail || '';
     document.getElementById('tdmOriginalDeadline').value = task.deadline;
     document.getElementById('tdmOriginalResult').value = task.result;
     document.getElementById('tdmOriginalPending').value = task.pending;
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 year: payloadYear,
                 category: document.getElementById('tdmTaskCategory').value,
                 title: document.getElementById('tdmTaskTitle').value,
-                detail: document.getElementById('tdmTaskDetail').value,
+                detail: action === 'process' ? document.getElementById('tdmInputPending').value : document.getElementById('tdmTaskDetail').value,
                 status: newStatus,
                 deadline: formattedDate,
                 result: action === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value
