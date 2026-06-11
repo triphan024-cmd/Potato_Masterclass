@@ -1,3 +1,6 @@
+// Google Apps Script Web App URL for updating tasks
+window.GAS_WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+
 // Function to open the detailed view of a class
 function openClassDetail(titleStr, contentStr) {
     if (event) event.stopPropagation();
@@ -15,6 +18,110 @@ function closeClassDetail() {
     const modal = document.getElementById('classModal');
     modal.classList.remove('show');
 }
+
+// Task Modal Logic
+function openTaskModal(task = null, picName = '', monthStr = '') {
+    if (event) event.stopPropagation();
+    const modal = document.getElementById('taskModal');
+    const form = document.getElementById('taskForm');
+    
+    // Reset form
+    form.reset();
+    document.getElementById('taskId').value = task ? task.id : '';
+    document.getElementById('taskPic').value = task ? task.pic : picName;
+    document.getElementById('taskMonth').value = task ? task.month : monthStr;
+    
+    if (task) {
+        document.getElementById('modalTaskTitle').innerText = 'Edit Task';
+        document.getElementById('taskDetail').value = task.detail || '';
+        document.getElementById('taskStatus').value = task.status || '1. New';
+        // Parse date for input type=date (YYYY-MM-DD)
+        if (task.deadline) {
+            const parts = task.deadline.split('/');
+            if (parts.length === 3) {
+                document.getElementById('taskDeadline').value = \`\${parts[2]}-\${parts[1]}-\${parts[0]}\`;
+            }
+        }
+        document.getElementById('taskResult').value = task.result || '';
+        document.getElementById('taskPending').value = task.pending || '';
+    } else {
+        document.getElementById('modalTaskTitle').innerText = 'Add New Task';
+        document.getElementById('taskStatus').value = '1. New';
+    }
+    
+    modal.classList.add('show');
+}
+
+function closeTaskModal() {
+    const modal = document.getElementById('taskModal');
+    modal.classList.remove('show');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const taskForm = document.getElementById('taskForm');
+    if (taskForm) {
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (window.GAS_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+                alert("Please configure window.GAS_WEB_APP_URL with your Google Apps Script URL first!");
+                return;
+            }
+
+            const btn = document.getElementById('saveTaskBtn');
+            const spinner = document.getElementById('taskSpinner');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            const rawDate = document.getElementById('taskDeadline').value; // YYYY-MM-DD
+            let formattedDate = '';
+            if (rawDate) {
+                const [y, m, d] = rawDate.split('-');
+                formattedDate = \`\${d}/\${m}/\${y}\`; // DD/MM/YYYY
+            }
+
+            const payload = {
+                action: document.getElementById('taskId').value ? 'edit' : 'add',
+                id: document.getElementById('taskId').value,
+                pic: document.getElementById('taskPic').value,
+                month: document.getElementById('taskMonth').value,
+                detail: document.getElementById('taskDetail').value,
+                status: document.getElementById('taskStatus').value,
+                deadline: formattedDate,
+                result: document.getElementById('taskResult').value,
+                pending: document.getElementById('taskPending').value
+            };
+
+            try {
+                const response = await fetch(window.GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // no-cors doesn't allow reading response, assume success if no throw
+                closeTaskModal();
+                alert("Task saved! Dashboard will reload.");
+                // Reload dashboard to fetch new data
+                if (typeof fetchDashboardData === 'function') {
+                    await fetchDashboardData();
+                } else {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error("Error saving task:", err);
+                alert("Failed to save task. Check console for details.");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
+});
 
 // Function to open Issues
 function openIssues(dept, className, issueCount) {
@@ -565,7 +672,14 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     // Left: Calendar Board
     const leftDiv = document.createElement('div');
     leftDiv.className = 'task-split-left';
-    leftDiv.innerHTML = `<h3 style="margin-top: 0; margin-bottom: 16px; color: var(--text-dark);">${roleTitle}</h3>`;
+    leftDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin: 0; color: var(--text-dark);">${roleTitle}</h3>
+            <button class="btn btn-primary" onclick="openTaskModal(null, '${picName}', '${monthStr}')" style="padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-plus"></i> Add Task
+            </button>
+        </div>
+    `;
     
     const board = document.createElement('div');
     board.className = 'planner-board';
@@ -946,6 +1060,18 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 </div>
             `;
             
+            const taskId = getVal(c[0]) || '';
+            const taskObjStr = JSON.stringify({
+                id: taskId,
+                pic: getVal(c[4]) || '',
+                month: getVal(c[22]) || '',
+                detail: getVal(c[7]) || '',
+                status: status,
+                deadline: getVal(c[11]) || '',
+                result: getVal(c[9]) || '',
+                pending: getVal(c[8]) || ''
+            }).replace(/"/g, '&quot;').replace(/'/g, "&#39;");
+
             const safeHTML = combinedHTML
                 .replace(/"/g, '&quot;')
                 .replace(/`/g, '\\`')
@@ -954,13 +1080,14 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 .replace(/'/g, "\\'");
             
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
+                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; transition: transform 0.2s, box-shadow 0.2s; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''">
                     <div class="modern-card-header">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
                         <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
                         <span class="deadline-badge"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
+                        <button onclick="openTaskModal(${taskObjStr})" style="margin-left: auto; border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
                     </div>
-                    <div class="modern-card-body" style="font-size: 0.9rem;">
+                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
                         ${shortPlan}
                     </div>
                 </div>

@@ -472,7 +472,60 @@
         </div>
     </div>
 
+    <!-- Modal for Task Add/Edit -->
+    <div id="taskModal" class="modal-backdrop">
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="modalTaskTitle">Add / Edit Task</h3>
+                <button class="close-btn" onclick="closeTaskModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <form id="taskForm" style="display: flex; flex-direction: column; gap: 16px;">
+                    <input type="hidden" id="taskId">
+                    <input type="hidden" id="taskPic">
+                    <input type="hidden" id="taskMonth">
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="taskDetail" style="font-weight: 600; color: var(--text-dark);">Task Detail *</label>
+                        <textarea id="taskDetail" required rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="taskStatus" style="font-weight: 600; color: var(--text-dark);">Status</label>
+                            <select id="taskStatus" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem;">
+                                <option value="1. New">1. New</option>
+                                <option value="2. Processing">2. Processing</option>
+                                <option value="3. Completed">3. Completed</option>
+                                <option value="4. Delay">4. Delay</option>
+                                <option value="5. Cancel">5. Cancel</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="taskDeadline" style="font-weight: 600; color: var(--text-dark);">Deadline *</label>
+                            <input type="date" id="taskDeadline" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="taskResult" style="font-weight: 600; color: var(--text-dark);">Result / Output</label>
+                        <textarea id="taskResult" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label for="taskPending" style="font-weight: 600; color: var(--text-dark);">Pending Issues / Feedback</label>
+                        <textarea id="taskPending" rows="2" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 0.95rem;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeTaskModal()" style="padding: 10px 20px; border-radius: 6px; border: none; background: #e0e0e0; color: #333; cursor: pointer; font-weight: 600;">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveTaskBtn" style="padding: 10px 20px; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; font-weight: 600;">Save Task <i class="fa-solid fa-spinner fa-spin" id="taskSpinner" style="display: none; margin-left: 8px;"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
-
