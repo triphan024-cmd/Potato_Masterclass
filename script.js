@@ -231,9 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const rawDate = document.getElementById('taskDeadline').value; // YYYY-MM-DD
             let formattedDate = '';
+            let payloadMonth = document.getElementById('taskMonth').value;
+            let payloadYear = '';
+
             if (rawDate) {
                 const [y, m, d] = rawDate.split('-');
                 formattedDate = `${d}/${m}/${y}`; // DD/MM/YYYY
+                
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const mIndex = parseInt(m, 10) - 1;
+                if (mIndex >= 0 && mIndex < 12) {
+                    payloadMonth = `${m} = ${monthNames[mIndex]}`;
+                }
+                payloadYear = y;
             }
 
             const shortPic = document.getElementById('taskInputPic').value;
@@ -243,7 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 action: document.getElementById('taskId').value ? 'edit' : 'add',
                 id: document.getElementById('taskId').value,
                 pic: fullPic,
-                month: document.getElementById('taskMonth').value,
+                month: payloadMonth,
+                year: payloadYear,
                 category: document.getElementById('taskCategory').value,
                 title: document.getElementById('taskTitle').value,
                 detail: document.getElementById('taskDetail').value,
@@ -304,19 +315,42 @@ document.addEventListener('DOMContentLoaded', () => {
             let newStatus = action === 'process' ? '2. Processing' : '3. Completed';
             
             let formattedDate = document.getElementById('tdmOriginalDeadline').value; // Default to existing
+            let payloadMonth = document.getElementById('tdmTaskMonth').value;
+            let payloadYear = '';
+            
+            let dateToParse = null;
             if (action === 'process') {
                 const rawDate = document.getElementById('tdmInputDeadline').value;
                 if (rawDate) {
                     const [y, m, d] = rawDate.split('-');
                     formattedDate = `${d}/${m}/${y}`;
+                    dateToParse = rawDate;
                 }
+            } else {
+                if (formattedDate) {
+                    const parts = formattedDate.split('/');
+                    if (parts.length === 3) {
+                        dateToParse = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                    }
+                }
+            }
+            
+            if (dateToParse) {
+                const [y, m, d] = dateToParse.split('-');
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const mIndex = parseInt(m, 10) - 1;
+                if (mIndex >= 0 && mIndex < 12) {
+                    payloadMonth = `${m} = ${monthNames[mIndex]}`;
+                }
+                payloadYear = y;
             }
             
             const payload = {
                 action: 'edit',
                 id: document.getElementById('tdmTaskId').value,
                 pic: document.getElementById('tdmTaskPic').value,
-                month: document.getElementById('tdmTaskMonth').value,
+                month: payloadMonth,
+                year: payloadYear,
                 detail: document.getElementById('tdmTaskDetail').value,
                 status: newStatus,
                 deadline: formattedDate,
