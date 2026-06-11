@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const mIndex = parseInt(m, 10) - 1;
                 if (mIndex >= 0 && mIndex < 12) {
-                    payloadMonth = m;
+                    payloadMonth = "'" + m; // Force text format in Google Sheets
                 }
                 payloadYear = y;
             }
@@ -276,9 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: document.getElementById('taskId').value,
                 pic: fullPic,
                 month: payloadMonth,
-                year: payloadYear,
-                category: document.getElementById('taskCategory').value,
-                title: document.getElementById('taskTitle').value,
+                Year: payloadYear,
+                Category: document.getElementById('taskCategory').value,
+                Tittle: document.getElementById('taskTitle').value,
                 detail: document.getElementById('taskDetail').value,
                 week: document.getElementById('taskWeek').value,
                 status: document.getElementById('taskId').value ? document.getElementById('taskStatus').value : 'New',
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const [y, m, d] = dateToParse.split('-');
                 const mIndex = parseInt(m, 10) - 1;
                 if (mIndex >= 0 && mIndex < 12) {
-                    payloadMonth = m;
+                    payloadMonth = "'" + m; // Force text format in Google Sheets
                 }
                 payloadYear = y;
             }
@@ -370,9 +370,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: document.getElementById('tdmTaskId').value,
                 pic: document.getElementById('tdmTaskPic').value,
                 month: payloadMonth,
-                year: payloadYear,
-                category: document.getElementById('tdmTaskCategory').value,
-                title: document.getElementById('tdmTaskTitle').value,
+                Year: payloadYear,
+                Category: document.getElementById('tdmTaskCategory').value,
+                Tittle: document.getElementById('tdmTaskTitle').value,
                 detail: document.getElementById('tdmTaskDetail').value,
                 status: newStatus,
                 deadline: formattedDate,
