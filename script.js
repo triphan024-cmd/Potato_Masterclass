@@ -39,7 +39,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         if (task.deadline) {
             const parts = task.deadline.split('/');
             if (parts.length === 3) {
-                document.getElementById('taskDeadline').value = \`\${parts[2]}-\${parts[1]}-\${parts[0]}\`;
+                document.getElementById('taskDeadline').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
             }
         }
         document.getElementById('taskResult').value = task.result || '';
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let formattedDate = '';
             if (rawDate) {
                 const [y, m, d] = rawDate.split('-');
-                formattedDate = \`\${d}/\${m}/\${y}\`; // DD/MM/YYYY
+                formattedDate = `${d}/${m}/${y}`; // DD/MM/YYYY
             }
 
             const payload = {
