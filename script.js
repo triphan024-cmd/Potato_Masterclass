@@ -1252,6 +1252,7 @@ function renderTeacherObservations(classRows) {
             sortedRows.forEach(row => {
                 const c = row.c;
                 const className = getVal(c[6]) || 'Unknown';
+                const schedule = getVal(c[12]) || '-';
                 const teacherName = getShortName(getVal(c[9])) || '-';
                 const obs = getVal(c[13]) || '';
                 const tScore = getVal(c[24]) || '-';
@@ -1293,10 +1294,11 @@ function renderTeacherObservations(classRows) {
 
                 rowsHtml += `
                     <tr>
-                        <td style="padding: 8px;"><strong>${className.split(' - ')[0]}</strong></td>
-                        <td style="padding: 8px;">${teacherName}</td>
-                        <td style="padding: 8px;">${statusBadge}</td>
-                        <td style="padding: 8px;">${tScore}</td>
+                        <td style="padding: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>${className.split(' - ')[0]}</strong></td>
+                        <td style="padding: 8px; text-align: center; font-size: 0.8rem;">${schedule}</td>
+                        <td style="padding: 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                        <td style="padding: 8px; text-align: center;">${statusBadge}</td>
+                        <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;">${headIcon}</td>
                     </tr>
                 `;
@@ -1317,14 +1319,15 @@ function renderTeacherObservations(classRows) {
                 </div>
                 <div class="modern-card-body" style="padding: 0;">
                     <div style="overflow-x: auto;">
-                        <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
+                        <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px;">Class</th>
-                                    <th style="padding: 8px;">Teacher</th>
-                                    <th style="padding: 8px;">Observation</th>
-                                    <th style="padding: 8px;">T.Score</th>
-                                    <th style="padding: 8px; text-align: center;">Head</th>
+                                    <th style="padding: 8px; width: 20%;">Class</th>
+                                    <th style="padding: 8px; width: 22%; text-align: center;">Schedule</th>
+                                    <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Obs</th>
+                                    <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
+                                    <th style="padding: 8px; width: 13%; text-align: center;">Head</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1846,15 +1849,15 @@ function renderTeacherPerformance(classRows) {
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px;">Class</th>
-                                <th style="padding: 8px; text-align: center;">Teacher</th>
-                                <th style="padding: 8px; text-align: center;">Absence</th>
-                                <th style="padding: 8px; text-align: center;">Progress</th>
-                                <th style="padding: 8px; text-align: center;">Exam Date</th>
-                                <th style="padding: 8px; text-align: center;">Details</th>
+                                <th style="padding: 8px; width: 22%;">Class</th>
+                                <th style="padding: 8px; width: 22%; text-align: center;">Teacher</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Absence</th>
+                                <th style="padding: 8px; width: 16%; text-align: center;">Progress</th>
+                                <th style="padding: 8px; width: 17%; text-align: center;">Exam Date</th>
+                                <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1893,11 +1896,11 @@ function renderTeacherPerformance(classRows) {
 
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                                        <td style="padding: 12px 8px; font-weight: 500;">${className.split(' - ')[0]}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${teacherName}</td>
+                                        <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
+                                        <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${absence}</td>
                                         <td style="padding: 12px 8px; text-align: center;"><span class="badge ${progress !== '-' ? 'success' : ''}">${progress}</span></td>
-                                        <td style="padding: 12px 8px; text-align: center;">${examDate}</td>
+                                        <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${examDate}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                     </tr>
                                 `;
@@ -1953,20 +1956,22 @@ function renderAcademicPerformance(classRows) {
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px;">Class</th>
-                                <th style="padding: 8px; text-align: center;">Teacher</th>
-                                <th style="padding: 8px; text-align: center;">Aid</th>
-                                <th style="padding: 8px; text-align: center;">Roadmap</th>
-                                <th style="padding: 8px; text-align: center;">Exam</th>
+                                <th style="padding: 8px; width: 20%;">Class</th>
+                                <th style="padding: 8px; width: 20%; text-align: center;">Schedule</th>
+                                <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Aid</th>
+                                <th style="padding: 8px; width: 14%; text-align: center;">Roadmap</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Exam</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${sortedRows.map(row => {
                                 const c = row.c;
                                 const className = getVal(c[6]) || getVal(c[1]);
+                                const schedule = getVal(c[12]) || '-';
                                 const teacherName = getShortName(getVal(c[9])) || '-';
                                 const aid = getVal(c[36]) || '-';
                                 const roadmap = getVal(c[37]) || '-';
@@ -1985,8 +1990,9 @@ function renderAcademicPerformance(classRows) {
 
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color);">${className.split(' - ')[0]}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${teacherName}</td>
+                                        <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
+                                        <td style="padding: 14px 12px; text-align: center; font-size: 0.8rem;">${schedule}</td>
+                                        <td style="padding: 14px 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam)}</td>
