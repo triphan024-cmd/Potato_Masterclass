@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: document.getElementById('taskTitle').value,
                 detail: document.getElementById('taskDetail').value,
                 week: document.getElementById('taskWeek').value,
-                status: document.getElementById('taskStatus').value || '1. New',
+                status: document.getElementById('taskId').value ? document.getElementById('taskStatus').value : 'New',
                 deadline: formattedDate,
                 result: document.getElementById('taskResult').value,
                 createdDate: document.getElementById('taskCreatedDate').value

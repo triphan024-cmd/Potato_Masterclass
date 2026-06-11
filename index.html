@@ -558,12 +558,10 @@
     <div id="taskDetailModal" class="modal-backdrop">
         <div class="modal-content glass-panel" style="max-width: 600px; padding: 0;">
             <div class="modal-body" style="padding: 24px; max-height: 80vh; overflow-y: auto;">
-                <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 5px;">
-                        <button type="button" class="close-btn" onclick="closeTaskDetailModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 16px; position: relative;">
+                    <button type="button" class="close-btn" onclick="closeTaskDetailModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
                     
-                    <div id="tdmContent" style="font-size: 1.1rem; line-height: 1.6; color: var(--text-dark);">
+                    <div id="tdmContent" style="font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); margin-top: 5px;">
                         <!-- readonly details rendered here -->
                     </div>
                     
@@ -618,6 +616,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>
