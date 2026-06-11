@@ -1795,6 +1795,15 @@ function updateAllRolesTasksMetrics() {
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
     const monthStr = String(monthVal).padStart(2, '0');
     const prevMonthStr = (typeof currentMonthIndex !== 'undefined' && currentMonthIndex > 0) ? String(monthVal - 1).padStart(2, '0') : null;
+
+    // Use specific task logic for each role's name
+    updateRoleTaskMetrics('Ms. Đào', 'head', monthStr, prevMonthStr);
+    updateRoleTaskMetrics('Mr. Khôi', 'teacher', monthStr, prevMonthStr);
+    updateRoleTaskMetrics('Ms. Khanh', 'academic', monthStr, prevMonthStr);
+    updateRoleTaskMetrics('Mr. Đạt', 'operation', monthStr, prevMonthStr);
+    updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
+}
+
 function renderTeacherPerformance(classRows) {
     const grid = document.getElementById('teacher-performance-grid');
     if (!grid) return;
