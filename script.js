@@ -28,38 +28,70 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
     // Reset form
     form.reset();
     document.getElementById('taskId').value = task ? task.id : '';
-    document.getElementById('taskPic').value = task ? task.pic : picName;
     document.getElementById('taskMonth').value = task ? task.month : monthStr;
+    document.getElementById('taskCreatedDate').value = new Date().toLocaleDateString('en-GB');
+    
+    // Parse task.detail which we mapped from c[7] (Title). Wait, I need to parse the original task data.
+    // In our payload, 'detail' mapped to c[7] (Title). But now we have separate 'Title' and 'Task Detail'.
+    // The user's sheet has PIC, Category, Title, Task Detail, Deadline, Week.
+    // Let's populate the fields:
     
     if (task) {
-        document.getElementById('modalTaskTitle').innerText = 'Edit Task';
-        document.getElementById('taskDetail').value = task.detail || '';
+        document.getElementById('innerModalTaskTitle').innerText = 'Edit Task';
+        
+        document.getElementById('taskInputPic').value = task.pic || '';
+        document.getElementById('taskCategory').value = task.category || '';
+        document.getElementById('taskTitle').value = task.title || task.detail || ''; // fallback to detail if title was stored there previously
+        document.getElementById('taskDetail').value = task.taskDetail || '';
+        document.getElementById('taskWeek').value = task.week || '';
+        
         document.getElementById('taskStatus').value = task.status || '1. New';
-        // Parse date for input type=date (YYYY-MM-DD)
         if (task.deadline) {
-            const parts = task.deadline.split('/');
+            const parts = String(task.deadline).split('/');
             if (parts.length === 3) {
                 document.getElementById('taskDeadline').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else if (parts.length === 2) {
+                document.getElementById('taskDeadline').value = `${new Date().getFullYear()}-${parts[1]}-${parts[0]}`;
             }
+        } else {
+            document.getElementById('taskDeadline').value = '';
         }
         document.getElementById('taskResult').value = task.result || '';
         document.getElementById('taskPending').value = task.pending || '';
         
+        // Disable fields for Edit mode
+        document.getElementById('taskInputPic').disabled = true;
+        document.getElementById('taskCategory').disabled = true;
+        document.getElementById('taskTitle').disabled = true;
         document.getElementById('taskDetail').disabled = true;
-        document.getElementById('taskStatus').disabled = true;
-        document.getElementById('taskResult').disabled = true;
+        document.getElementById('taskWeek').disabled = true;
         
+        // Show Plan Detail for Edit
+        document.getElementById('taskPlanDetailContainer').style.display = 'flex';
         document.getElementById('taskPending').disabled = false;
         document.getElementById('taskDeadline').disabled = false;
     } else {
-        document.getElementById('modalTaskTitle').innerText = 'Add New Task';
+        document.getElementById('innerModalTaskTitle').innerText = 'Add New Task';
+        
+        document.getElementById('taskInputPic').value = picName || '';
+        document.getElementById('taskCategory').value = '';
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDetail').value = '';
+        document.getElementById('taskWeek').value = '';
+        document.getElementById('taskDeadline').value = '';
+        
         document.getElementById('taskStatus').value = '1. New';
         
+        // Enable fields for Add mode
+        document.getElementById('taskInputPic').disabled = false;
+        document.getElementById('taskCategory').disabled = false;
+        document.getElementById('taskTitle').disabled = false;
         document.getElementById('taskDetail').disabled = false;
-        document.getElementById('taskStatus').disabled = false;
-        document.getElementById('taskResult').disabled = false;
+        document.getElementById('taskWeek').disabled = false;
         
-        document.getElementById('taskPending').disabled = false;
+        // Hide Plan Detail for Add
+        document.getElementById('taskPlanDetailContainer').style.display = 'none';
+        document.getElementById('taskPending').value = '';
         document.getElementById('taskDeadline').disabled = false;
     }
     
@@ -198,13 +230,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 action: document.getElementById('taskId').value ? 'edit' : 'add',
                 id: document.getElementById('taskId').value,
-                pic: document.getElementById('taskPic').value,
+                pic: document.getElementById('taskInputPic').value,
                 month: document.getElementById('taskMonth').value,
+                category: document.getElementById('taskCategory').value,
+                title: document.getElementById('taskTitle').value,
                 detail: document.getElementById('taskDetail').value,
-                status: document.getElementById('taskStatus').value,
+                week: document.getElementById('taskWeek').value,
+                status: document.getElementById('taskStatus').value || '1. New',
                 deadline: formattedDate,
                 result: document.getElementById('taskResult').value,
-                pending: document.getElementById('taskPending').value
+                pending: document.getElementById('taskPending').value,
+                createdDate: document.getElementById('taskCreatedDate').value
             };
 
             try {
@@ -1291,7 +1327,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
             const shortPlan = String(tittle).length > 80 ? String(tittle).substring(0, 80) + '...' : String(tittle);
             
             const combinedHTML = `
-                <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
+                <div style="font-size: 1.1rem; line-height: 1.6; color: var(--text-dark);">
                     <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
                     <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
                         <span class="status-badge" style="background: ${statusBg}; color: ${statusColor}; margin: 0;">${status}</span>
@@ -1310,7 +1346,10 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 id: taskId,
                 pic: getVal(c[4]) || '',
                 month: getVal(c[22]) || '',
-                detail: getVal(c[7]) || '',
+                category: getVal(c[6]) || '',
+                title: getVal(c[7]) || '',
+                taskDetail: getVal(c[7]) || '',
+                week: getVal(c[21]) || '',
                 status: status,
                 deadline: getVal(c[11]) || '',
                 result: getVal(c[9]) || '',
