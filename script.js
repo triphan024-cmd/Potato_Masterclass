@@ -1906,40 +1906,48 @@ function renderAcademicPerformance(classRows) {
     if (!grid) return;
     grid.innerHTML = '';
 
-    const teacherMap = {};
+    const departmentMap = {};
     classRows.forEach(row => {
         const c = row.c;
-        const teacher = getShortName(getVal(c[8])) || 'Unknown';
-        if (!teacherMap[teacher]) {
-            teacherMap[teacher] = { rows: [], count: 0 };
+        const department = getVal(c[5]) || 'Unknown Department';
+        if (!departmentMap[department]) {
+            departmentMap[department] = { rows: [], count: 0 };
         }
-        teacherMap[teacher].rows.push(row);
-        teacherMap[teacher].count++;
+        departmentMap[department].rows.push(row);
+        departmentMap[department].count++;
     });
 
-    const teachers = Object.keys(teacherMap).sort((a, b) => teacherMap[b].count - teacherMap[a].count);
-    if (teachers.length === 0) {
+    const departments = Object.keys(departmentMap).sort((a, b) => a.localeCompare(b));
+    if (departments.length === 0) {
         grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
         return;
     }
 
-    teachers.forEach(teacher => {
+    departments.forEach(department => {
+        const data = departmentMap[department];
+        const sortedRows = data.rows.sort((a, b) => {
+            const classA = String(getVal(a.c[6]) || '');
+            const classB = String(getVal(b.c[6]) || '');
+            return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
         const card = document.createElement('div');
         card.className = 'modern-card panel';
         card.style.margin = '0';
         card.innerHTML = `
             <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
                 <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-chalkboard-user"></i> ${teacher}
+                    <i class="fa-solid fa-layer-group"></i> ${department}
                 </h3>
-                <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">${teacherMap[teacher].count} Classes</span>
+                <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">${data.count} Classes</span>
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 400px;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px;">
                         <thead>
                             <tr>
                                 <th style="padding: 8px;">Class</th>
+                                <th style="padding: 8px; text-align: center;">Teacher</th>
                                 <th style="padding: 8px; text-align: center;">Material</th>
                                 <th style="padding: 8px; text-align: center;">Aid</th>
                                 <th style="padding: 8px; text-align: center;">Roadmap</th>
@@ -1947,9 +1955,10 @@ function renderAcademicPerformance(classRows) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${teacherMap[teacher].rows.map(row => {
+                            ${sortedRows.map(row => {
                                 const c = row.c;
                                 const className = getVal(c[6]) || getVal(c[1]);
+                                const teacherName = getShortName(getVal(c[8])) || '-';
                                 const material = getVal(c[34]) || '-';
                                 const aid = getVal(c[35]) || '-';
                                 const roadmap = getVal(c[36]) || '-';
@@ -1969,6 +1978,7 @@ function renderAcademicPerformance(classRows) {
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color);">${className.split(' - ')[0]}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(material)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap)}</td>
