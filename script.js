@@ -1861,13 +1861,13 @@ function renderTeacherPerformance(classRows) {
                             ${sortedRows.map(row => {
                                 const c = row.c;
                                 const className = getVal(c[6]) || getVal(c[1]);
-                                const teacherName = getShortName(getVal(c[8])) || '-';
-                                const absence = getVal(c[32]) || '-';
-                                const progress = getVal(c[33]) || getVal(c[11]) || '-';
-                                const examDate = getVal(c[38]) || '-';
-                                const achievement = getVal(c[29]) || '-';
-                                const redFlag = getVal(c[30]) || '-';
-                                const action = getVal(c[31]) || '-';
+                                const teacherName = getShortName(getVal(c[9])) || '-';
+                                const absence = getVal(c[33]) || '-';
+                                const progress = getVal(c[34]) || getVal(c[11]) || '-';
+                                const examDate = getVal(c[39]) || '-';
+                                const achievement = getVal(c[30]) || '-';
+                                const redFlag = getVal(c[31]) || '-';
+                                const action = getVal(c[32]) || '-';
                                 
                                 let safeHTML = '';
                                 const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
@@ -1967,10 +1967,10 @@ function renderAcademicPerformance(classRows) {
                             ${sortedRows.map(row => {
                                 const c = row.c;
                                 const className = getVal(c[6]) || getVal(c[1]);
-                                const teacherName = getShortName(getVal(c[8])) || '-';
-                                const aid = getVal(c[35]) || '-';
-                                const roadmap = getVal(c[36]) || '-';
-                                const exam = getVal(c[37]) || '-';
+                                const teacherName = getShortName(getVal(c[9])) || '-';
+                                const aid = getVal(c[36]) || '-';
+                                const roadmap = getVal(c[37]) || '-';
+                                const exam = getVal(c[38]) || '-';
                                 
                                 const getBadgeHtml = (text) => {
                                     if (!text || text === '-') return text;
