@@ -67,6 +67,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         document.getElementById('taskWeek').value = task.week || '';
         
         document.getElementById('taskStatus').value = task.status || 'New';
+        document.getElementById('taskOriginalStatus').value = task.status || 'New';
         if (task.deadline) {
             const parts = String(task.deadline).split('/');
             if (parts.length === 3) {
@@ -311,8 +312,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const shortPic = document.getElementById('taskInputPic').value;
             const fullPic = hrReverseMap[shortPic] || shortPic;
 
+            const action = document.getElementById('taskId').value ? 'edit' : 'add';
+            const status = action === 'edit' ? document.getElementById('taskStatus').value : 'New';
+            
+            let actionName = 'Update';
+            if (action === 'add') {
+                actionName = status;
+            } else {
+                const originalStatus = document.getElementById('taskOriginalStatus').value;
+                if (status !== originalStatus) {
+                    actionName = status;
+                }
+            }
+            
+            const fullPic = document.getElementById('taskInputPic').value;
+            const historyLine = `${getShortName(fullPic)} - ${actionName} (${getFormattedHistoryTime()})`;
+            
             const payload = {
-                action: document.getElementById('taskId').value ? 'edit' : 'add',
+                action: action,
                 id: document.getElementById('taskId').value,
                 pic: fullPic,
                 type: 'Task',
@@ -322,10 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: document.getElementById('taskTitle').value,
                 detail: document.getElementById('taskDetail').value,
                 week: document.getElementById('taskWeek').value,
-                status: document.getElementById('taskId').value ? document.getElementById('taskStatus').value : 'New',
+                status: status,
                 deadline: formattedDate,
                 result: document.getElementById('taskResult').value,
-                createdDate: document.getElementById('taskCreatedDate').value
+                createdDate: document.getElementById('taskCreatedDate').value,
+                historyLine: historyLine
             };
 
             try {
@@ -406,19 +424,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 payloadYear = y;
             }
             
+            const actionType = tdmQuickUpdateForm.getAttribute('data-action');
+            let actionName = actionType === 'process' ? 'Processing' : 'Completed';
+            const pic = document.getElementById('tdmTaskPic').value;
+            const historyLine = `${getShortName(pic)} - ${actionName} (${getFormattedHistoryTime()})`;
+            
             const payload = {
                 action: 'edit',
                 id: document.getElementById('tdmTaskId').value,
-                pic: document.getElementById('tdmTaskPic').value,
+                pic: pic,
                 type: 'Task',
                 month: payloadMonth,
                 year: payloadYear,
                 category: document.getElementById('tdmTaskCategory').value,
                 title: document.getElementById('tdmTaskTitle').value,
-                detail: action === 'process' ? document.getElementById('tdmInputPending').value : document.getElementById('tdmTaskDetail').value,
+                detail: actionType === 'process' ? document.getElementById('tdmInputPending').value : document.getElementById('tdmTaskDetail').value,
                 status: newStatus,
                 deadline: formattedDate,
-                result: action === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value
+                result: actionType === 'complete' ? document.getElementById('tdmInputResult').value : document.getElementById('tdmOriginalResult').value,
+                historyLine: historyLine
             };
 
             try {
@@ -461,10 +485,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 mStr = "'" + mStr;
             }
             
+            const action = document.getElementById('onethingAction').value;
+            const pic = document.getElementById('onethingPic').value;
+            const actionName = action === 'add' ? 'New Onething' : 'Update Onething';
+            const historyLine = `${getShortName(pic)} - ${actionName} (${getFormattedHistoryTime()})`;
+            
             const payload = {
-                action: document.getElementById('onethingAction').value,
+                action: action,
                 id: document.getElementById('onethingId').value,
-                pic: document.getElementById('onethingPic').value,
+                pic: pic,
                 type: 'Onething',
                 week: document.getElementById('onethingWeek').value,
                 month: mStr,
@@ -476,7 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 detail: '',
                 deadline: '',
                 result: '',
-                createdDate: new Date().toISOString()
+                createdDate: new Date().toISOString(),
+                historyLine: historyLine
             };
             
             try {
@@ -706,6 +736,14 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUv
 const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1739187215';
 const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
+
+
+
+function getFormattedHistoryTime() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${String(d.getFullYear()).slice(-2)}-${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 let hrMap = {};
 let hrReverseMap = {};
