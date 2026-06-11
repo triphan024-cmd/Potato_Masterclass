@@ -1606,6 +1606,8 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const safePlanDetail = String(rawPlanDetail).replace(/\n/g, '<br/>');
                 const safeResult = String(rawResult).replace(/\n/g, '<br/>');
                 const safeDeadline = String(rawDeadline).replace(/\n/g, '<br/>');
+                const rawHistory = getVal(c[18]) || 'No history recorded';
+                const safeHistory = String(rawHistory).replace(/\n/g, '<br/>');
 
                 const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
                 
