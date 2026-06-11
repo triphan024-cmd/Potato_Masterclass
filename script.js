@@ -82,11 +82,11 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
         
         // Disable fields for Edit mode (except Task Detail which replaces Plan Detail, and Deadline)
         document.getElementById('taskInputPic').disabled = true;
-        document.getElementById('taskCategory').disabled = true;
-        document.getElementById('taskTitle').disabled = true;
         document.getElementById('taskWeek').disabled = true;
         
         // Enable fields for Edit
+        document.getElementById('taskCategory').disabled = false;
+        document.getElementById('taskTitle').disabled = false;
         document.getElementById('taskDetail').disabled = false;
         document.getElementById('taskDeadline').disabled = false;
     } else {
@@ -136,6 +136,16 @@ function openTaskDetailModal(task, safeHTML) {
     
     // Reset quick update form
     hideTaskQuickUpdate();
+    
+    // Toggle Process button visibility
+    const processBtn = document.getElementById('tdmBtnProcess');
+    if (processBtn) {
+        if (task.status === 'New') {
+            processBtn.style.display = 'block';
+        } else {
+            processBtn.style.display = 'none';
+        }
+    }
     
     modal.classList.add('show');
     if (event) event.stopPropagation();
@@ -1610,7 +1620,9 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                         <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Plan Detail:</strong>
                         <p style="margin-top: 0; margin-bottom: 15px;">${safePlanDetail}</p>
                         <strong style="color: var(--info); display: block; margin-bottom: 5px;">Result:</strong>
-                        <p style="margin-top: 0; margin-bottom: 0;">${safeResult}</p>
+                        <p style="margin-top: 0; margin-bottom: 15px;">${safeResult}</p>
+                        <strong style="color: #64748b; display: block; margin-bottom: 5px;">History:</strong>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; font-size: 0.95rem; font-family: 'Consolas', monospace; color: #475569; max-height: 150px; overflow-y: auto;">${safeHistory}</div>
                     </div>
                 `;
                 
