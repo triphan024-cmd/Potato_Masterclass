@@ -498,7 +498,8 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label for="taskInputPic" style="font-weight: 600; color: var(--text-dark);">PIC *</label>
-                                <input type="text" id="taskInputPic" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                                <input type="text" id="taskInputPic" list="picDatalist" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.95rem; background: #fff;">
+                                <datalist id="picDatalist"></datalist>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <label for="taskCategory" style="font-weight: 600; color: var(--text-dark);">Category *</label>
@@ -615,6 +616,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>

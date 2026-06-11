@@ -39,7 +39,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
     if (task) {
         document.getElementById('innerModalTaskTitle').innerText = 'Edit Task';
         
-        document.getElementById('taskInputPic').value = task.pic || '';
+        document.getElementById('taskInputPic').value = getShortName(task.pic) || '';
         document.getElementById('taskCategory').value = task.category || '';
         document.getElementById('taskTitle').value = task.title || task.detail || ''; // fallback to detail if title was stored there previously
         document.getElementById('taskDetail').value = task.taskDetail || '';
@@ -236,10 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 formattedDate = `${d}/${m}/${y}`; // DD/MM/YYYY
             }
 
+            const shortPic = document.getElementById('taskInputPic').value;
+            const fullPic = hrReverseMap[shortPic] || shortPic;
+
             const payload = {
                 action: document.getElementById('taskId').value ? 'edit' : 'add',
                 id: document.getElementById('taskId').value,
-                pic: document.getElementById('taskInputPic').value,
+                pic: fullPic,
                 month: document.getElementById('taskMonth').value,
                 category: document.getElementById('taskCategory').value,
                 title: document.getElementById('taskTitle').value,
@@ -614,6 +617,7 @@ const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
 
 let hrMap = {};
+let hrReverseMap = {};
 let globalCalendarEvents = [];
 
 function getShortName(fullName) {
@@ -639,9 +643,21 @@ async function fetchDashboardData() {
             hrJson.table.rows.forEach(row => {
                 if(row && row.c && row.c[0] && row.c[5]) {
                     hrMap[row.c[0].v] = row.c[5].v;
+                    hrReverseMap[row.c[5].v] = row.c[0].v;
                 }
             });
             console.log("HR map built.");
+            
+            const picDatalist = document.getElementById('picDatalist');
+            if (picDatalist) {
+                picDatalist.innerHTML = '';
+                const uniqueTitles = [...new Set(Object.values(hrMap))].sort();
+                uniqueTitles.forEach(title => {
+                    const option = document.createElement('option');
+                    option.value = title;
+                    picDatalist.appendChild(option);
+                });
+            }
         } catch(e) { console.error("Error fetching HR:", e); }
 
         console.log("Loading data from Google Sheet...");
