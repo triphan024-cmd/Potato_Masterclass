@@ -860,6 +860,9 @@ function changeMonth(diff) {
             } else {
                 renderTeacherPerformance(filteredRows, monthStr);
             }
+            if (typeof renderOperationTodayClasses === 'function') {
+                renderOperationTodayClasses();
+            }
             renderAcademicPerformance(filteredRows);
         }
 
@@ -1287,8 +1290,9 @@ function renderOperationTodayClasses() {
             }
         });
     } else {
-        // All classes
-        targetRows = globalClassRows.filter(row => row && row.c && (getVal(row.c[2]) || '').includes('Teaching'));
+        // All classes filtered by the globally selected month
+        let rowsSource = window.currentMonthFilteredRows || globalClassRows;
+        targetRows = rowsSource.filter(row => row && row.c && (getVal(row.c[2]) || '').includes('Teaching'));
     }
 
     countEl.innerText = `(${targetRows.length} Classes)`;
