@@ -19,6 +19,95 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
+window.openDutyDetail = function(id) {
+    if (event) event.stopPropagation();
+    const row = window.globalDutyRows[id];
+    if (!row || !row.c) return;
+    
+    const category = getVal(row.c[3]) || 'N/A';
+    const branch = getVal(row.c[4]) || 'N/A';
+    const taskDetail = getVal(row.c[6]) || '';
+    const label = getVal(row.c[13]) || 'Duty';
+    
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
+            <div style="background: rgba(0,0,0,0.02); padding: 16px; border-radius: 8px;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Duty Info</div>
+                <div style="font-weight: 700; font-size: 1.15rem; color: var(--primary-color);">${label}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Category</div>
+                    <div style="font-weight: 600; color: var(--text-dark);">${category}</div>
+                </div>
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Branch</div>
+                    <div style="font-weight: 600; color: var(--text-dark);">${branch}</div>
+                </div>
+            </div>
+            
+            <div style="border: 1px solid rgba(0,0,0,0.06); padding: 16px; border-radius: 8px; background: white;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Details</div>
+                <div style="font-weight: 500; color: var(--text-dark); white-space: pre-wrap; line-height: 1.6;">${taskDetail || '<span style="color: var(--text-muted); font-style: italic;">No additional details.</span>'}</div>
+            </div>
+        </div>
+    `;
+    
+    openClassDetail('Duty Detail', html);
+};
+
+window.openCalEventDetail = function(id) {
+    if (event) event.stopPropagation();
+    const ev = window.globalCalendarEvents[id];
+    if (!ev) return;
+    
+    const dateStr = ev.date ? ev.date.toLocaleDateString('en-GB') : '';
+    const className = ev.className || 'Unknown Class';
+    const time = ev.time || 'N/A';
+    const teacher = ev.teacher || 'N/A';
+    
+    let rawHtml = '';
+    if (ev.raw && ev.raw.c) {
+        rawHtml = ev.raw.c.map((c, i) => {
+            let val = getVal(c);
+            if (val && String(val).trim() !== '') {
+                return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04);"><span style="color:var(--text-muted); display:inline-block; width: 80px;">Col ${i}:</span> <b style="color: var(--text-dark);">${val}</b></div>`;
+            }
+            return '';
+        }).join('');
+    }
+
+    const html = `
+        <div style="display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
+            <div style="background: rgba(0,174,239,0.05); padding: 16px; border-radius: 8px; border-left: 4px solid var(--info);">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Class Name</div>
+                <div style="font-weight: 700; font-size: 1.15rem; color: var(--text-dark);">${className}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Schedule</div>
+                    <div style="font-weight: 600; color: var(--text-dark);">${dateStr} <br/> <span style="color:var(--primary-color); display:inline-block; margin-top: 4px;">${time}</span></div>
+                </div>
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Teacher</div>
+                    <div style="font-weight: 600; color: var(--text-dark); display:flex; align-items:center; gap: 8px;"><i class="fa-solid fa-chalkboard-user"></i> ${teacher}</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 8px;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Raw Data</div>
+                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; max-height: 250px; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06);">
+                    ${rawHtml || '<i style="color: var(--text-muted);">No raw data available</i>'}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    openClassDetail('Class Schedule Detail', html);
+};
+
 // Toast Notification
 function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -896,7 +985,9 @@ async function fetchDashboardData() {
                         date: d,
                         className: getVal(row.c[3]),
                         time: getVal(row.c[14]),
-                        teacher: getVal(row.c[6])
+                        teacher: getVal(row.c[6]),
+                        raw: row,
+                        _eventId: globalCalendarEvents.length
                     });
                 }
             });
@@ -2161,7 +2252,7 @@ function selectCalendarDate(year, month, day) {
                     if (timeStr) {
                         namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
                     }
-                    return { branch, timeStr, namePart, label, dutyType };
+                    return { branch, timeStr, namePart, label, dutyType, _dutyId: row._dutyId };
                 });
 
                 let html = `<div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">`;
@@ -2180,7 +2271,7 @@ function selectCalendarDate(year, month, day) {
                         
                         let timeLabel = p.timeStr ? `<span style="font-weight: 600; color: var(--text-dark);">${p.timeStr}</span>` : '';
                         let wfhTag = p.dutyType && p.dutyType.toUpperCase() === 'WFH' ? ` <span style="font-weight: 700; color: #ea580c; font-size: 0.75rem;">(WFH)</span>` : '';
-                        let displayStr = `${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>${wfhTag}`;
+                        let displayStr = `<div onclick="openDutyDetail(${p._dutyId})" style="cursor: pointer; padding: 4px 0; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>${wfhTag}</div>`;
                         
                         if (p.branch === 'NQ' || p.label.includes('NQ')) {
                             if (isMorning) nqSang.push(displayStr); else nqChieu.push(displayStr);
@@ -2244,8 +2335,9 @@ function selectCalendarDate(year, month, day) {
                     sortedTimes.forEach((t, index) => {
                         let nqList = [], hdList = [];
                         timeGroups[t].forEach(p => {
-                            if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(p.namePart);
-                            else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(p.namePart);
+                            let itemHtml = `<span onclick="openDutyDetail(${p._dutyId})" style="cursor: pointer; display: inline-block; padding: 2px 0; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">${p.namePart}</span>`;
+                            if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(itemHtml);
+                            else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(itemHtml);
                         });
 
                         const borderStyle = index < sortedTimes.length - 1 ? 'border-bottom: 1px dashed rgba(0,0,0,0.06); margin-bottom: 12px; padding-bottom: 12px;' : '';
@@ -2350,7 +2442,7 @@ function selectCalendarDate(year, month, day) {
         const timeHtml = showTime ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: normal; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${e.time}</span>` : '';
 
         return `
-        <div class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden;">
+        <div onclick="openCalEventDetail(${e._eventId})" class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden; cursor: pointer;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                 <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
             </div>
