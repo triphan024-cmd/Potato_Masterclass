@@ -1330,37 +1330,32 @@ function renderOperationTodayClasses() {
              }
         }
 
-        const cardHtml = `
-            <div style="font-size: 1.05rem; line-height: 1.6; color: var(--text-dark); padding: 16px; margin-bottom: 16px; background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 8px;">
-                    <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.15rem; line-height: 1.3;">${evClassName || 'Unknown Class'}</h3>
-                    <div style="text-align: right; white-space: nowrap;">
-                        <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Total:</span>
-                        <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px; color: var(--text-dark);">${totalFee}</span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
-                        <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
-                        <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
-                    </div>
-                    
-                    <div style="display: flex; gap: 12px; align-items: center; text-align: right;">
-                        <div>
-                            <span style="color: #16a34a; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-money-bill-wave"></i> Collect:</span>
-                            <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px;">${daThu}</span>
+        const rowHtml = `
+            <tr>
+                <td style="padding: 10px 8px;">
+                    <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${evClassName || 'Unknown Class'}</div>
+                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
+                </td>
+                <td style="padding: 10px 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">
+                            ${(getShortName(ev.teacher) || 'N')[0]}
                         </div>
-                        <div>
-                            <span style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt:</span>
-                            <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</span>
-                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-dark);">${getShortName(ev.teacher) || 'N/A'}</span>
                     </div>
-                </div>
-            </div>
+                </td>
+                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                    ${totalFee}
+                </td>
+                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: #16a34a;">
+                    ${daThu}
+                </td>
+                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'};">
+                    ${congNo}
+                </td>
+            </tr>
         `;
-        groups[groupKey].push({ time: ev.time || '00:00', html: cardHtml });
+        groups[groupKey].push({ time: ev.time || '00:00', html: rowHtml });
     });
 
     // Sort items inside groups by time
@@ -1368,22 +1363,43 @@ function renderOperationTodayClasses() {
         groups[k].sort((a, b) => a.time.localeCompare(b.time));
     });
 
-    const renderGroup = (items) => {
-        if (items.length === 0) return `<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">No classes</div>`;
-        return items.map(i => i.html).join('');
+    const renderGroupTable = (items) => {
+        if (items.length === 0) return `<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; padding: 12px;">No classes</div>`;
+        return `
+            <div class="modern-card panel" style="margin: 0; padding: 0;">
+                <div class="modern-card-body" style="padding: 0;">
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px; width: 35%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Total</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Collect</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Debt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map(i => i.html).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
     };
 
     listEl.innerHTML = `
         <div style="display: flex; gap: 24px;">
             <!-- NQ Column -->
-            <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 24px;">
+            <div style="flex: 1; padding-right: 24px; border-right: 1px dashed rgba(0,0,0,0.1);">
                 <h3 style="text-align: center; color: #0284c7; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Ngô Quyền (NQ)</h3>
                 
                 <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
-                <div>${renderGroup(groups.nqMorning)}</div>
+                <div>${renderGroupTable(groups.nqMorning)}</div>
                 
                 <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
-                <div>${renderGroup(groups.nqAfternoon)}</div>
+                <div>${renderGroupTable(groups.nqAfternoon)}</div>
             </div>
             
             <!-- HD Column -->
@@ -1391,10 +1407,10 @@ function renderOperationTodayClasses() {
                 <h3 style="text-align: center; color: #16a34a; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Hưng Định (HD)</h3>
                 
                 <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
-                <div>${renderGroup(groups.hdMorning)}</div>
+                <div>${renderGroupTable(groups.hdMorning)}</div>
                 
                 <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
-                <div>${renderGroup(groups.hdAfternoon)}</div>
+                <div>${renderGroupTable(groups.hdAfternoon)}</div>
             </div>
         </div>
     `;
