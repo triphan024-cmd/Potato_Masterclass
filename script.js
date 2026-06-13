@@ -1295,13 +1295,16 @@ function renderOperationTodayClasses() {
         }
 
         let branch = 'NQ'; // default to NQ
-        if (classRow) {
-            const rawBranch = getVal(classRow.c[2]);
-            if (rawBranch && rawBranch.toUpperCase().includes('HD')) branch = 'HD';
-        } else if (ev.raw && ev.raw.c) {
-            // Check calendar raw data just in case
-            const rawBranch = getVal(ev.raw.c[1]);
-            if (rawBranch && rawBranch.toUpperCase().includes('HD')) branch = 'HD';
+        const rawBranchClass = classRow && classRow.c ? getVal(classRow.c[2]) : '';
+        const rawBranchCal = ev.raw && ev.raw.c ? getVal(ev.raw.c[1]) : '';
+        const nameUpper = evClassName.toUpperCase();
+        
+        if (nameUpper.includes('HD |') || nameUpper.startsWith('HD') || 
+            (rawBranchClass && String(rawBranchClass).toUpperCase().includes('HD')) || 
+            (rawBranchCal && String(rawBranchCal).toUpperCase().includes('HD'))) {
+            branch = 'HD';
+        } else if (nameUpper.includes('NQ |') || nameUpper.startsWith('NQ')) {
+            branch = 'NQ';
         }
 
         const isMorning = parseInt((ev.time || '00:00').split(':')[0] || '0') < 12;
@@ -1328,20 +1331,23 @@ function renderOperationTodayClasses() {
         const cardHtml = `
             <div style="font-size: 1.05rem; line-height: 1.6; color: var(--text-dark); padding: 16px; margin-bottom: 16px; background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.15rem;">${evClassName || 'Unknown Class'}</h3>
-                <div style="display: flex; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
-                    <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
-                    <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
-                    <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
-                </div>
                 
-                <div style="display: flex; gap: 16px; align-items: center; justify-content: space-between; background: #fdfdfd; border: 1px solid rgba(0,0,0,0.04); padding: 8px 12px; border-radius: 6px;">
-                    <div>
-                        <div style="color: #16a34a; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-money-bill-wave"></i> Collected</div>
-                        <div style="font-weight: 600; font-size: 0.95rem; margin-top: 2px;">${daThu}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
+                        <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
+                        <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt</div>
-                        <div style="font-weight: 600; font-size: 0.95rem; margin-top: 2px; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</div>
+                    
+                    <div style="display: flex; gap: 12px; align-items: center; text-align: right;">
+                        <div>
+                            <span style="color: #16a34a; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-money-bill-wave"></i> Collect:</span>
+                            <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px;">${daThu}</span>
+                        </div>
+                        <div>
+                            <span style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt:</span>
+                            <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</span>
+                        </div>
                     </div>
                 </div>
             </div>
