@@ -1841,6 +1841,7 @@ function renderTeacherObservations(classRows) {
         let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
         let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
         const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
+        const totalStudents = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0), 0);
 
         const branchHeader = document.createElement('div');
         branchHeader.style.gridColumn = '1 / -1';
@@ -1854,9 +1855,14 @@ function renderTeacherObservations(classRows) {
             <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
                 <i class="fa-solid fa-building"></i> ${branch}
             </h3>
-            <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem;">
-                ${totalClasses} Classes
-            </span>
+            <div style="display: flex; gap: 8px;">
+                <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem; margin: 0;">
+                    ${totalClasses} Classes
+                </span>
+                <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 0.95rem; margin: 0;">
+                    ${totalStudents} Students
+                </span>
+            </div>
         `;
         grid.appendChild(branchHeader);
 
@@ -1915,7 +1921,7 @@ function renderTeacherObservations(classRows) {
                 rowsHtml += `
                     <tr>
                         <td style="padding: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>${className.split(' - ')[0]}</strong></td>
-                        <td style="padding: 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                        <td style="padding: 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center; font-size: 0.8rem;">${schedule}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
@@ -2466,6 +2472,7 @@ function renderTeacherPerformance(classRows) {
         let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
         let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
         const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
+        const totalStudents = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0), 0);
 
         const branchHeader = document.createElement('div');
         branchHeader.style.gridColumn = '1 / -1';
@@ -2479,9 +2486,14 @@ function renderTeacherPerformance(classRows) {
             <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
                 <i class="fa-solid fa-building"></i> ${branch}
             </h3>
-            <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem;">
-                ${totalClasses} Classes
-            </span>
+            <div style="display: flex; gap: 8px;">
+                <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem; margin: 0;">
+                    ${totalClasses} Classes
+                </span>
+                <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 0.95rem; margin: 0;">
+                    ${totalStudents} Students
+                </span>
+            </div>
         `;
         grid.appendChild(branchHeader);
 
@@ -2509,7 +2521,7 @@ function renderTeacherPerformance(classRows) {
                             <thead>
                                 <tr>
                                     <th style="padding: 8px; width: 30%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 12%; text-align: center;">Absence</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
                                     <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
@@ -2550,12 +2562,36 @@ function renderTeacherPerformance(classRows) {
                                         ? `<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '${safeHTML}')"></i>`
                                         : '-';
 
+                                    let pColor = '';
+                                    let pBg = '';
+                                    const pLower = String(progress).toLowerCase();
+                                    if (pLower.includes('late') || pLower.includes('trễ') || pLower.includes('chậm') || pLower.includes('behind')) {
+                                        pColor = '#ef4444'; // red
+                                        pBg = 'rgba(239, 68, 68, 0.1)';
+                                    } else if (pLower.includes('on track') || pLower.includes('đúng tiến độ') || pLower.includes('kịp')) {
+                                        pColor = '#10b981'; // green
+                                        pBg = 'rgba(16, 185, 129, 0.1)';
+                                    } else if (pLower.includes('missing') || pLower.includes('mất bài') || pLower.includes('nghỉ')) {
+                                        pColor = '#8b5cf6'; // purple
+                                        pBg = 'rgba(139, 92, 246, 0.1)';
+                                    } else if (pLower.includes('ahead') || pLower.includes('vượt tiến độ') || pLower.includes('nhanh')) {
+                                        pColor = '#3b82f6'; // blue
+                                        pBg = 'rgba(59, 130, 246, 0.1)';
+                                    } else {
+                                        pColor = '#64748b'; // default gray
+                                        pBg = 'rgba(100, 116, 139, 0.1)';
+                                    }
+                                    
+                                    let pBadgeHtml = progress !== '-' && progress !== '' 
+                                        ? `<span class="status-badge" style="margin: 0; background: ${pBg}; color: ${pColor}; font-size: 0.75rem; white-space: nowrap;">${progress}</span>` 
+                                        : '-';
+
                                     return `
                                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                                             <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
-                                            <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                            <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${absence}</td>
-                                            <td style="padding: 12px 8px; text-align: center;"><span class="badge ${progress !== '-' ? 'success' : ''}">${progress}</span></td>
+                                            <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                             <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${examDate}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                         </tr>
