@@ -2193,7 +2193,7 @@ function selectCalendarDate(year, month, day) {
                     // Row Sáng
                     if (nqSang.length > 0 || hdSang.length > 0) {
                         html += `<div style="margin-bottom: 12px;">`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Ca Sáng</div>`;
+                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Morning Shift</div>`;
                         html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
                         html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
                             <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
@@ -2209,7 +2209,7 @@ function selectCalendarDate(year, month, day) {
                     // Row Chiều
                     if (nqChieu.length > 0 || hdChieu.length > 0) {
                         html += `<div>`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Ca Chiều</div>`;
+                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Afternoon Shift</div>`;
                         html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
                         html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
                             <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
@@ -2234,9 +2234,6 @@ function selectCalendarDate(year, month, day) {
 
                     html += `<div style="font-weight: 700; color: ${color}; font-size: 0.95rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;">`;
                     html += `<span>${title}</span>`;
-                    if (mainTime) {
-                        html += `<span style="font-size: 0.75rem; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 600;"><i class="fa-regular fa-clock"></i> ${mainTime}</span>`;
-                    }
                     html += `</div>`;
 
                     let nqList = [];
@@ -2250,6 +2247,14 @@ function selectCalendarDate(year, month, day) {
                     if (nqList.length === 0 && hdList.length === 0) return '';
                     
                     html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
+                    
+                    if (mainTime) {
+                        html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-dark);">`;
+                        html += `<i class="fa-regular fa-clock" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 6px;"></i>`;
+                        html += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center;">${mainTime.split(' - ')[0]}<br><span style="color: var(--text-muted); font-size: 0.75rem;">đến</span><br>${mainTime.split(' - ')[1] || ''}</div>`;
+                        html += `</div>`;
+                    }
+                    
                     html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
                         <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
                         <div style="color: var(--text-dark); line-height: 1.6;">${nqList.length > 0 ? nqList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
