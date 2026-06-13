@@ -2187,37 +2187,41 @@ function selectCalendarDate(year, month, day) {
                         }
                     });
 
-                    // Row Sáng
-                    if (nqSang.length > 0 || hdSang.length > 0) {
-                        html += `<div style="margin-bottom: 12px;">`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Morning</div>`;
-                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
-                        html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
-                            <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${nqSang.length > 0 ? nqSang.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
-                        </div>`;
-                        html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
-                            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${hdSang.length > 0 ? hdSang.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
-                        </div>`;
-                        html += `</div></div>`;
-                    }
+                    html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
                     
-                    // Row Chiều
-                    if (nqChieu.length > 0 || hdChieu.length > 0) {
-                        html += `<div>`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
-                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
-                        html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
-                            <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${nqChieu.length > 0 ? nqChieu.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
-                        </div>`;
-                        html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
-                            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${hdChieu.length > 0 ? hdChieu.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
-                        </div>`;
-                        html += `</div></div>`;
+                    // NQ Column
+                    html += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
+                        <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Ngô Quyền</div>`;
+                    if (nqSang.length > 0) {
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Morning</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; margin-bottom: 10px; padding-left: 4px;">${nqSang.join('<br>')}</div>`;
                     }
+                    if (nqChieu.length > 0) {
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; padding-left: 4px;">${nqChieu.join('<br>')}</div>`;
+                    }
+                    if (nqSang.length === 0 && nqChieu.length === 0) {
+                        html += `<div style="color: var(--text-muted); font-style: italic;">-</div>`;
+                    }
+                    html += `</div>`;
+                    
+                    // HD Column
+                    html += `<div style="flex: 1; padding-left: 12px;">
+                        <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Hưng Định</div>`;
+                    if (hdSang.length > 0) {
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Morning</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; margin-bottom: 10px; padding-left: 4px;">${hdSang.join('<br>')}</div>`;
+                    }
+                    if (hdChieu.length > 0) {
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; padding-left: 4px;">${hdChieu.join('<br>')}</div>`;
+                    }
+                    if (hdSang.length === 0 && hdChieu.length === 0) {
+                        html += `<div style="color: var(--text-muted); font-style: italic;">-</div>`;
+                    }
+                    html += `</div>`;
+                    
+                    html += `</div>`;
                     
                 } else {
                     // Operation
@@ -2253,11 +2257,11 @@ function selectCalendarDate(year, month, day) {
                             html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-align: center;">${t}</div>`;
                         }
                         
-                        html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
+                        html += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
                             <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
                             <div style="color: var(--text-dark); line-height: 1.6;">${nqList.length > 0 ? nqList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
-                        html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
+                        html += `<div style="flex: 1; padding-left: 12px;">
                             <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
                             <div style="color: var(--text-dark); line-height: 1.6;">${hdList.length > 0 ? hdList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
