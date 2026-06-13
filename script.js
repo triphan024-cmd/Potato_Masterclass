@@ -1276,11 +1276,11 @@ function renderOperationTodayClasses() {
 
     if (todayEvents.length === 0) {
         countEl.innerText = "0 Classes";
-        listEl.innerHTML = \`<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>\`;
+        listEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>`;
         return;
     }
 
-    countEl.innerText = \`\${todayEvents.length} Classes\`;
+    countEl.innerText = `${todayEvents.length} Classes`;
     listEl.innerHTML = '';
 
     todayEvents.forEach(ev => {
@@ -1309,7 +1309,7 @@ function renderOperationTodayClasses() {
         }
 
         const card = document.createElement('div');
-        card.style.cssText = \`
+        card.style.cssText = `
             border: 1px solid rgba(0,0,0,0.06);
             border-radius: 12px;
             padding: 16px;
@@ -1318,32 +1318,32 @@ function renderOperationTodayClasses() {
             display: flex;
             flex-direction: column;
             gap: 12px;
-        \`;
+        `;
 
-        card.innerHTML = \`
+        card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                <div style="font-weight: 700; color: var(--text-dark); font-size: 1.05rem;">\${evClassName || 'Unknown Class'}</div>
+                <div style="font-weight: 700; color: var(--text-dark); font-size: 1.05rem;">${evClassName || 'Unknown Class'}</div>
                 <div style="font-size: 0.8rem; background: var(--primary-light); color: var(--primary-color); padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
-                    <i class="fa-regular fa-clock"></i> \${ev.time || 'N/A'}
+                    <i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}
                 </div>
             </div>
             
             <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px;">
-                <span><i class="fa-solid fa-chalkboard-user"></i> \${getShortName(ev.teacher) || 'N/A'}</span>
-                <span><i class="fa-solid fa-users"></i> \${studentCount} Students</span>
+                <span><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
+                <span><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
             </div>
             
             <div style="margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                 <div>
                     <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Collected</div>
-                    <div style="font-weight: 600; color: #16a34a; font-size: 0.95rem;">\${daThu}</div>
+                    <div style="font-weight: 600; color: #16a34a; font-size: 0.95rem;">${daThu}</div>
                 </div>
                 <div>
                     <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Debt</div>
-                    <div style="font-weight: 600; color: \${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.95rem;">\${congNo}</div>
+                    <div style="font-weight: 600; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.95rem;">${congNo}</div>
                 </div>
             </div>
-        \`;
+        `;
         listEl.appendChild(card);
     });
 }
