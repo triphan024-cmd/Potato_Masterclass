@@ -26,6 +26,54 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
+window.openRoadmapDetail = function(courseName) {
+    if (event) event.stopPropagation();
+    
+    let rows = [];
+    if (window.globalCourseRoadmapRows) {
+        rows = window.globalCourseRoadmapRows.filter(row => {
+            if (!row || !row.c) return false;
+            let found = false;
+            for(let i=0; i<10; i++) {
+                if (row.c[i] && getVal(row.c[i]).toLowerCase().trim() === courseName.toLowerCase().trim()) {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        });
+    }
+
+    let contentHtml = '';
+    if (rows.length === 0) {
+        contentHtml = `<div style="padding: 20px; text-align: center; color: #64748b;">No roadmap details found for course: <strong>${courseName}</strong></div>`;
+    } else {
+        const cols = window.globalCourseRoadmapCols || [];
+        contentHtml += `<div style="overflow-x: auto; max-height: 60vh;"><table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><tr>`;
+        cols.forEach((col, i) => {
+            if (col && col.label) {
+                contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap;">${col.label}</th>`;
+            } else {
+                contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap;">Col ${i+1}</th>`;
+            }
+        });
+        contentHtml += `</tr></thead><tbody>`;
+        
+        rows.forEach(row => {
+            contentHtml += `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">`;
+            cols.forEach((col, i) => {
+                const val = (row.c && row.c[i]) ? getVal(row.c[i]) : '-';
+                contentHtml += `<td style="padding: 10px; white-space: nowrap;">${val}</td>`;
+            });
+            contentHtml += `</tr>`;
+        });
+        contentHtml += `</tbody></table></div>`;
+    }
+    
+    openClassDetail(`<i class="fa-solid fa-map"></i> Roadmap: ${courseName}`, contentHtml);
+};
+
 window.openDutyDetail = function(id) {
     if (event) event.stopPropagation();
     const row = window.globalDutyRows[id];
@@ -887,6 +935,7 @@ const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtg
 const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
 const DUTY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=585528165';
+const ROADMAP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=882542672';
 
 
 
@@ -999,6 +1048,14 @@ async function fetchDashboardData() {
             }
             
             console.log(`Retrieved leader data.`);
+            
+            const rmRes = await fetch(ROADMAP_SHEET_URL);
+            const rmText = await rmRes.text();
+            const rmJsonString = rmText.substring(rmText.indexOf('{'), rmText.lastIndexOf('}') + 1);
+            const rmJson = JSON.parse(rmJsonString);
+            window.globalCourseRoadmapCols = rmJson.table.cols;
+            window.globalCourseRoadmapRows = rmJson.table.rows;
+            console.log("Roadmap data loaded.");
         } catch (err) {
             console.error("Error fetching leader data:", err);
         }
@@ -3329,12 +3386,14 @@ function renderAcademicPerformance(classRows) {
                                 const c = row.c;
                                 const className = getVal(c[6]) || getVal(c[1]);
                                 const schedule = getVal(c[12]) || '-';
+                                const studentCount = parseInt(getVal(c[7]) || 0);
+                                const course = getVal(c[4]) || '';
                                 const teacherName = getShortName(getVal(c[9])) || '-';
                                 const aid = getVal(c[36]) || '-';
                                 const roadmap = getVal(c[37]) || '-';
                                 const exam = getVal(c[38]) || '-';
                                 
-                                const getBadgeHtml = (text, type) => {
+                                const getBadgeHtml = (text, type, courseName) => {
                                     if (!text || text === '-') return text;
                                     const cleanText = text.replace(/^\d+\.\s*/, '');
                                     const lower = cleanText.toLowerCase();
@@ -3347,8 +3406,9 @@ function renderAcademicPerformance(classRows) {
 
                                     const safeText = text.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>').replace(/\r/g, ' ');
                                     let titleStr = '';
-                                    if (type === 'roadmap') titleStr = 'Roadmap Detail';
-                                    else if (type === 'aid') titleStr = 'Aid Detail';
+                                    if (type === 'roadmap') {
+                                        return `<span class="stat-badge ${badgeClass}" ${style} onclick="window.openRoadmapDetail('${courseName}')">${cleanText}</span>`;
+                                    } else if (type === 'aid') titleStr = 'Aid Detail';
                                     else if (type === 'exam') titleStr = 'Exam Detail';
 
                                     const badgeHtml = `<span class="stat-badge ${badgeClass}" ${style} onclick="openClassDetail('${titleStr}', '${safeText}')">${cleanText}</span>`;
@@ -3358,11 +3418,15 @@ function renderAcademicPerformance(classRows) {
 
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
-                                        <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
-                                        <td style="padding: 14px 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                                        <td style="padding: 14px 12px; text-align: center; font-size: 0.8rem;">${schedule}</td>
+                                        <td style="padding: 12px 8px;">
+                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.split(' - ')[0].trim()}</div>
+                                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
+                                                <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 14px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid')}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap')}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', course)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam')}</td>
                                     </tr>
                                 `;
