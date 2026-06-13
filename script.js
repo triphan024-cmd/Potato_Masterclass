@@ -2148,34 +2148,75 @@ function selectCalendarDate(year, month, day) {
         });
         
         if (dutyEvents.length > 0) {
-            let nqDuty = [];
-            let hdDuty = [];
-            dutyEvents.forEach(row => {
-                const label = getVal(row.c[13]) || '';
-                const displayStr = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
-                if (label.includes('NQ')) nqDuty.push(displayStr);
-                else if (label.includes('HĐ') || label.includes('HD')) hdDuty.push(displayStr);
-            });
+            const renderDutyGroup = (groupDuties, title, color) => {
+                if (groupDuties.length === 0) return '';
+                
+                const parsed = groupDuties.map(row => {
+                    const label = getVal(row.c[13]) || '';
+                    const branch = getVal(row.c[4]) || '';
+                    let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
+                    let timeStr = timeMatch ? timeMatch[1] : '';
+                    let namePart = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
+                    if (timeStr) {
+                        namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
+                    }
+                    return { branch, timeStr, namePart, label };
+                });
+                
+                const timeCounts = {};
+                parsed.forEach(p => { if (p.timeStr) timeCounts[p.timeStr] = (timeCounts[p.timeStr] || 0) + 1; });
+                let mainTime = '';
+                let maxCount = 0;
+                for (const t in timeCounts) {
+                    if (timeCounts[t] > maxCount) { maxCount = timeCounts[t]; mainTime = t; }
+                }
+                
+                let nqList = [];
+                let hdList = [];
+                
+                parsed.forEach(p => {
+                    let displayStr = p.namePart;
+                    if (p.timeStr && p.timeStr !== mainTime) {
+                        displayStr += ` <span style="font-size: 0.75rem; color: var(--text-muted);">(${p.timeStr})</span>`;
+                    }
+                    if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(displayStr);
+                    else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(displayStr);
+                });
+                
+                if (nqList.length === 0 && hdList.length === 0) return '';
+                
+                let html = `<div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">`;
+                html += `<div style="font-weight: 700; color: ${color}; font-size: 0.95rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;">`;
+                html += `<span>${title}</span>`;
+                if (mainTime) {
+                    html += `<span style="font-size: 0.75rem; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 600;"><i class="fa-regular fa-clock"></i> ${mainTime}</span>`;
+                }
+                html += `</div>`;
+                
+                html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
+                
+                html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
+                    <div style="color: var(--text-dark); line-height: 1.6;">${nqList.length > 0 ? nqList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                </div>`;
+                
+                html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
+                    <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
+                    <div style="color: var(--text-dark); line-height: 1.6;">${hdList.length > 0 ? hdList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                </div>`;
+                
+                html += `</div></div>`;
+                return html;
+            };
+
+            const opDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'operation'; });
+            const acDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
             
-            let dutyHtml = '<div style="display: flex; gap: 12px; flex-wrap: wrap;">';
-            if (nqDuty.length > 0) {
-                dutyHtml += `
-                <div class="daily-class-card" style="flex: 1; min-width: 150px; background: white; border-left: 3px solid #0284c7; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Ngô Quyền (NQ)</div>
-                    <div style="font-size: 0.85rem; color: var(--text-dark); line-height: 1.4;">${nqDuty.join('<br>')}</div>
-                </div>`;
-            }
-            if (hdDuty.length > 0) {
-                dutyHtml += `
-                <div class="daily-class-card" style="flex: 1; min-width: 150px; background: white; border-left: 3px solid #059669; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-                    <div style="font-size: 0.75rem; color: #059669; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Hưng Định (HĐ)</div>
-                    <div style="font-size: 0.85rem; color: var(--text-dark); line-height: 1.4;">${hdDuty.join('<br>')}</div>
-                </div>`;
-            }
-            dutyHtml += '</div>';
-            if (nqDuty.length === 0 && hdDuty.length === 0) {
-                dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
-            }
+            let dutyHtml = '';
+            dutyHtml += renderDutyGroup(opDuties, '<i class="fa-solid fa-briefcase" style="margin-right: 4px;"></i> Operation', 'var(--primary-dark)');
+            dutyHtml += renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic', '#d97706');
+            
+            if (!dutyHtml) dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
             dutyContent.innerHTML = dutyHtml;
         } else {
             dutyContent.innerHTML = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
