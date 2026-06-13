@@ -2,17 +2,33 @@
 window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyUpPBhYBLvwyKhTk-7bNAC2rr5PE0dnN7T4lizrNNcIyJkDM_Z5PPw1v75-zWG0DQPCg/exec';
 
 // Function to open the detailed view of a class
-function openClassDetail(titleStr, contentStr, hideHeader = false) {
+function openClassDetail(titleStr, contentStr, hideHeader = false, modalWidth = null) {
     if (event) event.stopPropagation();
     const modal = document.getElementById('classModal');
     const title = document.getElementById('modalClassTitle');
     const content = document.getElementById('modalClassContent');
     const header = modal.querySelector('.modal-header');
+    const modalContent = modal.querySelector('.modal-content');
     
     if (hideHeader) {
         if (header) header.style.display = 'none';
+        if (content) content.style.padding = '0'; // Remove default padding when header is hidden
     } else {
         if (header) header.style.display = '';
+        if (content) content.style.padding = ''; // Restore default
+    }
+
+    if (modalContent) {
+        if (modalWidth) {
+            modalContent.dataset.origMaxWidth = modalContent.style.maxWidth || '';
+            modalContent.style.maxWidth = modalWidth;
+            modalContent.style.width = '100%';
+        } else {
+            if (modalContent.dataset.origMaxWidth !== undefined) {
+                modalContent.style.maxWidth = modalContent.dataset.origMaxWidth;
+                modalContent.style.width = '';
+            }
+        }
     }
     
     title.innerHTML = titleStr;
@@ -46,7 +62,11 @@ window.openRoadmapDetail = function(courseName) {
 
     let contentHtml = '';
     if (rows.length === 0) {
-        contentHtml = `<div style="padding: 20px; text-align: center; color: #64748b; background: white; border-radius: 8px;">No roadmap details found for course: <strong>${courseName}</strong></div>`;
+        contentHtml = `<div style="padding: 32px; text-align: center; color: #64748b; background: white; border-radius: 12px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; color: var(--primary-dark); font-size: 1.4rem; text-align: left;"><i class="fa-solid fa-map"></i> Roadmap: ${courseName}</h3>
+            No roadmap details found for course: <strong>${courseName}</strong>
+        </div>`;
     } else {
         const cols = window.globalCourseRoadmapCols || [];
         const allowedLabels = ["Status", "Course", "Lesson Order", "Lesson Name", "Lesson Content", "Suggestion"];
@@ -54,36 +74,44 @@ window.openRoadmapDetail = function(courseName) {
         
         cols.forEach((col, i) => {
             const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
-            // check if the column label is in the allowed list
             if (allowedLabels.some(allowed => label.toLowerCase().includes(allowed.toLowerCase()))) {
                 colIndices.push({ index: i, label: label });
             }
         });
         
-        // If no matching columns are found, just show all columns up to 8
         if (colIndices.length === 0) {
             cols.slice(0, 8).forEach((col, i) => colIndices.push({ index: i, label: col && col.label ? col.label : `Col ${i+1}` }));
         }
 
-        contentHtml += `<div style="overflow-x: auto; max-height: 60vh; background: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"><table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-            <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><tr>`;
+        contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-map"></i> Roadmap: ${courseName}</h3>
+            <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="modern-table" style="width: 100%; font-size: 0.9rem; border-collapse: collapse; table-layout: auto;">
+            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
+        
         colIndices.forEach((colObj) => {
-            contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap; font-weight: 600; color: var(--primary-dark);">${colObj.label}</th>`;
+            const isLongCol = ['lesson name', 'lesson content', 'suggestion'].some(c => colObj.label.toLowerCase().includes(c));
+            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap; ${isLongCol ? 'min-width: 250px;' : 'min-width: 100px;'}`;
+            contentHtml += `<th style="${thStyle}">${colObj.label}</th>`;
         });
         contentHtml += `</tr></thead><tbody>`;
         
-        rows.forEach(row => {
-            contentHtml += `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">`;
+        rows.forEach((row, rowIndex) => {
+            const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
+            contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
             colIndices.forEach((colObj) => {
                 const val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
-                contentHtml += `<td style="padding: 12px 10px; line-height: 1.4; min-width: 120px;">${val.replace(/\n/g, '<br>')}</td>`;
+                const isLongCol = ['lesson name', 'lesson content', 'suggestion'].some(c => colObj.label.toLowerCase().includes(c));
+                const tdStyle = `padding: 14px 16px; line-height: 1.5; color: #1e293b; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
+                contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
             });
             contentHtml += `</tr>`;
         });
-        contentHtml += `</tbody></table></div>`;
+        contentHtml += `</tbody></table></div></div>`;
     }
     
-    openClassDetail(`<i class="fa-solid fa-map"></i> Roadmap: ${courseName}`, contentHtml);
+    openClassDetail('', contentHtml, true, '90vw');
 };
 
 window.openDutyDetail = function(id) {
@@ -3385,12 +3413,11 @@ function renderAcademicPerformance(classRows) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 30%;">Class</th>
-                                <th style="padding: 8px; width: 18%; text-align: center;">Teacher</th>
-                                <th style="padding: 8px; width: 16%; text-align: center;">Schedule</th>
-                                <th style="padding: 8px; width: 12%; text-align: center;">Aid</th>
-                                <th style="padding: 8px; width: 12%; text-align: center;">Roadmap</th>
-                                <th style="padding: 8px; width: 12%; text-align: center;">Exam</th>
+                                <th style="padding: 8px; width: 40%;">Class</th>
+                                <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 15%; text-align: center;">Aid</th>
+                                <th style="padding: 8px; width: 15%; text-align: center;">Roadmap</th>
+                                <th style="padding: 8px; width: 10%; text-align: center;">Exam</th>
                             </tr>
                         </thead>
                         <tbody>
