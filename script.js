@@ -2524,35 +2524,35 @@ function renderTeacherPerformance(classRows) {
                                     let safeHTML = '';
                                     const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
                                     if (hasDetails) {
-                                        let modalContent = \`
+                                        let modalContent = `
                                             <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--primary);">
                                                 <h4 style="color: var(--primary); margin-bottom: 8px;">Teacher Achievement</h4>
-                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">\${achievement.replace(/\\n/g, '<br>')}</p>
+                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${achievement.replace(/\n/g, '<br>')}</p>
                                             </div>
                                             <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger);">
                                                 <h4 style="color: var(--danger); margin-bottom: 8px;">Red Flag</h4>
-                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">\${redFlag.replace(/\\n/g, '<br>')}</p>
+                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${redFlag.replace(/\n/g, '<br>')}</p>
                                                 <h4 style="color: var(--primary); margin-bottom: 8px;">Action</h4>
-                                                <p style="color: var(--text-color); line-height: 1.6;">\${action.replace(/\\n/g, '<br>')}</p>
+                                                <p style="color: var(--text-color); line-height: 1.6;">${action.replace(/\n/g, '<br>')}</p>
                                             </div>
-                                        \`;
-                                        safeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\\n/g, '').replace(/\\r/g, ' ');
+                                        `;
+                                        safeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '').replace(/\r/g, ' ');
                                     }
                                         
                                     let icon = hasDetails
-                                        ? \`<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '\${safeHTML}')"></i>\`
+                                        ? `<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '${safeHTML}')"></i>`
                                         : '-';
 
-                                    return \`
+                                    return `
                                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                                            <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${className.split(' - ')[0]}</td>
-                                            <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${teacherName}</td>
-                                            <td style="padding: 12px 8px; text-align: center;">\${absence}</td>
-                                            <td style="padding: 12px 8px; text-align: center;"><span class="badge \${progress !== '-' ? 'success' : ''}">\${progress}</span></td>
-                                            <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">\${examDate}</td>
-                                            <td style="padding: 12px 8px; text-align: center;">\${icon}</td>
+                                            <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
+                                            <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">${absence}</td>
+                                            <td style="padding: 12px 8px; text-align: center;"><span class="badge ${progress !== '-' ? 'success' : ''}">${progress}</span></td>
+                                            <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${examDate}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                         </tr>
-                                    \`;
+                                    `;
                                 }).join('')}
                             </tbody>
                         </table>
