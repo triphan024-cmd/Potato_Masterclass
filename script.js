@@ -1948,8 +1948,8 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 30%;">Class</th>
-                                    <th style="padding: 8px; width: 18%; text-align: center;">Teacher</th>
+                                    <th style="padding: 8px; width: 33%;">Class</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 12%; text-align: center;">Schedule</th>
                                     <th style="padding: 8px; width: 18%; text-align: center;">Status</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
@@ -2525,8 +2525,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 25%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 30%;">Class</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Students</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                     <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
@@ -2549,7 +2549,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                     
                                     let formattedExamDate = examDate;
                                     if (examDate !== '-' && currentMonthStr && examDate.split('/')[1] === currentMonthStr) {
-                                        formattedExamDate = `<span style="background: rgba(234, 179, 8, 0.2); color: #ca8a04; font-weight: bold; border-radius: 4px; padding: 2px 6px;">${examDate}</span>`;
+                                        formattedExamDate = `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);"><i class="fa-solid fa-fire"></i> ${examDate}</span>`;
                                     }
 
                                     let safeHTML = '';
