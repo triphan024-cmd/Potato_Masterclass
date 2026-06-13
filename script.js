@@ -1417,9 +1417,6 @@ function renderOperationTodayClasses() {
                                             </td>
                                             <td style="padding: 10px 8px;">
                                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                                    <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">
-                                                        ${(teacherName)[0]}
-                                                    </div>
                                                     <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-dark);">${teacherName}</span>
                                                 </div>
                                             </td>
