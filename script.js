@@ -1401,25 +1401,28 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     window[`tmpValidRows_${containerId}`] = validRows;
     
     let examDays = new Set();
-    if (typeof globalClassRows !== 'undefined' && globalClassRows) {
+    if (containerId === 'teacher-tasks-container' && typeof globalClassRows !== 'undefined' && globalClassRows) {
         globalClassRows.forEach(row => {
             if (!row || !row.c) return;
-            // Removed picName filter to show all exam dates in the calendar
-            const examDateStr = String(getVal(row.c[39]) || '');
-            if (examDateStr && examDateStr !== '-') {
-                // Extract all DD/MM or DD/MM/YYYY dates from the string
-                const dateMatches = examDateStr.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?/g);
-                if (dateMatches) {
-                    dateMatches.forEach(dStr => {
-                        const parts = dStr.split(/[\/\-]/);
-                        if (parts.length >= 2) {
-                            const dDay = parseInt(parts[0], 10);
-                            const dMonth = parseInt(parts[1], 10) - 1;
-                            if (dMonth === month && !isNaN(dDay)) {
-                                examDays.add(dDay);
+            const tName = getShortName(getVal(row.c[9])) || '-';
+            // Only add exam days for the specific teacher (picName)
+            if (tName === picName || picName.includes(tName) || tName.includes(picName)) {
+                const examDateStr = String(getVal(row.c[39]) || '');
+                if (examDateStr && examDateStr !== '-') {
+                    // Extract all DD/MM or DD/MM/YYYY dates from the string
+                    const dateMatches = examDateStr.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?/g);
+                    if (dateMatches) {
+                        dateMatches.forEach(dStr => {
+                            const parts = dStr.split(/[\/\-]/);
+                            if (parts.length >= 2) {
+                                const dDay = parseInt(parts[0], 10);
+                                const dMonth = parseInt(parts[1], 10) - 1;
+                                if (dMonth === month && !isNaN(dDay)) {
+                                    examDays.add(dDay);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }
         });
