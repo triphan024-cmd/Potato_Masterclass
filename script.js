@@ -59,7 +59,7 @@ window.openDutyDetail = function(id) {
 
 window.openCalEventDetail = function(id) {
     if (event) event.stopPropagation();
-    const ev = window.globalCalendarEvents[id];
+    const ev = globalCalendarEvents[id];
     if (!ev) return;
     
     const dateStr = ev.date ? ev.date.toLocaleDateString('en-GB') : '';
