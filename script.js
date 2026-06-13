@@ -1291,7 +1291,7 @@ function renderOperationTodayClasses() {
         targetRows = globalClassRows.filter(row => row && row.c && (getVal(row.c[2]) || '').includes('Teaching'));
     }
 
-    countEl.innerText = `${targetRows.length} Classes`;
+    countEl.innerText = `(${targetRows.length} Classes)`;
     grid.innerHTML = '';
 
     if (targetRows.length === 0) {
@@ -1394,7 +1394,8 @@ function renderOperationTodayClasses() {
                             <tbody>
                                 ${sortedRows.map(row => {
                                     const c = row.c;
-                                    const className = getVal(c[6]) || getVal(c[1]);
+                                    const fullClassName = getVal(c[6]) || getVal(c[1]);
+                                    const className = fullClassName.split(' - ')[0].trim();
                                     const teacherName = getShortName(getVal(c[9])) || '-';
                                     const studentCount = parseInt(getVal(c[7]) || 0);
                                     
