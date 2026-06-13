@@ -1310,39 +1310,26 @@ function renderOperationTodayClasses() {
 
         const card = document.createElement('div');
         card.style.cssText = `
-            border: 1px solid rgba(0,0,0,0.06);
-            border-radius: 12px;
-            padding: 16px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
         `;
 
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                <div style="font-weight: 700; color: var(--text-dark); font-size: 1.05rem;">${evClassName || 'Unknown Class'}</div>
-                <div style="font-size: 0.8rem; background: var(--primary-light); color: var(--primary-color); padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
-                    <i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}
-                </div>
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem;">${evClassName || 'Unknown Class'}</h3>
+            <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
+                <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color);"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
+                <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
+                <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
             </div>
             
-            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px;">
-                <span><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
-                <span><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
-            </div>
+            <strong style="color: #16a34a; display: block; margin-bottom: 5px;"><i class="fa-solid fa-money-bill-wave"></i> Collected (Đã thu):</strong>
+            <p style="margin-top: 0; margin-bottom: 15px; font-weight: 600;">${daThu}</p>
             
-            <div style="margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Collected</div>
-                    <div style="font-weight: 600; color: #16a34a; font-size: 0.95rem;">${daThu}</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Debt</div>
-                    <div style="font-weight: 600; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.95rem;">${congNo}</div>
-                </div>
-            </div>
+            <strong style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; display: block; margin-bottom: 5px;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt (Công nợ):</strong>
+            <p style="margin-top: 0; margin-bottom: 0; font-weight: 600; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</p>
         `;
         listEl.appendChild(card);
     });
