@@ -1318,8 +1318,8 @@ function renderOperationTodayClasses() {
 
         if (classRow) {
             doanhThu = getVal(classRow.c[43]) || '0';
-            daThu = getVal(classRow.c[44]) || '0';
-            congNo = getVal(classRow.c[45]) || '0';
+            daThu = getVal(classRow.c[46]) || '0';
+            congNo = getVal(classRow.c[47]) || '0';
             studentCount = getVal(classRow.c[7]) || '0';
         } else {
              // Fallback to calendar raw data for student count
