@@ -91,12 +91,23 @@ window.openCalEventDetail = function(id) {
     if (typeof studentName === 'string') {
         studentName = studentName.split(',').map(s => s.trim()).join('<br>');
     }
-    const weekly = rawData['Weekly'] || '';
-    const history = rawData['History'] || '';
+    const className = ev.className || 'Class Detail Information';
 
-    const createBox = (title, value, icon, fullWidth = false) => {
+    const createBox = (title, value, icon, fullWidth = false, inline = true) => {
         if (!value || value === 'N/A' || value === '') return '';
         const colSpan = fullWidth ? 'grid-column: 1 / -1;' : '';
+        
+        if (inline && !fullWidth) {
+            return `
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 14px; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; gap: 12px; ${colSpan}">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; white-space: nowrap;">
+                        ${icon ? `<i class="fa-solid ${icon}" style="color: var(--primary-color); opacity: 0.8;"></i>` : ''} ${title}
+                    </div>
+                    <div style="font-weight: 600; color: var(--text-dark); font-size: 0.95rem; text-align: right; word-break: break-word;">${value}</div>
+                </div>
+            `;
+        }
+
         return `
             <div style="border: 1px solid rgba(0,0,0,0.06); padding: 14px; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 2px rgba(0,0,0,0.02); ${colSpan}">
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">
@@ -109,22 +120,21 @@ window.openCalEventDetail = function(id) {
 
     let boxesHtml = `
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
-            ${createBox('Teacher', teacher, 'fa-chalkboard-user')}
-            ${createBox('Student', countStudent, 'fa-users')}
-            ${createBox('Study Date', dateStr, 'fa-calendar-day')}
-            ${createBox('Time', time, 'fa-clock')}
             ${createBox('Status', status, 'fa-info-circle')}
             ${createBox('Branch', branch, 'fa-building')}
-            ${createBox('Student Name', studentName, 'fa-user-graduate', true)}
-            ${createBox('Weekly', weekly, 'fa-clipboard-list', true)}
-            ${createBox('History', history, 'fa-clock-rotate-left', true)}
+            ${createBox('Study Date', dateStr, 'fa-calendar-day')}
+            ${createBox('Time', time, 'fa-clock')}
+            ${createBox('Teacher', teacher, 'fa-chalkboard-user')}
+            ${createBox('Student', countStudent, 'fa-users')}
+            ${createBox('Student Name', studentName, 'fa-user-graduate', true, false)}
+            ${createBox('History', history, 'fa-clock-rotate-left', true, false)}
         </div>
     `;
 
     const html = `
         <div style="background: rgba(255,255,255,0.95); padding: 24px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; font-family: 'Inter', sans-serif; position: relative;">
             <button type="button" class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"></i></button>
-            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; padding-right: 24px;">Class Detail Information</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; padding-right: 24px;">${className}</div>
             ${boxesHtml}
         </div>
     `;
