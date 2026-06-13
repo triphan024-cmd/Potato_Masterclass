@@ -1255,118 +1255,130 @@ function renderOperationTable(classRows) {
     });
 }
 
+window.applyOperationTodayFilter = function() {
+    renderOperationTodayClasses();
+};
+
 function renderOperationTodayClasses() {
-    const listEl = document.getElementById('operation-today-list');
+    const grid = document.getElementById('operation-today-grid');
     const countEl = document.getElementById('operation-today-count');
-    if (!listEl || !countEl) return;
+    if (!grid || !countEl) return;
 
     if (!globalCalendarEvents || !globalClassRows) return;
+
+    const filter = document.getElementById('operationTodayFilter') ? document.getElementById('operationTodayFilter').value : 'today';
 
     const today = new Date();
     const isToday = (d) => d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
 
-    const todayEvents = globalCalendarEvents.filter(ev => ev.date && isToday(ev.date));
+    let targetRows = [];
+    
+    if (filter === 'today') {
+        const todayEvents = globalCalendarEvents.filter(ev => ev.date && isToday(ev.date));
+        todayEvents.forEach(ev => {
+            const evClassName = String(ev.className || '').trim();
+            for (let row of globalClassRows) {
+                if (!row || !row.c) continue;
+                const cName = String(getVal(row.c[6]) || getVal(row.c[1])).trim();
+                if (cName && (cName === evClassName || cName.includes(evClassName) || evClassName.includes(cName))) {
+                    targetRows.push({ ...row, todayTime: ev.time });
+                    break;
+                }
+            }
+        });
+    } else {
+        // All classes
+        targetRows = globalClassRows.filter(row => row && row.c && (getVal(row.c[2]) || '').includes('Teaching'));
+    }
 
-    if (todayEvents.length === 0) {
-        countEl.innerText = "0 Classes";
-        listEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>`;
+    countEl.innerText = `${targetRows.length} Classes`;
+    grid.innerHTML = '';
+
+    if (targetRows.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes found.</div>`;
         return;
     }
 
-    countEl.innerText = `${todayEvents.length} Classes`;
-
-    const groups = {
-        nqMorning: [],
-        nqAfternoon: [],
-        hdMorning: [],
-        hdAfternoon: []
+    const branchMap = {
+        'Ngô Quyền (NQ)': {},
+        'Hưng Định (HD)': {}
     };
 
-    todayEvents.forEach(ev => {
-        const evClassName = String(ev.className || '').trim();
-        let classRow = null;
-        for (let row of globalClassRows) {
-            if (!row || !row.c) continue;
-            const cName = String(getVal(row.c[6]) || getVal(row.c[1])).trim();
-            if (cName && (cName === evClassName || cName.includes(evClassName) || evClassName.includes(cName))) {
-                classRow = row;
-                break;
-            }
-        }
-
-        let branch = 'NQ'; // default to NQ
-        const rawBranchClass = classRow && classRow.c ? getVal(classRow.c[2]) : '';
-        const rawBranchCal = ev.raw && ev.raw.c ? getVal(ev.raw.c[1]) : '';
-        const nameUpper = evClassName.toUpperCase();
-        
-        if (nameUpper.includes('HD |') || nameUpper.startsWith('HD') || 
-            (rawBranchClass && String(rawBranchClass).toUpperCase().includes('HD')) || 
-            (rawBranchCal && String(rawBranchCal).toUpperCase().includes('HD'))) {
-            branch = 'HD';
-        } else if (nameUpper.includes('NQ |') || nameUpper.startsWith('NQ')) {
-            branch = 'NQ';
-        }
-
-        const isMorning = parseInt((ev.time || '00:00').split(':')[0] || '0') < 12;
-        
-        const groupKey = (branch === 'HD' ? 'hd' : 'nq') + (isMorning ? 'Morning' : 'Afternoon');
-        
-        let doanhThu = '0';
-        let totalFee = '0';
-        let daThu = '0';
-        let congNo = '0';
-        let studentCount = '0';
-
-        if (classRow) {
-            doanhThu = getVal(classRow.c[43]) || '0';
-            totalFee = getVal(classRow.c[44]) || '0';
-            daThu = getVal(classRow.c[45]) || '0'; // Paid
-            congNo = getVal(classRow.c[46]) || '0'; // Remain
-            studentCount = getVal(classRow.c[7]) || '0';
+    targetRows.forEach(row => {
+        const c = row.c;
+        let rawBranch = getVal(c[3]) || getVal(c[2]) || '';
+        let branch = '';
+        if (rawBranch.includes('HD') || rawBranch.includes('Hưng Định') || rawBranch.includes('Hưng \u0110ịnh')) {
+            branch = 'Hưng Định (HD)';
         } else {
-             // Fallback to calendar raw data for student count
-             if (ev.raw && ev.raw.c) {
-                 studentCount = getVal(ev.raw.c[7]) || '0';
-             }
+            branch = 'Ngô Quyền (NQ)';
         }
+        
+        const department = getVal(c[5]) || 'Unknown Department';
+        if (!branchMap[branch][department]) {
+            branchMap[branch][department] = { rows: [], count: 0 };
+        }
+        branchMap[branch][department].rows.push(row);
+        branchMap[branch][department].count++;
+    });
 
-        const rowHtml = `
-            <tr>
-                <td style="padding: 10px 8px;">
-                    <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${evClassName || 'Unknown Class'}</div>
-                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
-                </td>
-                <td style="padding: 10px 8px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">
-                            ${(getShortName(ev.teacher) || 'N')[0]}
-                        </div>
-                        <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-dark);">${getShortName(ev.teacher) || 'N/A'}</span>
-                    </div>
-                </td>
-                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem;">
-                    ${totalFee}
-                </td>
-                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: #16a34a;">
-                    ${daThu}
-                </td>
-                <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'};">
-                    ${congNo}
-                </td>
-            </tr>
+    const branches = ['Ngô Quyền (NQ)', 'Hưng Định (HD)'];
+
+    branches.forEach(branch => {
+        const departments = Object.keys(branchMap[branch]).sort((a, b) => a.localeCompare(b));
+        if (departments.length === 0) return;
+
+        let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
+        let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+        const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
+        const totalStudents = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0), 0);
+
+        const branchHeader = document.createElement('div');
+        branchHeader.style.gridColumn = '1 / -1';
+        branchHeader.style.marginTop = '16px';
+        branchHeader.style.paddingBottom = '8px';
+        branchHeader.style.borderBottom = `2px solid ${colorStr}`;
+        branchHeader.style.display = 'flex';
+        branchHeader.style.alignItems = 'center';
+        branchHeader.style.justifyContent = 'space-between';
+        branchHeader.innerHTML = `
+            <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
+                <i class="fa-solid fa-building"></i> ${branch}
+            </h3>
+            <div style="display: flex; gap: 8px;">
+                <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem; margin: 0;">
+                    ${totalClasses} Classes
+                </span>
+                <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 0.95rem; margin: 0;">
+                    ${totalStudents} Students
+                </span>
+            </div>
         `;
-        groups[groupKey].push({ time: ev.time || '00:00', html: rowHtml });
-    });
+        grid.appendChild(branchHeader);
 
-    // Sort items inside groups by time
-    Object.keys(groups).forEach(k => {
-        groups[k].sort((a, b) => a.time.localeCompare(b.time));
-    });
+        departments.forEach(department => {
+            const data = branchMap[branch][department];
+            const sortedRows = data.rows.sort((a, b) => {
+                const classA = String(getVal(a.c[6]) || getVal(a.c[1]) || '');
+                const classB = String(getVal(b.c[6]) || getVal(b.c[1]) || '');
+                return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
+            });
 
-    const renderGroupTable = (items) => {
-        if (items.length === 0) return `<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; padding: 12px;">No classes</div>`;
-        return `
-            <div class="modern-card panel" style="margin: 0; padding: 0;">
+            const deptTotalStudents = data.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0);
+
+            const card = document.createElement('div');
+            card.className = 'modern-card panel';
+            card.style.margin = '0';
+            card.innerHTML = `
+                <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-layer-group"></i> ${department}
+                    </h3>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; margin: 0;">${data.count} Classes</span>
+                        <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; margin: 0;">${deptTotalStudents} Students</span>
+                    </div>
+                </div>
                 <div class="modern-card-body" style="padding: 0;">
                     <div style="overflow-x: auto;">
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
@@ -1380,40 +1392,52 @@ function renderOperationTodayClasses() {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${items.map(i => i.html).join('')}
+                                ${sortedRows.map(row => {
+                                    const c = row.c;
+                                    const className = getVal(c[6]) || getVal(c[1]);
+                                    const teacherName = getShortName(getVal(c[9])) || '-';
+                                    const studentCount = parseInt(getVal(c[7]) || 0);
+                                    
+                                    const scheduleStr = filter === 'today' && row.todayTime ? row.todayTime : (getVal(c[12]) || 'N/A');
+
+                                    const totalFee = getVal(c[44]) || '0';
+                                    const daThu = getVal(c[45]) || '0';
+                                    const congNo = getVal(c[46]) || '0';
+
+                                    return `
+                                        <tr>
+                                            <td style="padding: 10px 8px;">
+                                                <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className}</div>
+                                                <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${scheduleStr} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
+                                            </td>
+                                            <td style="padding: 10px 8px;">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--primary-light); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">
+                                                        ${(teacherName)[0]}
+                                                    </div>
+                                                    <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-dark);">${teacherName}</span>
+                                                </div>
+                                            </td>
+                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                                                ${totalFee}
+                                            </td>
+                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: #16a34a;">
+                                                ${daThu}
+                                            </td>
+                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'};">
+                                                ${congNo}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        `;
-    };
-
-    listEl.innerHTML = `
-        <div style="display: flex; gap: 24px;">
-            <!-- NQ Column -->
-            <div style="flex: 1; padding-right: 24px; border-right: 1px dashed rgba(0,0,0,0.1);">
-                <h3 style="text-align: center; color: #0284c7; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Ngô Quyền (NQ)</h3>
-                
-                <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
-                <div>${renderGroupTable(groups.nqMorning)}</div>
-                
-                <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
-                <div>${renderGroupTable(groups.nqAfternoon)}</div>
-            </div>
-            
-            <!-- HD Column -->
-            <div style="flex: 1;">
-                <h3 style="text-align: center; color: #16a34a; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Hưng Định (HD)</h3>
-                
-                <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
-                <div>${renderGroupTable(groups.hdMorning)}</div>
-                
-                <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
-                <div>${renderGroupTable(groups.hdAfternoon)}</div>
-            </div>
-        </div>
-    `;
+            `;
+            grid.appendChild(card);
+        });
+    });
 }
 
 function renderRoleTasks(rows, picName, containerId, monthStr) {
