@@ -280,8 +280,11 @@
                     </section>
                     
                     <section style="margin-top: 24px;">
-                        <div class="weekly-header" style="margin-bottom: 16px;">
-                            <h2>Teacher Performance</h2>
+                        <div class="weekly-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                            <h2 style="margin: 0;">Teacher Performance</h2>
+                            <select id="teacherFilter" class="modern-select" onchange="applyTeacherFilter()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); font-size: 0.9rem; outline: none; display: none;">
+                                <option value="all">All Teachers</option>
+                            </select>
                         </div>
                         <div id="teacher-performance-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <!-- Dynamic Teacher Performance Cards -->
@@ -651,6 +654,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=35"></script>
+    <script src="script.js?v=36"></script>
 </body>
 </html>

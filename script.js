@@ -718,10 +718,24 @@ function changeMonth(diff) {
                 // The user clarified that the Month column (c[57]) correctly represents the month's snapshot data.
                 return row.c[57] && String(row.c[57].v).padStart(2, '0') === monthStr;
             });
+            window.currentMonthFilteredRows = filteredRows;
+            
+            // Populate teacher filter
+            const teacherSelect = document.getElementById('teacherFilter');
+            if (teacherSelect) {
+                const teachers = [...new Set(filteredRows.map(r => getShortName(getVal(r.c[9]))).filter(n => n && n !== '-'))].sort();
+                teacherSelect.innerHTML = '<option value="all">All Teachers</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                teacherSelect.style.display = 'block';
+            }
+
             updateMetricsCards(filteredRows, globalMetricsRow, monthStr);
             renderDashboardTable(filteredRows);
             renderTeacherObservations(filteredRows);
-            renderTeacherPerformance(filteredRows, monthStr);
+            if (typeof applyTeacherFilter === 'function') {
+                applyTeacherFilter();
+            } else {
+                renderTeacherPerformance(filteredRows, monthStr);
+            }
             renderAcademicPerformance(filteredRows);
         }
 
@@ -2432,6 +2446,22 @@ function updateAllRolesTasksMetrics() {
     updateRoleTaskMetrics('Mr. Đạt', 'operation', monthStr, prevMonthStr);
     updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
 }
+window.applyTeacherFilter = function() {
+    const tSelect = document.getElementById('teacherFilter');
+    let selectedTeacher = 'all';
+    if (tSelect) {
+        selectedTeacher = tSelect.value;
+    }
+    
+    let rowsToRender = window.currentMonthFilteredRows || [];
+    if (selectedTeacher !== 'all') {
+        rowsToRender = rowsToRender.filter(row => getShortName(getVal(row.c[9])) === selectedTeacher);
+    }
+    
+    const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
+    const monthStr = String(monthVal).padStart(2, '0');
+    renderTeacherPerformance(rowsToRender, monthStr);
+}
 
 function renderTeacherPerformance(classRows, currentMonthStr) {
     const grid = document.getElementById('teacher-performance-grid');
@@ -2516,7 +2546,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <i class="fa-solid fa-layer-group"></i> ${department}
                     </h3>
                     <div style="display: flex; gap: 8px;">
-                        <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); margin: 0;">${data.count} Classes</span>
+                        <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; margin: 0;">${data.count} Classes</span>
                         <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; margin: 0;">${deptTotalStudents} Students</span>
                     </div>
                 </div>
@@ -2549,7 +2579,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                     
                                     let formattedExamDate = examDate;
                                     if (examDate !== '-' && currentMonthStr && examDate.split('/')[1] === currentMonthStr) {
-                                        formattedExamDate = `<span style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);"><i class="fa-solid fa-fire"></i> ${examDate}</span>`;
+                                        formattedExamDate = `<span style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);">${examDate}</span>`;
                                     }
 
                                     let safeHTML = '';
