@@ -1404,19 +1404,21 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     if (typeof globalClassRows !== 'undefined' && globalClassRows) {
         globalClassRows.forEach(row => {
             if (!row || !row.c) return;
-            const tName = getShortName(getVal(row.c[9])) || '-';
-            if (tName === picName) {
-                const examDateStr = getVal(row.c[39]);
-                if (examDateStr && examDateStr !== '-') {
-                    const parts = examDateStr.split('/');
+            // Removed picName filter to show all exam dates in the calendar
+            const examDateStr = String(getVal(row.c[39]) || '');
+            if (examDateStr && examDateStr !== '-') {
+                // Handle multiple dates separated by comma, newline, &, or 'và'
+                const dateItems = examDateStr.split(/,|\n|&| và /i).map(s => s.trim());
+                dateItems.forEach(dStr => {
+                    const parts = dStr.split(/[\/\-]/);
                     if (parts.length >= 2) {
-                        const dDay = parseInt(parts[0]);
-                        const dMonth = parseInt(parts[1]) - 1;
+                        const dDay = parseInt(parts[0], 10);
+                        const dMonth = parseInt(parts[1], 10) - 1;
                         if (dMonth === month && !isNaN(dDay)) {
                             examDays.add(dDay);
                         }
                     }
-                }
+                });
             }
         });
     }
