@@ -2169,7 +2169,7 @@ function selectCalendarDate(year, month, day) {
                 html += `</div>`;
                 
                 if (isAcademic) {
-                    let acSang = [], acChieu = [];
+                    let nqSang = [], hdSang = [], nqChieu = [], hdChieu = [];
                     parsed.forEach(p => {
                         let isMorning = true;
                         if (p.timeStr) {
@@ -2180,23 +2180,43 @@ function selectCalendarDate(year, month, day) {
                         let timeLabel = p.timeStr ? `<span style="font-weight: 600; color: var(--text-dark);">${p.timeStr}</span>` : '';
                         let displayStr = `${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>`;
                         
-                        if (isMorning) acSang.push(displayStr); else acChieu.push(displayStr);
+                        if (p.branch === 'NQ' || p.label.includes('NQ')) {
+                            if (isMorning) nqSang.push(displayStr); else nqChieu.push(displayStr);
+                        } else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) {
+                            if (isMorning) hdSang.push(displayStr); else hdChieu.push(displayStr);
+                        }
                     });
 
                     // Row Sáng
-                    if (acSang.length > 0) {
+                    if (nqSang.length > 0 || hdSang.length > 0) {
                         html += `<div style="margin-bottom: 12px;">`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Morning Shift</div>`;
-                        html += `<div style="padding-left: 8px; line-height: 1.8; font-size: 0.85rem;">${acSang.join('<br>')}</div>`;
-                        html += `</div>`;
+                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Morning</div>`;
+                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
+                        html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
+                            <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${nqSang.length > 0 ? nqSang.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                        </div>`;
+                        html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
+                            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${hdSang.length > 0 ? hdSang.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                        </div>`;
+                        html += `</div></div>`;
                     }
                     
                     // Row Chiều
-                    if (acChieu.length > 0) {
+                    if (nqChieu.length > 0 || hdChieu.length > 0) {
                         html += `<div>`;
-                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Afternoon Shift</div>`;
-                        html += `<div style="padding-left: 8px; line-height: 1.8; font-size: 0.85rem;">${acChieu.join('<br>')}</div>`;
-                        html += `</div>`;
+                        html += `<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; background: rgba(0,0,0,0.03); padding: 4px 8px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
+                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
+                        html += `<div style="flex: 1; border-left: 2px solid #0284c7; padding-left: 10px;">
+                            <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${nqChieu.length > 0 ? nqChieu.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                        </div>`;
+                        html += `<div style="flex: 1; border-left: 2px solid #059669; padding-left: 10px;">
+                            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${hdChieu.length > 0 ? hdChieu.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                        </div>`;
+                        html += `</div></div>`;
                     }
                     
                 } else {
@@ -2226,10 +2246,8 @@ function selectCalendarDate(year, month, day) {
                         html += `<div style="display: flex; gap: 16px; ${borderStyle}">`;
                         
                         if (t !== 'Không rõ giờ' && t.includes(' - ')) {
-                            const tParts = t.split(' - ');
-                            html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-dark);">`;
-                            html += `<i class="fa-regular fa-clock" style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 6px;"></i>`;
-                            html += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center;">${tParts[0]}<br><span style="color: var(--text-muted); font-size: 0.75rem;">đến</span><br>${tParts[1] || ''}</div>`;
+                            html += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dark);">`;
+                            html += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center; white-space: nowrap;"><i class="fa-regular fa-clock" style="font-size: 0.9rem; color: var(--text-muted); margin-right: 6px;"></i>${t}</div>`;
                             html += `</div>`;
                         } else {
                             html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-align: center;">${t}</div>`;
