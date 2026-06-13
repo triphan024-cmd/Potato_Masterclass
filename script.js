@@ -1401,7 +1401,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     window[`tmpValidRows_${containerId}`] = validRows;
     
     let examDays = new Set();
-    if (containerId === 'teacher-tasks-container' && typeof globalClassRows !== 'undefined' && globalClassRows) {
+    if (containerId === 'teacher-report-grid' && typeof globalClassRows !== 'undefined' && globalClassRows) {
         globalClassRows.forEach(row => {
             if (!row || !row.c) return;
             const tName = getShortName(getVal(row.c[9])) || '-';
