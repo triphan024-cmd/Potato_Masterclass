@@ -92,6 +92,7 @@ window.openCalEventDetail = function(id) {
         studentName = studentName.split(',').map(s => s.trim()).join('<br>');
     }
     const className = ev.className || 'Class Detail Information';
+    const history = rawData['History'] || '';
 
     const createBox = (title, value, icon, fullWidth = false, inline = true) => {
         if (!value || value === 'N/A' || value === '') return '';
