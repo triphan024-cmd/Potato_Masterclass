@@ -718,7 +718,7 @@ function changeMonth(diff) {
                 // The user clarified that the Month column (c[57]) correctly represents the month's snapshot data.
                 return row.c[57] && String(row.c[57].v).padStart(2, '0') === monthStr;
             });
-            updateMetricsCards(filteredRows, globalMetricsRow);
+            updateMetricsCards(filteredRows, globalMetricsRow, monthStr);
             renderDashboardTable(filteredRows);
             renderTeacherObservations(filteredRows);
             renderTeacherPerformance(filteredRows);
@@ -898,7 +898,7 @@ async function fetchDashboardData() {
     }
 }
 
-function updateMetricsCards(classRows, metricsRow) {
+function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
     const totalStudents = classRows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0);
     const totalTeachers = new Set(classRows.map(row => getVal(row.c[9]))).size;
     const totalClasses = classRows.length;
@@ -912,7 +912,14 @@ function updateMetricsCards(classRows, metricsRow) {
         const progress = (getVal(c[34]) || getVal(c[12]) || '').toLowerCase();
         
         if (examDate && examDate !== '-' && examDate.trim() !== '') {
-            upcomingExams++;
+            if (!currentMonthStr) {
+                upcomingExams++;
+            } else {
+                const parts = examDate.split('/');
+                if (parts.length >= 2 && parts[1] === currentMonthStr) {
+                    upcomingExams++;
+                }
+            }
         }
         if (progress.includes('late') || progress.includes('trễ') || progress.includes('chậm') || progress.includes('behind')) {
             lateProgress++;
