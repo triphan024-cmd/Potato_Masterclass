@@ -1401,8 +1401,8 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     window[`tmpValidRows_${containerId}`] = validRows;
     
     let examDays = new Set();
-    if (typeof globalTeacherObservation !== 'undefined' && globalTeacherObservation) {
-        globalTeacherObservation.forEach(row => {
+    if (typeof globalClassRows !== 'undefined' && globalClassRows) {
+        globalClassRows.forEach(row => {
             if (!row || !row.c) return;
             const tName = getShortName(getVal(row.c[9])) || '-';
             if (tName === picName) {
@@ -2540,14 +2540,14 @@ function selectCalendarDate(year, month, day) {
         if (nqHeaderEl) {
             nqHeaderEl.style.display = 'flex';
             nqHeaderEl.style.alignItems = 'center';
-            nqHeaderEl.style.justifyContent = 'center';
-            nqHeaderEl.innerHTML = `Ngô Quyền (NQ) <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${nqClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${nqStudents} Students</span>`;
+            nqHeaderEl.style.justifyContent = 'space-between';
+            nqHeaderEl.innerHTML = `<span>Ngô Quyền (NQ)</span> <div><span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; font-weight: 600;">${nqClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${nqStudents} Students</span></div>`;
         }
         if (hdHeaderEl) {
             hdHeaderEl.style.display = 'flex';
             hdHeaderEl.style.alignItems = 'center';
-            hdHeaderEl.style.justifyContent = 'center';
-            hdHeaderEl.innerHTML = `Hưng Định (HD) <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${hdClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${hdStudents} Students</span>`;
+            hdHeaderEl.style.justifyContent = 'space-between';
+            hdHeaderEl.innerHTML = `<span>Hưng Định (HD)</span> <div><span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; font-weight: 600;">${hdClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${hdStudents} Students</span></div>`;
         }
     }
     
