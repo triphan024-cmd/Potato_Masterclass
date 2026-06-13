@@ -15,7 +15,7 @@ function openClassDetail(titleStr, contentStr, hideHeader = false) {
         if (header) header.style.display = '';
     }
     
-    title.innerText = titleStr;
+    title.innerHTML = titleStr;
     content.innerHTML = contentStr || 'No details available.';
     modal.classList.add('show');
 }
@@ -46,25 +46,37 @@ window.openRoadmapDetail = function(courseName) {
 
     let contentHtml = '';
     if (rows.length === 0) {
-        contentHtml = `<div style="padding: 20px; text-align: center; color: #64748b;">No roadmap details found for course: <strong>${courseName}</strong></div>`;
+        contentHtml = `<div style="padding: 20px; text-align: center; color: #64748b; background: white; border-radius: 8px;">No roadmap details found for course: <strong>${courseName}</strong></div>`;
     } else {
         const cols = window.globalCourseRoadmapCols || [];
-        contentHtml += `<div style="overflow-x: auto; max-height: 60vh;"><table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-            <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><tr>`;
+        const allowedLabels = ["Status", "Course", "Lesson Order", "Lesson Name", "Lesson Content", "Suggestion"];
+        const colIndices = [];
+        
         cols.forEach((col, i) => {
-            if (col && col.label) {
-                contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap;">${col.label}</th>`;
-            } else {
-                contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap;">Col ${i+1}</th>`;
+            const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
+            // check if the column label is in the allowed list
+            if (allowedLabels.some(allowed => label.toLowerCase().includes(allowed.toLowerCase()))) {
+                colIndices.push({ index: i, label: label });
             }
+        });
+        
+        // If no matching columns are found, just show all columns up to 8
+        if (colIndices.length === 0) {
+            cols.slice(0, 8).forEach((col, i) => colIndices.push({ index: i, label: col && col.label ? col.label : `Col ${i+1}` }));
+        }
+
+        contentHtml += `<div style="overflow-x: auto; max-height: 60vh; background: #ffffff; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"><table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"><tr>`;
+        colIndices.forEach((colObj) => {
+            contentHtml += `<th style="padding: 10px; text-align: left; white-space: nowrap; font-weight: 600; color: var(--primary-dark);">${colObj.label}</th>`;
         });
         contentHtml += `</tr></thead><tbody>`;
         
         rows.forEach(row => {
             contentHtml += `<tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">`;
-            cols.forEach((col, i) => {
-                const val = (row.c && row.c[i]) ? getVal(row.c[i]) : '-';
-                contentHtml += `<td style="padding: 10px; white-space: nowrap;">${val}</td>`;
+            colIndices.forEach((colObj) => {
+                const val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
+                contentHtml += `<td style="padding: 12px 10px; line-height: 1.4; min-width: 120px;">${val.replace(/\n/g, '<br>')}</td>`;
             });
             contentHtml += `</tr>`;
         });
