@@ -2507,13 +2507,13 @@ function selectCalendarDate(year, month, day) {
             nqHeaderEl.style.display = 'flex';
             nqHeaderEl.style.alignItems = 'center';
             nqHeaderEl.style.justifyContent = 'center';
-            nqHeaderEl.innerHTML = `Ngô Quyền (NQ) <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${nqClasses} Lớp</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${nqStudents} HV</span>`;
+            nqHeaderEl.innerHTML = `Ngô Quyền (NQ) <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${nqClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${nqStudents} Students</span>`;
         }
         if (hdHeaderEl) {
             hdHeaderEl.style.display = 'flex';
             hdHeaderEl.style.alignItems = 'center';
             hdHeaderEl.style.justifyContent = 'center';
-            hdHeaderEl.innerHTML = `Hưng Định (HD) <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${hdClasses} Lớp</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${hdStudents} HV</span>`;
+            hdHeaderEl.innerHTML = `Hưng Định (HD) <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${hdClasses} Classes</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${hdStudents} Students</span>`;
         }
     }
     
