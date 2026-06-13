@@ -3169,10 +3169,10 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                             <thead>
                                 <tr>
                                     <th style="padding: 8px; width: 35%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                    <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
-                                    <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
                                 </tr>
                             </thead>
@@ -3338,20 +3338,21 @@ function renderAcademicPerformance(classRows) {
                                     if (!text || text === '-') return text;
                                     const cleanText = text.replace(/^\d+\.\s*/, '');
                                     const lower = cleanText.toLowerCase();
-                                    const style = 'style="font-weight: 400; white-space: nowrap;"';
+                                    const style = 'style="font-weight: 400; white-space: nowrap; cursor: pointer;"';
                                     
                                     let badgeClass = 'primary';
                                     if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) badgeClass = 'success';
                                     else if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) badgeClass = 'danger';
                                     else if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) badgeClass = 'warning';
 
-                                    const badgeHtml = `<span class="stat-badge ${badgeClass}" ${style}>${cleanText}</span>`;
+                                    const safeText = text.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>').replace(/\r/g, ' ');
+                                    let titleStr = '';
+                                    if (type === 'roadmap') titleStr = 'Roadmap Detail';
+                                    else if (type === 'aid') titleStr = 'Aid Detail';
+                                    else if (type === 'exam') titleStr = 'Exam Detail';
+
+                                    const badgeHtml = `<span class="stat-badge ${badgeClass}" ${style} onclick="openClassDetail('${titleStr}', '${safeText}')">${cleanText}</span>`;
                                     
-                                    if (type === 'roadmap') {
-                                        return `<a href="https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/edit?gid=882542672#gid=882542672" target="_blank" style="text-decoration: none;">${badgeHtml}</a>`;
-                                    } else if (type === 'aid' || type === 'exam') {
-                                        return `<a href="javascript:void(0)" onclick="alert('Chưa có link chi tiết cho mục này'); return false;" style="text-decoration: none;">${badgeHtml}</a>`;
-                                    }
                                     return badgeHtml;
                                 };
 
