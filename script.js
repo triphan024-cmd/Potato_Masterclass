@@ -3164,10 +3164,11 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 40%;">Class</th>
-                                    <th style="padding: 8px; width: 25%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 35%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
+                                    <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
+                                    <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
                                 </tr>
                             </thead>
@@ -3177,6 +3178,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                     const className = getVal(c[6]) || getVal(c[1]);
                                     const teacherName = getShortName(getVal(c[9])) || '-';
                                     const studentCount = parseInt(getVal(c[7]) || 0);
+                                    const schedule = getVal(c[12]) || '-';
                                     const absence = getVal(c[33]) || '-';
                                     const progress = getVal(c[34]) || getVal(c[11]) || '-';
                                     const examDate = getVal(c[39]) || '-';
@@ -3240,11 +3242,12 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                             <td style="padding: 12px 8px;">
                                                 <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.split(' - ')[0].trim()}</div>
                                                 <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
-                                                    ${pBadgeHtml !== '-' ? pBadgeHtml + ' &nbsp;|&nbsp;' : ''} <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
+                                                    <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                                 </div>
                                             </td>
                                             <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${absence}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                             <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                         </tr>
