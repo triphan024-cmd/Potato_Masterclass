@@ -721,7 +721,7 @@ function changeMonth(diff) {
             updateMetricsCards(filteredRows, globalMetricsRow, monthStr);
             renderDashboardTable(filteredRows);
             renderTeacherObservations(filteredRows);
-            renderTeacherPerformance(filteredRows);
+            renderTeacherPerformance(filteredRows, monthStr);
             renderAcademicPerformance(filteredRows);
         }
 
@@ -2433,7 +2433,7 @@ function updateAllRolesTasksMetrics() {
     updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
 }
 
-function renderTeacherPerformance(classRows) {
+function renderTeacherPerformance(classRows, currentMonthStr) {
     const grid = document.getElementById('teacher-performance-grid');
     if (!grid) return;
     grid.innerHTML = '';
@@ -2505,6 +2505,8 @@ function renderTeacherPerformance(classRows) {
                 return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
             });
 
+            const deptTotalStudents = data.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0);
+
             const card = document.createElement('div');
             card.className = 'modern-card panel';
             card.style.margin = '0';
@@ -2513,17 +2515,21 @@ function renderTeacherPerformance(classRows) {
                     <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-layer-group"></i> ${department}
                     </h3>
-                    <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">${data.count} Classes</span>
+                    <div style="display: flex; gap: 8px;">
+                        <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); margin: 0;">${data.count} Classes</span>
+                        <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; margin: 0;">${deptTotalStudents} Students</span>
+                    </div>
                 </div>
                 <div class="modern-card-body" style="padding: 0;">
                     <div style="overflow-x: auto;">
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 30%;">Class</th>
+                                    <th style="padding: 8px; width: 25%;">Class</th>
                                     <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
-                                    <th style="padding: 8px; width: 12%; text-align: center;">Absence</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
+                                    <th style="padding: 8px; width: 10%; text-align: center;">Students</th>
+                                    <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
+                                    <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
                                     <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
                                 </tr>
@@ -2533,6 +2539,7 @@ function renderTeacherPerformance(classRows) {
                                     const c = row.c;
                                     const className = getVal(c[6]) || getVal(c[1]);
                                     const teacherName = getShortName(getVal(c[9])) || '-';
+                                    const studentCount = parseInt(getVal(c[7]) || 0);
                                     const absence = getVal(c[33]) || '-';
                                     const progress = getVal(c[34]) || getVal(c[11]) || '-';
                                     const examDate = getVal(c[39]) || '-';
@@ -2540,6 +2547,11 @@ function renderTeacherPerformance(classRows) {
                                     const redFlag = getVal(c[31]) || '-';
                                     const action = getVal(c[32]) || '-';
                                     
+                                    let formattedExamDate = examDate;
+                                    if (examDate !== '-' && currentMonthStr && examDate.split('/')[1] === currentMonthStr) {
+                                        formattedExamDate = `<span style="background: rgba(234, 179, 8, 0.2); color: #ca8a04; font-weight: bold; border-radius: 4px; padding: 2px 6px;">${examDate}</span>`;
+                                    }
+
                                     let safeHTML = '';
                                     const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
                                     if (hasDetails) {
@@ -2590,9 +2602,10 @@ function renderTeacherPerformance(classRows) {
                                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                                             <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
                                             <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">${studentCount}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${absence}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
-                                            <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${examDate}</td>
+                                            <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                         </tr>
                                     `;
