@@ -1407,18 +1407,20 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
             // Removed picName filter to show all exam dates in the calendar
             const examDateStr = String(getVal(row.c[39]) || '');
             if (examDateStr && examDateStr !== '-') {
-                // Handle multiple dates separated by comma, newline, &, or 'và'
-                const dateItems = examDateStr.split(/,|\n|&| và /i).map(s => s.trim());
-                dateItems.forEach(dStr => {
-                    const parts = dStr.split(/[\/\-]/);
-                    if (parts.length >= 2) {
-                        const dDay = parseInt(parts[0], 10);
-                        const dMonth = parseInt(parts[1], 10) - 1;
-                        if (dMonth === month && !isNaN(dDay)) {
-                            examDays.add(dDay);
+                // Extract all DD/MM or DD/MM/YYYY dates from the string
+                const dateMatches = examDateStr.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]\d{2,4})?/g);
+                if (dateMatches) {
+                    dateMatches.forEach(dStr => {
+                        const parts = dStr.split(/[\/\-]/);
+                        if (parts.length >= 2) {
+                            const dDay = parseInt(parts[0], 10);
+                            const dMonth = parseInt(parts[1], 10) - 1;
+                            if (dMonth === month && !isNaN(dDay)) {
+                                examDays.add(dDay);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
