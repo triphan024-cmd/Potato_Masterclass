@@ -1267,25 +1267,23 @@ function renderOperationTodayClasses() {
 
     const todayEvents = globalCalendarEvents.filter(ev => ev.date && isToday(ev.date));
 
-    // Sort by time
-    todayEvents.sort((a, b) => {
-        const timeA = a.time || '00:00';
-        const timeB = b.time || '00:00';
-        return timeA.localeCompare(timeB);
-    });
-
     if (todayEvents.length === 0) {
         countEl.innerText = "0 Classes";
-        listEl.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>`;
+        listEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>`;
         return;
     }
 
     countEl.innerText = `${todayEvents.length} Classes`;
-    listEl.innerHTML = '';
+
+    const groups = {
+        nqMorning: [],
+        nqAfternoon: [],
+        hdMorning: [],
+        hdAfternoon: []
+    };
 
     todayEvents.forEach(ev => {
         const evClassName = String(ev.className || '').trim();
-        // Find matching class in globalClassRows
         let classRow = null;
         for (let row of globalClassRows) {
             if (!row || !row.c) continue;
@@ -1296,6 +1294,20 @@ function renderOperationTodayClasses() {
             }
         }
 
+        let branch = 'NQ'; // default to NQ
+        if (classRow) {
+            const rawBranch = getVal(classRow.c[2]);
+            if (rawBranch && rawBranch.toUpperCase().includes('HD')) branch = 'HD';
+        } else if (ev.raw && ev.raw.c) {
+            // Check calendar raw data just in case
+            const rawBranch = getVal(ev.raw.c[1]);
+            if (rawBranch && rawBranch.toUpperCase().includes('HD')) branch = 'HD';
+        }
+
+        const isMorning = parseInt((ev.time || '00:00').split(':')[0] || '0') < 12;
+        
+        const groupKey = (branch === 'HD' ? 'hd' : 'nq') + (isMorning ? 'Morning' : 'Afternoon');
+        
         let doanhThu = '0';
         let daThu = '0';
         let congNo = '0';
@@ -1306,33 +1318,72 @@ function renderOperationTodayClasses() {
             daThu = getVal(classRow.c[44]) || '0';
             congNo = getVal(classRow.c[45]) || '0';
             studentCount = getVal(classRow.c[7]) || '0';
+        } else {
+             // Fallback to calendar raw data for student count
+             if (ev.raw && ev.raw.c) {
+                 studentCount = getVal(ev.raw.c[7]) || '0';
+             }
         }
 
-        const card = document.createElement('div');
-        card.style.cssText = `
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: var(--text-dark);
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.06);
+        const cardHtml = `
+            <div style="font-size: 1.05rem; line-height: 1.6; color: var(--text-dark); padding: 16px; margin-bottom: 16px; background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.15rem;">${evClassName || 'Unknown Class'}</h3>
+                <div style="display: flex; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+                    <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color); padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
+                    <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
+                    <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b; padding: 3px 6px; border-radius: 4px; font-size: 0.8rem;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
+                </div>
+                
+                <div style="display: flex; gap: 16px; align-items: center; justify-content: space-between; background: #fdfdfd; border: 1px solid rgba(0,0,0,0.04); padding: 8px 12px; border-radius: 6px;">
+                    <div>
+                        <div style="color: #16a34a; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-money-bill-wave"></i> Collected</div>
+                        <div style="font-weight: 600; font-size: 0.95rem; margin-top: 2px;">${daThu}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt</div>
+                        <div style="font-weight: 600; font-size: 0.95rem; margin-top: 2px; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</div>
+                    </div>
+                </div>
+            </div>
         `;
+        groups[groupKey].push({ time: ev.time || '00:00', html: cardHtml });
+    });
 
-        card.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem;">${evClassName || 'Unknown Class'}</h3>
-            <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
-                <span class="deadline-badge" style="margin: 0; background: var(--primary-light); color: var(--primary-color);"><i class="fa-regular fa-clock"></i> ${ev.time || 'N/A'}</span>
-                <span class="category-badge" style="margin: 0; background: rgba(99, 102, 241, 0.1); color: #6366f1;"><i class="fa-solid fa-chalkboard-user"></i> ${getShortName(ev.teacher) || 'N/A'}</span>
-                <span class="status-badge" style="margin: 0; background: rgba(148, 163, 184, 0.1); color: #64748b;"><i class="fa-solid fa-users"></i> ${studentCount} Students</span>
+    // Sort items inside groups by time
+    Object.keys(groups).forEach(k => {
+        groups[k].sort((a, b) => a.time.localeCompare(b.time));
+    });
+
+    const renderGroup = (items) => {
+        if (items.length === 0) return `<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">No classes</div>`;
+        return items.map(i => i.html).join('');
+    };
+
+    listEl.innerHTML = `
+        <div style="display: flex; gap: 24px;">
+            <!-- NQ Column -->
+            <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 24px;">
+                <h3 style="text-align: center; color: #0284c7; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Ngô Quyền (NQ)</h3>
+                
+                <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
+                <div>${renderGroup(groups.nqMorning)}</div>
+                
+                <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
+                <div>${renderGroup(groups.nqAfternoon)}</div>
             </div>
             
-            <strong style="color: #16a34a; display: block; margin-bottom: 5px;"><i class="fa-solid fa-money-bill-wave"></i> Collected (Đã thu):</strong>
-            <p style="margin-top: 0; margin-bottom: 15px; font-weight: 600;">${daThu}</p>
-            
-            <strong style="color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; display: block; margin-bottom: 5px;"><i class="fa-solid fa-file-invoice-dollar"></i> Debt (Công nợ):</strong>
-            <p style="margin-top: 0; margin-bottom: 0; font-weight: 600; color: ${congNo && congNo !== '0' ? '#ef4444' : 'inherit'};">${congNo}</p>
-        `;
-        listEl.appendChild(card);
-    });
+            <!-- HD Column -->
+            <div style="flex: 1;">
+                <h3 style="text-align: center; color: #16a34a; font-size: 1rem; text-transform: uppercase; margin-bottom: 24px;">Hưng Định (HD)</h3>
+                
+                <h4 style="margin-top: 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-sun"></i> Morning</h4>
+                <div>${renderGroup(groups.hdMorning)}</div>
+                
+                <h4 style="margin-top: 24px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 8px; margin-bottom: 16px;"><i class="fa-solid fa-cloud-moon"></i> Afternoon</h4>
+                <div>${renderGroup(groups.hdAfternoon)}</div>
+            </div>
+        </div>
+    `;
 }
 
 function renderRoleTasks(rows, picName, containerId, monthStr) {
