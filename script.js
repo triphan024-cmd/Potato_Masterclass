@@ -30,7 +30,7 @@ window.openDutyDetail = function(id) {
     const label = getVal(row.c[13]) || 'Duty';
     
     const html = `
-        <div style="display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
+        <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
             <div style="background: rgba(0,0,0,0.02); padding: 16px; border-radius: 8px;">
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Duty Info</div>
                 <div style="font-weight: 700; font-size: 1.15rem; color: var(--primary-color);">${label}</div>
@@ -71,15 +71,16 @@ window.openCalEventDetail = function(id) {
     if (ev.raw && ev.raw.c) {
         rawHtml = ev.raw.c.map((c, i) => {
             let val = getVal(c);
+            let label = window.calendarHeaders && window.calendarHeaders[i] ? window.calendarHeaders[i] : `Col ${i}`;
             if (val && String(val).trim() !== '') {
-                return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04);"><span style="color:var(--text-muted); display:inline-block; width: 80px;">Col ${i}:</span> <b style="color: var(--text-dark);">${val}</b></div>`;
+                return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04);"><span style="color:var(--text-muted); display:inline-block; width: 120px;">${label}:</span> <b style="color: var(--text-dark);">${val}</b></div>`;
             }
             return '';
         }).join('');
     }
 
     const html = `
-        <div style="display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
+        <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
             <div style="background: rgba(0,174,239,0.05); padding: 16px; border-radius: 8px; border-left: 4px solid var(--info);">
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Class Name</div>
                 <div style="font-weight: 700; font-size: 1.15rem; color: var(--text-dark);">${className}</div>
@@ -972,6 +973,7 @@ async function fetchDashboardData() {
             const calText = await calRes.text();
             const calJsonString = calText.substring(calText.indexOf('{'), calText.lastIndexOf('}') + 1);
             const calJson = JSON.parse(calJsonString);
+            window.calendarHeaders = calJson.table.cols ? calJson.table.cols.map(c => c ? c.label : '') : [];
             const calRows = calJson.table.rows;
             
             globalCalendarEvents = [];
@@ -1005,6 +1007,7 @@ async function fetchDashboardData() {
             const dutyJsonString = dutyText.substring(dutyText.indexOf('{'), dutyText.lastIndexOf('}') + 1);
             const dutyJson = JSON.parse(dutyJsonString);
             window.globalDutyRows = dutyJson.table.rows || [];
+            window.globalDutyRows.forEach((r, i) => r._dutyId = i);
             console.log(`Retrieved duty events.`);
         } catch (err) {
             console.error("Error fetching duty data:", err);
