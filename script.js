@@ -2164,8 +2164,8 @@ function selectCalendarDate(year, month, day) {
                     return { branch, timeStr, namePart, label, dutyType };
                 });
 
-                let html = `<div class="duty-group-card">`;
-                html += `<div class="duty-group-header" style="color: ${color}; border-bottom-color: ${color}40;">`;
+                let html = `<div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">`;
+                html += `<div style="font-weight: 700; color: ${color}; font-size: 0.95rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;">`;
                 html += `<span>${title}</span>`;
                 html += `</div>`;
                 
@@ -2178,9 +2178,9 @@ function selectCalendarDate(year, month, day) {
                             if (startHour >= 12) isMorning = false;
                         }
                         
-                        let timeLabel = p.timeStr ? `<span class="duty-time"><i class="fa-regular fa-clock" style="margin-right: 4px; opacity: 0.7;"></i>${p.timeStr}</span>` : '';
-                        let wfhTag = p.dutyType && p.dutyType.toUpperCase() === 'WFH' ? ` <span class="duty-wfh-tag">(WFH)</span>` : '';
-                        let displayStr = `<div class="duty-person-row">${timeLabel} <span class="duty-person-name">${p.namePart}</span>${wfhTag}</div>`;
+                        let timeLabel = p.timeStr ? `<span style="font-weight: 600; color: var(--text-dark);">${p.timeStr}</span>` : '';
+                        let wfhTag = p.dutyType && p.dutyType.toUpperCase() === 'WFH' ? ` <span style="font-weight: 700; color: #ea580c; font-size: 0.75rem;">(WFH)</span>` : '';
+                        let displayStr = `${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>${wfhTag}`;
                         
                         if (p.branch === 'NQ' || p.label.includes('NQ')) {
                             if (isMorning) nqSang.push(displayStr); else nqChieu.push(displayStr);
@@ -2193,33 +2193,33 @@ function selectCalendarDate(year, month, day) {
                     
                     // NQ Column
                     html += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
-                        <div class="duty-branch-header duty-branch-nq">Ngô Quyền</div>`;
+                        <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Ngô Quyền</div>`;
                     if (nqSang.length > 0) {
-                        html += `<div class="duty-shift-badge">Morning</div>`;
-                        html += `<div class="duty-list-container">${nqSang.join('')}</div>`;
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Morning</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; margin-bottom: 10px; padding-left: 4px;">${nqSang.join('<br>')}</div>`;
                     }
                     if (nqChieu.length > 0) {
-                        html += `<div class="duty-shift-badge">Afternoon</div>`;
-                        html += `<div class="duty-list-container">${nqChieu.join('')}</div>`;
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; padding-left: 4px;">${nqChieu.join('<br>')}</div>`;
                     }
                     if (nqSang.length === 0 && nqChieu.length === 0) {
-                        html += `<div class="duty-empty-state">-</div>`;
+                        html += `<div style="color: var(--text-muted); font-style: italic;">-</div>`;
                     }
                     html += `</div>`;
                     
                     // HD Column
                     html += `<div style="flex: 1; padding-left: 12px;">
-                        <div class="duty-branch-header duty-branch-hd">Hưng Định</div>`;
+                        <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Hưng Định</div>`;
                     if (hdSang.length > 0) {
-                        html += `<div class="duty-shift-badge">Morning</div>`;
-                        html += `<div class="duty-list-container">${hdSang.join('')}</div>`;
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Morning</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; margin-bottom: 10px; padding-left: 4px;">${hdSang.join('<br>')}</div>`;
                     }
                     if (hdChieu.length > 0) {
-                        html += `<div class="duty-shift-badge">Afternoon</div>`;
-                        html += `<div class="duty-list-container">${hdChieu.join('')}</div>`;
+                        html += `<div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; background: rgba(0,0,0,0.03); padding: 2px 6px; border-radius: 4px; display: inline-block;">Afternoon</div>`;
+                        html += `<div style="color: var(--text-dark); line-height: 1.6; padding-left: 4px;">${hdChieu.join('<br>')}</div>`;
                     }
                     if (hdSang.length === 0 && hdChieu.length === 0) {
-                        html += `<div class="duty-empty-state">-</div>`;
+                        html += `<div style="color: var(--text-muted); font-style: italic;">-</div>`;
                     }
                     html += `</div>`;
                     
@@ -2249,27 +2249,23 @@ function selectCalendarDate(year, month, day) {
                         });
 
                         const borderStyle = index < sortedTimes.length - 1 ? 'border-bottom: 1px dashed rgba(0,0,0,0.06); margin-bottom: 12px; padding-bottom: 12px;' : '';
-                        html += `<div class="duty-operation-row" style="${borderStyle}">`;
+                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem; ${borderStyle}">`;
                         
                         if (t !== 'Không rõ giờ' && t.includes(' - ')) {
-                            html += `<div class="duty-op-time-col">`;
-                            html += `<div class="duty-op-time-badge"><i class="fa-regular fa-clock" style="opacity: 0.7; margin-right: 4px;"></i>${t}</div>`;
+                            html += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dark);">`;
+                            html += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center; white-space: nowrap;"><i class="fa-regular fa-clock" style="font-size: 0.9rem; color: var(--text-muted); margin-right: 6px;"></i>${t}</div>`;
                             html += `</div>`;
                         } else {
-                            html += `<div class="duty-op-time-col">`;
-                            html += `<div class="duty-op-time-badge">${t}</div>`;
-                            html += `</div>`;
+                            html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-align: center;">${t}</div>`;
                         }
                         
-                        let wrapList = list => list.length > 0 ? list.map(n => `<div class="duty-person-row"><span class="duty-person-name">${n}</span></div>`).join('') : '<div class="duty-empty-state">-</div>';
-                        
                         html += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
-                            <div class="duty-branch-header duty-branch-nq">Ngô Quyền</div>
-                            <div class="duty-list-container">${wrapList(nqList)}</div>
+                            <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${nqList.length > 0 ? nqList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
                         html += `<div style="flex: 1; padding-left: 12px;">
-                            <div class="duty-branch-header duty-branch-hd">Hưng Định</div>
-                            <div class="duty-list-container">${wrapList(hdList)}</div>
+                            <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${hdList.length > 0 ? hdList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
                         html += `</div>`;
                     });
