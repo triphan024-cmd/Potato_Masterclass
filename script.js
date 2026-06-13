@@ -1399,6 +1399,27 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
 
     let currentDate = 1;
     window[`tmpValidRows_${containerId}`] = validRows;
+    
+    let examDays = new Set();
+    if (typeof globalTeacherObservation !== 'undefined' && globalTeacherObservation) {
+        globalTeacherObservation.forEach(row => {
+            if (!row || !row.c) return;
+            const tName = getShortName(getVal(row.c[9])) || '-';
+            if (tName === picName) {
+                const examDateStr = getVal(row.c[39]);
+                if (examDateStr && examDateStr !== '-') {
+                    const parts = examDateStr.split('/');
+                    if (parts.length >= 2) {
+                        const dDay = parseInt(parts[0]);
+                        const dMonth = parseInt(parts[1]) - 1;
+                        if (dMonth === month && !isNaN(dDay)) {
+                            examDays.add(dDay);
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     for (let i = 0; i < totalCells; i++) {
         // Start of a week row: inject week button
@@ -1421,8 +1442,11 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
                     document.querySelectorAll(`#${containerId} .week-btn`).forEach(b => b.classList.remove('active'));
                     wBtn.classList.add('active');
                     document.querySelectorAll(`#${containerId} .cal-day-active`).forEach(el => {
-                        el.style.backgroundColor = '';
-                        el.style.color = 'var(--primary-color)';
+                        el.style.border = el.dataset.origBorder || '';
+                        if (!el.dataset.isExam) {
+                            el.style.backgroundColor = '';
+                            el.style.color = 'var(--primary-color)';
+                        }
                     });
                     showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentW}, rightDiv.id, validRows);
                 };
@@ -1437,23 +1461,33 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         if (i >= firstDayOfMonth && currentDate <= daysInMonth) {
             const today = new Date();
             const isToday = currentDate === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+            const isExamDay = examDays.has(currentDate);
             
             let style = `width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto; border-radius: 50%;`;
-            if (isToday) {
+            
+            if (isExamDay) {
+                style += ` background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.4); font-weight: 600;`;
+            } else if (isToday) {
                 style += ` background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);`;
             }
             
             if (dayMap[currentDate]) {
-                if (!isToday) {
+                if (!isToday && !isExamDay) {
                     style += ` border: 2px solid var(--primary-light); color: var(--primary-color); font-weight: 600;`;
                 }
                 style += ` cursor: pointer; position: relative;`;
                 const dateNum = currentDate;
                 const tooltip = dayMap[currentDate].map(r => getVal(r.c[6]) || getVal(r.c[11])).join('&#10;');
-                cell.innerHTML = `<div style="padding: 4px;" title="${tooltip}"><div style="${style}" class="cal-day-active" id="${containerId}-day-${dateNum}" onclick="
+                cell.innerHTML = `<div style="padding: 4px;" title="${tooltip}"><div style="${style}" class="cal-day-active" ${isExamDay ? 'data-is-exam="true"' : ''} id="${containerId}-day-${dateNum}" onclick="
                     document.querySelectorAll('#${containerId} .week-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelectorAll('#${containerId} .cal-day-active').forEach(el => { el.style.backgroundColor=''; el.style.color='var(--primary-color)'; });
-                    this.style.backgroundColor='var(--primary-light)'; this.style.color='var(--primary-dark)';
+                    document.querySelectorAll('#${containerId} .cal-day-active').forEach(el => { 
+                        el.style.border = el.dataset.origBorder || ''; 
+                        if (!el.dataset.isExam) {
+                            el.style.backgroundColor=''; el.style.color='var(--primary-color)'; 
+                        }
+                    });
+                    this.dataset.origBorder = this.style.border;
+                    this.style.border='2px solid var(--primary-dark)';
                     showTaskDetails('${picName}', ${year}, ${month}, ${dateNum}, '${rightDiv.id}', window['tmpValidRows_${containerId}'])
                 ">${dateNum}</div></div>`;
             } else {
