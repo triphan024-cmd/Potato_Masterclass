@@ -2154,13 +2154,14 @@ function selectCalendarDate(year, month, day) {
                 const parsed = groupDuties.map(row => {
                     const label = getVal(row.c[13]) || '';
                     const branch = getVal(row.c[4]) || '';
+                    const dutyType = getVal(row.c[2]) || '';
                     let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
                     let timeStr = timeMatch ? timeMatch[1] : '';
                     let namePart = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
                     if (timeStr) {
                         namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
                     }
-                    return { branch, timeStr, namePart, label };
+                    return { branch, timeStr, namePart, label, dutyType };
                 });
 
                 let html = `<div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">`;
@@ -2178,7 +2179,8 @@ function selectCalendarDate(year, month, day) {
                         }
                         
                         let timeLabel = p.timeStr ? `<span style="font-weight: 600; color: var(--text-dark);">${p.timeStr}</span>` : '';
-                        let displayStr = `${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>`;
+                        let wfhTag = p.dutyType && p.dutyType.toUpperCase() === 'WFH' ? ` <span style="font-weight: 700; color: #ea580c; font-size: 0.75rem;">(WFH)</span>` : '';
+                        let displayStr = `${timeLabel} <span style="color: var(--text-dark); margin-left: 4px;">${p.namePart}</span>${wfhTag}`;
                         
                         if (p.branch === 'NQ' || p.label.includes('NQ')) {
                             if (isMorning) nqSang.push(displayStr); else nqChieu.push(displayStr);
@@ -2247,7 +2249,7 @@ function selectCalendarDate(year, month, day) {
                         });
 
                         const borderStyle = index < sortedTimes.length - 1 ? 'border-bottom: 1px dashed rgba(0,0,0,0.06); margin-bottom: 12px; padding-bottom: 12px;' : '';
-                        html += `<div style="display: flex; gap: 16px; ${borderStyle}">`;
+                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem; ${borderStyle}">`;
                         
                         if (t !== 'Không rõ giờ' && t.includes(' - ')) {
                             html += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dark);">`;
