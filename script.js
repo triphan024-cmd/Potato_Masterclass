@@ -2318,49 +2318,89 @@ function selectCalendarDate(year, month, day) {
                     
                 } else {
                     // Operation
-                    const timeGroups = {};
+                    let sang = [];
+                    let chieu = [];
+                    
                     parsed.forEach(p => {
-                        const t = p.timeStr || 'Không rõ giờ';
-                        if (!timeGroups[t]) timeGroups[t] = [];
-                        timeGroups[t].push(p);
+                        let isMorning = true;
+                        let t = p.timeStr || '';
+                        if (t) {
+                            const startHour = parseInt(t.split(':')[0]);
+                            if (startHour >= 12) isMorning = false;
+                        }
+                        if (isMorning) sang.push(p);
+                        else chieu.push(p);
                     });
 
-                    // Sort timeGroups keys by start time
-                    const sortedTimes = Object.keys(timeGroups).sort((a, b) => {
-                        const tA = a.split(' - ')[0] || '24:00';
-                        const tB = b.split(' - ')[0] || '24:00';
-                        return tA.localeCompare(tB);
-                    });
-
-                    sortedTimes.forEach((t, index) => {
+                    const processOpGroup = (groupArr) => {
+                        if (groupArr.length === 0) return null;
+                        
+                        let minStart = "24:00";
+                        let maxEnd = "00:00";
+                        
+                        groupArr.forEach(p => {
+                            if (p.timeStr && p.timeStr.includes('-')) {
+                                const parts = p.timeStr.split('-');
+                                const st = parts[0].trim();
+                                const et = parts[1].trim();
+                                if (st < minStart) minStart = st;
+                                if (et > maxEnd) maxEnd = et;
+                            }
+                        });
+                        
+                        let groupTime = "Không rõ giờ";
+                        if (minStart !== "24:00" && maxEnd !== "00:00") {
+                            groupTime = `${minStart} - ${maxEnd}`;
+                        }
+                        
                         let nqList = [], hdList = [];
-                        timeGroups[t].forEach(p => {
-                            let itemHtml = `<span onclick="openDutyDetail(${p._dutyId})" style="cursor: pointer; display: inline-block; padding: 2px 0; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">${p.namePart}</span>`;
+                        groupArr.forEach(p => {
+                            let timeDiffText = '';
+                            if (p.timeStr && p.timeStr !== groupTime) {
+                                timeDiffText = `<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">(${p.timeStr})</div>`;
+                            }
+                            let itemHtml = `<div onclick="openDutyDetail(${p._dutyId})" style="cursor: pointer; padding: 4px 0; transition: transform 0.2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='none'">
+                                <span>${p.namePart}</span>
+                                ${timeDiffText}
+                            </div>`;
+                            
                             if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(itemHtml);
                             else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(itemHtml);
                         });
-
-                        const borderStyle = index < sortedTimes.length - 1 ? 'border-bottom: 1px dashed rgba(0,0,0,0.06); margin-bottom: 12px; padding-bottom: 12px;' : '';
-                        html += `<div style="display: flex; gap: 16px; font-size: 0.85rem; ${borderStyle}">`;
                         
-                        if (t !== 'Không rõ giờ' && t.includes(' - ')) {
-                            html += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dark);">`;
-                            html += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center; white-space: nowrap;"><i class="fa-regular fa-clock" style="font-size: 0.9rem; color: var(--text-muted); margin-right: 6px;"></i>${t}</div>`;
-                            html += `</div>`;
+                        return { groupTime, nqList, hdList };
+                    };
+                    
+                    const morningGroup = processOpGroup(sang);
+                    const afternoonGroup = processOpGroup(chieu);
+                    
+                    const renderOpGroupHTML = (g, isLast) => {
+                        if (!g) return '';
+                        const borderStyle = !isLast ? 'border-bottom: 1px dashed rgba(0,0,0,0.06); margin-bottom: 12px; padding-bottom: 12px;' : '';
+                        let gHtml = `<div style="display: flex; gap: 16px; font-size: 0.85rem; ${borderStyle}">`;
+                        
+                        if (g.groupTime !== 'Không rõ giờ') {
+                            gHtml += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--text-dark);">`;
+                            gHtml += `<div style="font-weight: 700; font-size: 0.85rem; text-align: center; white-space: nowrap;"><i class="fa-regular fa-clock" style="font-size: 0.9rem; color: var(--text-muted); margin-right: 6px;"></i>${g.groupTime}</div>`;
+                            gHtml += `</div>`;
                         } else {
-                            html += `<div style="width: 80px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-align: center;">${t}</div>`;
+                            gHtml += `<div style="width: 100px; flex-shrink: 0; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-align: center;">${g.groupTime}</div>`;
                         }
                         
-                        html += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
+                        gHtml += `<div style="flex: 1; padding-left: 12px; padding-right: 12px; border-right: 1px dashed rgba(0,0,0,0.1);">
                             <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Ngô Quyền</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${nqList.length > 0 ? nqList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${g.nqList.length > 0 ? g.nqList.join('') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
-                        html += `<div style="flex: 1; padding-left: 12px;">
+                        gHtml += `<div style="flex: 1; padding-left: 12px;">
                             <div style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Hưng Định</div>
-                            <div style="color: var(--text-dark); line-height: 1.6;">${hdList.length > 0 ? hdList.join('<br>') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
+                            <div style="color: var(--text-dark); line-height: 1.6;">${g.hdList.length > 0 ? g.hdList.join('') : '<span style="color: var(--text-muted); font-style: italic;">-</span>'}</div>
                         </div>`;
-                        html += `</div>`;
-                    });
+                        gHtml += `</div>`;
+                        return gHtml;
+                    };
+                    
+                    html += renderOpGroupHTML(morningGroup, !afternoonGroup);
+                    html += renderOpGroupHTML(afternoonGroup, true);
                 }
                 
                 html += `</div>`;
