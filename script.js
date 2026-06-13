@@ -1312,14 +1312,16 @@ function renderOperationTodayClasses() {
         const groupKey = (branch === 'HD' ? 'hd' : 'nq') + (isMorning ? 'Morning' : 'Afternoon');
         
         let doanhThu = '0';
+        let totalFee = '0';
         let daThu = '0';
         let congNo = '0';
         let studentCount = '0';
 
         if (classRow) {
             doanhThu = getVal(classRow.c[43]) || '0';
-            daThu = getVal(classRow.c[46]) || '0';
-            congNo = getVal(classRow.c[47]) || '0';
+            totalFee = getVal(classRow.c[44]) || '0';
+            daThu = getVal(classRow.c[45]) || '0'; // Paid
+            congNo = getVal(classRow.c[46]) || '0'; // Remain
             studentCount = getVal(classRow.c[7]) || '0';
         } else {
              // Fallback to calendar raw data for student count
@@ -1330,7 +1332,13 @@ function renderOperationTodayClasses() {
 
         const cardHtml = `
             <div style="font-size: 1.05rem; line-height: 1.6; color: var(--text-dark); padding: 16px; margin-bottom: 16px; background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--primary-dark); font-size: 1.15rem;">${evClassName || 'Unknown Class'}</h3>
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 8px;">
+                    <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.15rem; line-height: 1.3;">${evClassName || 'Unknown Class'}</h3>
+                    <div style="text-align: right; white-space: nowrap;">
+                        <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Total:</span>
+                        <span style="font-weight: 600; font-size: 0.95rem; margin-left: 4px; color: var(--text-dark);">${totalFee}</span>
+                    </div>
+                </div>
                 
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                     <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
