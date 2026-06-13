@@ -1366,3 +1366,5 @@ body {
 @keyframes toastFadeOut {
     to { transform: translateY(-20px); opacity: 0; }
 }
+# v i e w - a c a d e m i c   . m e t r i c s - g r i d   {   g r i d - t e m p l a t e - c o l u m n s :   r e p e a t ( 5 ,   1 f r ) ;   }  
+ 

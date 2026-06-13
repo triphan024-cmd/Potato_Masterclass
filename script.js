@@ -1098,6 +1098,10 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         if (title === 'active courses') valEl.innerText = totalClasses.toLocaleString();
         if (title === 'upcoming exams') valEl.innerText = upcomingExams.toLocaleString();
         if (title === 'late progress') valEl.innerText = lateProgress.toLocaleString();
+        if (title === 'program "story spark"') {
+            const ssCount = classRows.filter(r => (getVal(r.c[6]) || '').toLowerCase().includes('story spark') || (getVal(r.c[1]) || '').toLowerCase().includes('ss')).length;
+            valEl.innerText = ssCount.toLocaleString();
+        }
     });
 }
 
@@ -1390,9 +1394,9 @@ function renderOperationTodayClasses() {
                                 <tr>
                                     <th style="padding: 8px; width: 35%;">Class</th>
                                     <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Total</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Collect</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Debt</th>
+                                    <th style="padding: 8px; width: 15%; text-align: right;">Total</th>
+                                    <th style="padding: 8px; width: 15%; text-align: right;">Collect</th>
+                                    <th style="padding: 8px; width: 15%; text-align: right;">Debt</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1420,13 +1424,13 @@ function renderOperationTodayClasses() {
                                                     <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-dark);">${teacherName}</span>
                                                 </div>
                                             </td>
-                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                                            <td style="padding: 10px 8px; text-align: right; font-weight: 600; font-size: 0.85rem;">
                                                 ${totalFee}
                                             </td>
-                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: #16a34a;">
+                                            <td style="padding: 10px 8px; text-align: right; font-weight: 600; font-size: 0.85rem; color: #16a34a;">
                                                 ${daThu}
                                             </td>
-                                            <td style="padding: 10px 8px; text-align: center; font-weight: 600; font-size: 0.85rem; color: ${congNo && congNo !== '0' ? '#ef4444' : '#64748b'};">
+                                            <td style="padding: 10px 8px; text-align: right; font-weight: 600; font-size: 0.85rem; color: #dc2626;">
                                                 ${congNo}
                                             </td>
                                         </tr>
@@ -3330,15 +3334,25 @@ function renderAcademicPerformance(classRows) {
                                 const roadmap = getVal(c[37]) || '-';
                                 const exam = getVal(c[38]) || '-';
                                 
-                                const getBadgeHtml = (text) => {
+                                const getBadgeHtml = (text, type) => {
                                     if (!text || text === '-') return text;
                                     const cleanText = text.replace(/^\d+\.\s*/, '');
                                     const lower = cleanText.toLowerCase();
                                     const style = 'style="font-weight: 400; white-space: nowrap;"';
-                                    if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) return `<span class="stat-badge success" ${style}>${cleanText}</span>`;
-                                    if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) return `<span class="stat-badge danger" ${style}>${cleanText}</span>`;
-                                    if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) return `<span class="stat-badge warning" ${style}>${cleanText}</span>`;
-                                    return `<span class="stat-badge primary" ${style}>${cleanText}</span>`;
+                                    
+                                    let badgeClass = 'primary';
+                                    if (lower.includes('ready') || lower.includes('done') || lower.includes('completed') || lower.includes('yes') || lower.includes('ok') || lower.includes('pass') || lower.includes('có')) badgeClass = 'success';
+                                    else if (lower.includes('pending') || lower.includes('no') || lower.includes('late') || lower.includes('missing') || lower.includes('fail') || lower.includes('chưa')) badgeClass = 'danger';
+                                    else if (lower.includes('review') || lower.includes('upgrading') || lower.includes('doing') || lower.includes('in progress') || lower.includes('đang')) badgeClass = 'warning';
+
+                                    const badgeHtml = `<span class="stat-badge ${badgeClass}" ${style}>${cleanText}</span>`;
+                                    
+                                    if (type === 'roadmap') {
+                                        return `<a href="https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/edit?gid=882542672#gid=882542672" target="_blank" style="text-decoration: none;">${badgeHtml}</a>`;
+                                    } else if (type === 'aid' || type === 'exam') {
+                                        return `<a href="javascript:void(0)" onclick="alert('Chưa có link chi tiết cho mục này'); return false;" style="text-decoration: none;">${badgeHtml}</a>`;
+                                    }
+                                    return badgeHtml;
                                 };
 
                                 return `
@@ -3346,9 +3360,9 @@ function renderAcademicPerformance(classRows) {
                                         <td style="padding: 14px 12px; font-weight: 500; color: var(--text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
                                         <td style="padding: 14px 12px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center; font-size: 0.8rem;">${schedule}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid')}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap')}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam')}</td>
                                     </tr>
                                 `;
                             }).join('')}
