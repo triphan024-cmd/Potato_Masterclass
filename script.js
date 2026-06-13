@@ -2,11 +2,18 @@
 window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyUpPBhYBLvwyKhTk-7bNAC2rr5PE0dnN7T4lizrNNcIyJkDM_Z5PPw1v75-zWG0DQPCg/exec';
 
 // Function to open the detailed view of a class
-function openClassDetail(titleStr, contentStr) {
+function openClassDetail(titleStr, contentStr, hideHeader = false) {
     if (event) event.stopPropagation();
     const modal = document.getElementById('classModal');
     const title = document.getElementById('modalClassTitle');
     const content = document.getElementById('modalClassContent');
+    const header = modal.querySelector('.modal-header');
+    
+    if (hideHeader) {
+        if (header) header.style.display = 'none';
+    } else {
+        if (header) header.style.display = '';
+    }
     
     title.innerText = titleStr;
     content.innerHTML = contentStr || 'No details available.';
@@ -63,30 +70,35 @@ window.openCalEventDetail = function(id) {
     if (!ev) return;
     
     const dateStr = ev.date ? ev.date.toLocaleDateString('en-GB') : '';
-    const className = ev.className || 'Unknown Class';
     const time = ev.time || 'N/A';
-    const teacher = ev.teacher || 'N/A';
+    const teacher = getShortName(ev.teacher) || ev.teacher || 'N/A';
     
     let rawHtml = '';
     if (ev.raw && ev.raw.c) {
+        const allowedHeaders = ['Status', 'Branch', 'Student Name', 'Weekly', 'History'];
         rawHtml = ev.raw.c.map((c, i) => {
-            let val = getVal(c);
             let label = window.calendarHeaders && window.calendarHeaders[i] ? window.calendarHeaders[i] : `Col ${i}`;
+            if (!allowedHeaders.includes(label)) return '';
+            
+            let val = getVal(c);
             if (val && String(val).trim() !== '') {
-                return `<div style="padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04);"><span style="color:var(--text-muted); display:inline-block; width: 120px;">${label}:</span> <b style="color: var(--text-dark);">${val}</b></div>`;
+                if (label === 'Student Name' && typeof val === 'string') {
+                    val = val.split(',').map(s => s.trim()).join('<br>');
+                }
+                return `<div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px;">
+                    <span style="color:var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">${label}</span> 
+                    <div style="color: var(--text-dark); font-weight: 500; line-height: 1.5;">${val}</div>
+                </div>`;
             }
             return '';
         }).join('');
     }
 
     const html = `
-        <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
-            <div style="background: rgba(0,174,239,0.05); padding: 16px; border-radius: 8px; border-left: 4px solid var(--info);">
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Class Name</div>
-                <div style="font-weight: 700; font-size: 1.15rem; color: var(--text-dark);">${className}</div>
-            </div>
+        <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif; position: relative;">
+            <button type="button" class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></button>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px;">
                 <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
                     <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Schedule</div>
                     <div style="font-weight: 600; color: var(--text-dark);">${dateStr} <br/> <span style="color:var(--primary-color); display:inline-block; margin-top: 4px;">${time}</span></div>
@@ -99,14 +111,14 @@ window.openCalEventDetail = function(id) {
             
             <div style="margin-top: 8px;">
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Raw Data</div>
-                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; max-height: 250px; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06);">
+                <div style="background: #f8fafc; padding: 16px; border-radius: 8px; max-height: 400px; overflow-y: auto; border: 1px solid rgba(0,0,0,0.06);">
                     ${rawHtml || '<i style="color: var(--text-muted);">No raw data available</i>'}
                 </div>
             </div>
         </div>
     `;
     
-    openClassDetail('Class Schedule Detail', html);
+    openClassDetail('', html, true);
 };
 
 // Toast Notification
