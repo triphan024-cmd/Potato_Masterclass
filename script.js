@@ -2478,8 +2478,43 @@ function selectCalendarDate(year, month, day) {
         if (hdHeaderEl) hdHeaderEl.style.display = 'none';
         return;
     } else {
-        if (nqHeaderEl) nqHeaderEl.style.display = 'block';
-        if (hdHeaderEl) hdHeaderEl.style.display = 'block';
+        let nqClasses = 0, nqStudents = 0;
+        let hdClasses = 0, hdStudents = 0;
+        
+        dayEvents.forEach(e => {
+            const parts = e.className ? e.className.split(' - ')[0].split(' | ') : [];
+            const branch = parts.length > 1 ? parts[0].trim() : '';
+            const rawData = e.raw && e.raw.c ? e.raw.c : [];
+            
+            let studentCount = 0;
+            if (window.calendarHeaders) {
+                const idx = window.calendarHeaders.indexOf('Count Student');
+                if (idx !== -1 && rawData[idx]) {
+                    studentCount = parseInt(getVal(rawData[idx])) || 0;
+                }
+            }
+            
+            if (branch.includes('NQ')) {
+                nqClasses++;
+                nqStudents += studentCount;
+            } else if (branch.includes('HD') || branch.includes('HĐ')) {
+                hdClasses++;
+                hdStudents += studentCount;
+            }
+        });
+
+        if (nqHeaderEl) {
+            nqHeaderEl.style.display = 'flex';
+            nqHeaderEl.style.alignItems = 'center';
+            nqHeaderEl.style.justifyContent = 'center';
+            nqHeaderEl.innerHTML = `Ngô Quyền (NQ) <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${nqClasses} Lớp</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(2, 132, 199, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${nqStudents} HV</span>`;
+        }
+        if (hdHeaderEl) {
+            hdHeaderEl.style.display = 'flex';
+            hdHeaderEl.style.alignItems = 'center';
+            hdHeaderEl.style.justifyContent = 'center';
+            hdHeaderEl.innerHTML = `Hưng Định (HD) <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 600;">${hdClasses} Lớp</span> <span style="font-size: 0.7rem; text-transform: none; background: rgba(5, 150, 105, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: 600;">${hdStudents} HV</span>`;
+        }
     }
     
     // Group events within 15 minutes of start time
