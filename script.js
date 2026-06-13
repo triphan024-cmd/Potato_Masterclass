@@ -1029,6 +1029,7 @@ async function fetchDashboardData() {
             });
             console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
             renderCalendar(0); // Re-render with data
+            renderOperationTodayClasses();
         } catch (err) {
             console.error("Error fetching calendar data:", err);
         }
@@ -1251,6 +1252,99 @@ function renderOperationTable(classRows) {
             <td>Normal</td>
         `;
         tbody.appendChild(tr);
+    });
+}
+
+function renderOperationTodayClasses() {
+    const listEl = document.getElementById('operation-today-list');
+    const countEl = document.getElementById('operation-today-count');
+    if (!listEl || !countEl) return;
+
+    if (!globalCalendarEvents || !globalClassRows) return;
+
+    const today = new Date();
+    const isToday = (d) => d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+
+    const todayEvents = globalCalendarEvents.filter(ev => ev.date && isToday(ev.date));
+
+    // Sort by time
+    todayEvents.sort((a, b) => {
+        const timeA = a.time || '00:00';
+        const timeB = b.time || '00:00';
+        return timeA.localeCompare(timeB);
+    });
+
+    if (todayEvents.length === 0) {
+        countEl.innerText = "0 Classes";
+        listEl.innerHTML = \`<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px; font-style: italic;">No classes scheduled for today.</div>\`;
+        return;
+    }
+
+    countEl.innerText = \`\${todayEvents.length} Classes\`;
+    listEl.innerHTML = '';
+
+    todayEvents.forEach(ev => {
+        const evClassName = String(ev.className || '').trim();
+        // Find matching class in globalClassRows
+        let classRow = null;
+        for (let row of globalClassRows) {
+            if (!row || !row.c) continue;
+            const cName = String(getVal(row.c[6]) || getVal(row.c[1])).trim();
+            if (cName && (cName === evClassName || cName.includes(evClassName) || evClassName.includes(cName))) {
+                classRow = row;
+                break;
+            }
+        }
+
+        let doanhThu = '0';
+        let daThu = '0';
+        let congNo = '0';
+        let studentCount = '0';
+
+        if (classRow) {
+            doanhThu = getVal(classRow.c[43]) || '0';
+            daThu = getVal(classRow.c[44]) || '0';
+            congNo = getVal(classRow.c[45]) || '0';
+            studentCount = getVal(classRow.c[7]) || '0';
+        }
+
+        const card = document.createElement('div');
+        card.style.cssText = \`
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        \`;
+
+        card.innerHTML = \`
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <div style="font-weight: 700; color: var(--text-dark); font-size: 1.05rem;">\${evClassName || 'Unknown Class'}</div>
+                <div style="font-size: 0.8rem; background: var(--primary-light); color: var(--primary-color); padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap;">
+                    <i class="fa-regular fa-clock"></i> \${ev.time || 'N/A'}
+                </div>
+            </div>
+            
+            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 12px;">
+                <span><i class="fa-solid fa-chalkboard-user"></i> \${getShortName(ev.teacher) || 'N/A'}</span>
+                <span><i class="fa-solid fa-users"></i> \${studentCount} Students</span>
+            </div>
+            
+            <div style="margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Collected</div>
+                    <div style="font-weight: 600; color: #16a34a; font-size: 0.95rem;">\${daThu}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Debt</div>
+                    <div style="font-weight: 600; color: \${congNo && congNo !== '0' ? '#ef4444' : '#64748b'}; font-size: 0.95rem;">\${congNo}</div>
+                </div>
+            </div>
+        \`;
+        listEl.appendChild(card);
     });
 }
 
