@@ -2148,7 +2148,7 @@ function selectCalendarDate(year, month, day) {
         });
         
         if (dutyEvents.length > 0) {
-            const renderDutyGroup = (groupDuties, title, color) => {
+            const renderDutyGroup = (groupDuties, title, color, isAcademic) => {
                 if (groupDuties.length === 0) return '';
                 
                 const parsed = groupDuties.map(row => {
@@ -2162,35 +2162,44 @@ function selectCalendarDate(year, month, day) {
                     }
                     return { branch, timeStr, namePart, label };
                 });
-                
-                const timeCounts = {};
-                parsed.forEach(p => { if (p.timeStr) timeCounts[p.timeStr] = (timeCounts[p.timeStr] || 0) + 1; });
-                let mainTime = '';
-                let maxCount = 0;
-                for (const t in timeCounts) {
-                    if (timeCounts[t] > maxCount) { maxCount = timeCounts[t]; mainTime = t; }
-                }
-                
+
                 let nqList = [];
                 let hdList = [];
-                
-                parsed.forEach(p => {
-                    let displayStr = p.namePart;
-                    if (p.timeStr && p.timeStr !== mainTime) {
-                        displayStr += ` <span style="font-size: 0.75rem; color: var(--text-muted);">(${p.timeStr})</span>`;
-                    }
-                    if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(displayStr);
-                    else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(displayStr);
-                });
-                
+
+                if (isAcademic) {
+                    let nqSang = [], nqChieu = [], hdSang = [], hdChieu = [];
+                    parsed.forEach(p => {
+                        let isMorning = true;
+                        if (p.timeStr) {
+                            const startHour = parseInt(p.timeStr.split(':')[0]);
+                            if (startHour >= 12) isMorning = false;
+                        }
+                        
+                        let displayStr = p.namePart;
+                        if (p.branch === 'NQ' || p.label.includes('NQ')) {
+                            if (isMorning) nqSang.push(displayStr); else nqChieu.push(displayStr);
+                        } else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) {
+                            if (isMorning) hdSang.push(displayStr); else hdChieu.push(displayStr);
+                        }
+                    });
+
+                    if (nqSang.length > 0) nqList.push(`<strong style="color: var(--text-dark); font-weight: 600;">Sáng:</strong> ${nqSang.join(', ')}`);
+                    if (nqChieu.length > 0) nqList.push(`<strong style="color: var(--text-dark); font-weight: 600;">Chiều:</strong> ${nqChieu.join(', ')}`);
+                    if (hdSang.length > 0) hdList.push(`<strong style="color: var(--text-dark); font-weight: 600;">Sáng:</strong> ${hdSang.join(', ')}`);
+                    if (hdChieu.length > 0) hdList.push(`<strong style="color: var(--text-dark); font-weight: 600;">Chiều:</strong> ${hdChieu.join(', ')}`);
+                } else {
+                    parsed.forEach(p => {
+                        let displayStr = p.namePart;
+                        if (p.branch === 'NQ' || p.label.includes('NQ')) nqList.push(displayStr);
+                        else if (p.branch === 'HD' || p.branch === 'HĐ' || p.label.includes('HĐ') || p.label.includes('HD')) hdList.push(displayStr);
+                    });
+                }
+
                 if (nqList.length === 0 && hdList.length === 0) return '';
                 
                 let html = `<div style="background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">`;
                 html += `<div style="font-weight: 700; color: ${color}; font-size: 0.95rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 8px;">`;
                 html += `<span>${title}</span>`;
-                if (mainTime) {
-                    html += `<span style="font-size: 0.75rem; background: rgba(0,0,0,0.04); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); font-weight: 600;"><i class="fa-regular fa-clock"></i> ${mainTime}</span>`;
-                }
                 html += `</div>`;
                 
                 html += `<div style="display: flex; gap: 16px; font-size: 0.85rem;">`;
@@ -2213,8 +2222,8 @@ function selectCalendarDate(year, month, day) {
             const acDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
             
             let dutyHtml = '';
-            dutyHtml += renderDutyGroup(opDuties, '<i class="fa-solid fa-briefcase" style="margin-right: 4px;"></i> Operation', 'var(--primary-dark)');
-            dutyHtml += renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic', '#d97706');
+            dutyHtml += renderDutyGroup(opDuties, '<i class="fa-solid fa-briefcase" style="margin-right: 4px;"></i> Operation', 'var(--primary-dark)', false);
+            dutyHtml += renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic', '#d97706', true);
             
             if (!dutyHtml) dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
             dutyContent.innerHTML = dutyHtml;
