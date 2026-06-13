@@ -759,6 +759,7 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUv
 const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1739187215';
 const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
+const DUTY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=585528165';
 
 
 
@@ -901,12 +902,25 @@ async function fetchDashboardData() {
             });
             console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
             renderCalendar(0); // Re-render with data
-            const today = new Date();
-            selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
         } catch (err) {
             console.error("Error fetching calendar data:", err);
         }
-        
+
+        // Fetch Duty Data
+        try {
+            console.log("Loading duty data...");
+            const dutyRes = await fetch(DUTY_SHEET_URL);
+            const dutyText = await dutyRes.text();
+            const dutyJsonString = dutyText.substring(dutyText.indexOf('{'), dutyText.lastIndexOf('}') + 1);
+            const dutyJson = JSON.parse(dutyJsonString);
+            window.globalDutyRows = dutyJson.table.rows || [];
+            console.log(`Retrieved duty events.`);
+        } catch (err) {
+            console.error("Error fetching duty data:", err);
+        }
+
+        const today = new Date();
+        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
     } catch (error) {
         console.error('Error fetching or parsing data:', error);
     }
@@ -2115,6 +2129,48 @@ function selectCalendarDate(year, month, day) {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     document.getElementById('selected-date-display').innerText = `${monthNames[month]} ${day}, ${year}`;
     
+    // Update duty person
+    const dutyContent = document.getElementById('duty-content');
+    if (dutyContent && window.globalDutyRows) {
+        const selectedDateStr = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
+        const dutyEvents = window.globalDutyRows.filter(row => {
+            if (!row || !row.c || !row.c[15]) return false;
+            let dStr = '';
+            if (row.c[15].f) {
+                dStr = row.c[15].f;
+            } else if (row.c[15].v) {
+                const parts = String(row.c[15].v).replace('Date(', '').replace(')', '').split(',');
+                if (parts.length >= 3) {
+                    dStr = `${String(parts[2]).padStart(2, '0')}/${String(parseInt(parts[1])+1).padStart(2, '0')}/${parts[0]}`;
+                }
+            }
+            return dStr === selectedDateStr;
+        });
+        
+        if (dutyEvents.length > 0) {
+            let nqDuty = [];
+            let hdDuty = [];
+            dutyEvents.forEach(row => {
+                const label = getVal(row.c[13]) || '';
+                const displayStr = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
+                if (label.includes('NQ')) nqDuty.push(displayStr);
+                else if (label.includes('HĐ') || label.includes('HD')) hdDuty.push(displayStr);
+            });
+            
+            let dutyHtml = '';
+            if (nqDuty.length > 0) {
+                dutyHtml += `<div style="margin-bottom: 6px;"><strong style="color: #0284c7;">NQ:</strong> ${nqDuty.join(', ')}</div>`;
+            }
+            if (hdDuty.length > 0) {
+                dutyHtml += `<div><strong style="color: #059669;">HĐ:</strong> ${hdDuty.join(', ')}</div>`;
+            }
+            if (!dutyHtml) dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
+            dutyContent.innerHTML = dutyHtml;
+        } else {
+            dutyContent.innerHTML = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
+        }
+    }
+
     const listEl = document.getElementById('daily-classes-list');
     const nqHeaderEl = document.getElementById('header-nq');
     const hdHeaderEl = document.getElementById('header-hd');
