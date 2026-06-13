@@ -2157,14 +2157,25 @@ function selectCalendarDate(year, month, day) {
                 else if (label.includes('HĐ') || label.includes('HD')) hdDuty.push(displayStr);
             });
             
-            let dutyHtml = '';
+            let dutyHtml = '<div style="display: flex; gap: 12px; flex-wrap: wrap;">';
             if (nqDuty.length > 0) {
-                dutyHtml += `<div style="margin-bottom: 6px;"><strong style="color: #0284c7;">NQ:</strong> ${nqDuty.join(', ')}</div>`;
+                dutyHtml += `
+                <div class="daily-class-card" style="flex: 1; min-width: 150px; background: white; border-left: 3px solid #0284c7; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Ngô Quyền (NQ)</div>
+                    <div style="font-size: 0.85rem; color: var(--text-dark); line-height: 1.4;">${nqDuty.join('<br>')}</div>
+                </div>`;
             }
             if (hdDuty.length > 0) {
-                dutyHtml += `<div><strong style="color: #059669;">HĐ:</strong> ${hdDuty.join(', ')}</div>`;
+                dutyHtml += `
+                <div class="daily-class-card" style="flex: 1; min-width: 150px; background: white; border-left: 3px solid #059669; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                    <div style="font-size: 0.75rem; color: #059669; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Hưng Định (HĐ)</div>
+                    <div style="font-size: 0.85rem; color: var(--text-dark); line-height: 1.4;">${hdDuty.join('<br>')}</div>
+                </div>`;
             }
-            if (!dutyHtml) dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
+            dutyHtml += '</div>';
+            if (nqDuty.length === 0 && hdDuty.length === 0) {
+                dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
+            }
             dutyContent.innerHTML = dutyHtml;
         } else {
             dutyContent.innerHTML = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
