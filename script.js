@@ -2425,106 +2425,147 @@ function renderTeacherPerformance(classRows) {
     if (!grid) return;
     grid.innerHTML = '';
 
-    const departmentMap = {};
+    const branchMap = {
+        'Ngô Quyền (NQ)': {},
+        'Hưng Định (HD)': {}
+    };
+
     classRows.forEach(row => {
         const c = row.c;
-        const department = getVal(c[5]) || 'Unknown Department';
-        if (!departmentMap[department]) {
-            departmentMap[department] = { rows: [], count: 0 };
+        let rawBranch = getVal(c[3]) || '';
+        let branch = '';
+        if (rawBranch.includes('HD') || rawBranch.includes('Hưng Định')) {
+            branch = 'Hưng Định (HD)';
+        } else {
+            branch = 'Ngô Quyền (NQ)';
         }
-        departmentMap[department].rows.push(row);
-        departmentMap[department].count++;
+        
+        const department = getVal(c[5]) || 'Unknown Department';
+        if (!branchMap[branch][department]) {
+            branchMap[branch][department] = { rows: [], count: 0 };
+        }
+        branchMap[branch][department].rows.push(row);
+        branchMap[branch][department].count++;
     });
 
-    const departments = Object.keys(departmentMap).sort((a, b) => a.localeCompare(b));
-    if (departments.length === 0) {
-        grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
-        return;
-    }
+    const branches = ['Ngô Quyền (NQ)', 'Hưng Định (HD)'];
+    let hasAnyData = false;
 
-    departments.forEach(department => {
-        const data = departmentMap[department];
-        const sortedRows = data.rows.sort((a, b) => {
-            const classA = String(getVal(a.c[6]) || '');
-            const classB = String(getVal(b.c[6]) || '');
-            return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
-        });
+    branches.forEach(branch => {
+        const departments = Object.keys(branchMap[branch]).sort((a, b) => a.localeCompare(b));
+        if (departments.length === 0) return;
+        hasAnyData = true;
 
-        const card = document.createElement('div');
-        card.className = 'modern-card panel';
-        card.style.margin = '0';
-        card.innerHTML = `
-            <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
-                <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-layer-group"></i> ${department}
-                </h3>
-                <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">${data.count} Classes</span>
-            </div>
-            <div class="modern-card-body" style="padding: 0;">
-                <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
-                        <thead>
-                            <tr>
-                                <th style="padding: 8px; width: 30%;">Class</th>
-                                <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
-                                <th style="padding: 8px; width: 12%; text-align: center;">Absence</th>
-                                <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
-                                <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${sortedRows.map(row => {
-                                const c = row.c;
-                                const className = getVal(c[6]) || getVal(c[1]);
-                                const teacherName = getShortName(getVal(c[9])) || '-';
-                                const absence = getVal(c[33]) || '-';
-                                const progress = getVal(c[34]) || getVal(c[11]) || '-';
-                                const examDate = getVal(c[39]) || '-';
-                                const achievement = getVal(c[30]) || '-';
-                                const redFlag = getVal(c[31]) || '-';
-                                const action = getVal(c[32]) || '-';
-                                
-                                let safeHTML = '';
-                                const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
-                                if (hasDetails) {
-                                    let modalContent = `
-                                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--primary);">
-                                            <h4 style="color: var(--primary); margin-bottom: 8px;">Teacher Achievement</h4>
-                                            <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${achievement.replace(/\n/g, '<br>')}</p>
-                                        </div>
-                                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger);">
-                                            <h4 style="color: var(--danger); margin-bottom: 8px;">Red Flag</h4>
-                                            <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${redFlag.replace(/\n/g, '<br>')}</p>
-                                            <h4 style="color: var(--primary); margin-bottom: 8px;">Action</h4>
-                                            <p style="color: var(--text-color); line-height: 1.6;">${action.replace(/\n/g, '<br>')}</p>
-                                        </div>
-                                    `;
-                                    safeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '').replace(/\r/g, ' ');
-                                }
-                                    
-                                let icon = hasDetails
-                                    ? `<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '${safeHTML}')"></i>`
-                                    : '-';
+        let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
+        let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+        const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
 
-                                return `
-                                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                                        <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${className.split(' - ')[0]}</td>
-                                        <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${absence}</td>
-                                        <td style="padding: 12px 8px; text-align: center;"><span class="badge ${progress !== '-' ? 'success' : ''}">${progress}</span></td>
-                                        <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${examDate}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${icon}</td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        const branchHeader = document.createElement('div');
+        branchHeader.style.gridColumn = '1 / -1';
+        branchHeader.style.marginTop = '16px';
+        branchHeader.style.paddingBottom = '8px';
+        branchHeader.style.borderBottom = `2px solid ${colorStr}`;
+        branchHeader.style.display = 'flex';
+        branchHeader.style.alignItems = 'center';
+        branchHeader.style.justifyContent = 'space-between';
+        branchHeader.innerHTML = `
+            <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
+                <i class="fa-solid fa-building"></i> ${branch}
+            </h3>
+            <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem;">
+                ${totalClasses} Classes
+            </span>
         `;
-        grid.appendChild(card);
+        grid.appendChild(branchHeader);
+
+        departments.forEach(department => {
+            const data = branchMap[branch][department];
+            const sortedRows = data.rows.sort((a, b) => {
+                const classA = String(getVal(a.c[6]) || '');
+                const classB = String(getVal(b.c[6]) || '');
+                return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            const card = document.createElement('div');
+            card.className = 'modern-card panel';
+            card.style.margin = '0';
+            card.innerHTML = `
+                <div class="modern-card-header" style="justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-layer-group"></i> ${department}
+                    </h3>
+                    <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">${data.count} Classes</span>
+                </div>
+                <div class="modern-card-body" style="padding: 0;">
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 8px; width: 30%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
+                                    <th style="padding: 8px; width: 12%; text-align: center;">Absence</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
+                                    <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
+                                    <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sortedRows.map(row => {
+                                    const c = row.c;
+                                    const className = getVal(c[6]) || getVal(c[1]);
+                                    const teacherName = getShortName(getVal(c[9])) || '-';
+                                    const absence = getVal(c[33]) || '-';
+                                    const progress = getVal(c[34]) || getVal(c[11]) || '-';
+                                    const examDate = getVal(c[39]) || '-';
+                                    const achievement = getVal(c[30]) || '-';
+                                    const redFlag = getVal(c[31]) || '-';
+                                    const action = getVal(c[32]) || '-';
+                                    
+                                    let safeHTML = '';
+                                    const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
+                                    if (hasDetails) {
+                                        let modalContent = \`
+                                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--primary);">
+                                                <h4 style="color: var(--primary); margin-bottom: 8px;">Teacher Achievement</h4>
+                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">\${achievement.replace(/\\n/g, '<br>')}</p>
+                                            </div>
+                                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger);">
+                                                <h4 style="color: var(--danger); margin-bottom: 8px;">Red Flag</h4>
+                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">\${redFlag.replace(/\\n/g, '<br>')}</p>
+                                                <h4 style="color: var(--primary); margin-bottom: 8px;">Action</h4>
+                                                <p style="color: var(--text-color); line-height: 1.6;">\${action.replace(/\\n/g, '<br>')}</p>
+                                            </div>
+                                        \`;
+                                        safeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\\n/g, '').replace(/\\r/g, ' ');
+                                    }
+                                        
+                                    let icon = hasDetails
+                                        ? \`<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '\${safeHTML}')"></i>\`
+                                        : '-';
+
+                                    return \`
+                                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                            <td style="padding: 12px 8px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${className.split(' - ')[0]}</td>
+                                            <td style="padding: 12px 8px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${teacherName}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">\${absence}</td>
+                                            <td style="padding: 12px 8px; text-align: center;"><span class="badge \${progress !== '-' ? 'success' : ''}">\${progress}</span></td>
+                                            <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">\${examDate}</td>
+                                            <td style="padding: 12px 8px; text-align: center;">\${icon}</td>
+                                        </tr>
+                                    \`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
     });
+
+    if (!hasAnyData) {
+        grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
+    }
 }
 
 function renderAcademicPerformance(classRows) {
