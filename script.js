@@ -183,8 +183,8 @@ window.openFeesDetail = function(classId, className) {
         
         let groupedRows = {};
         rows.forEach(row => {
-            let stageVal = (stageIdx !== -1 && row.c && row.c[stageIdx]) ? getVal(row.c[stageIdx]) : 'Unknown Stage';
-            if (!stageVal || stageVal.trim() === '-' || stageVal.trim() === '') stageVal = 'Unknown Stage';
+            let stageVal = (stageIdx !== -1 && row.c && row.c[stageIdx]) ? getVal(row.c[stageIdx]) : 'Book';
+            if (!stageVal || stageVal.trim() === '-' || stageVal.trim() === '' || stageVal.trim() === 'Unknown Stage') stageVal = 'Book';
             if (!groupedRows[stageVal]) groupedRows[stageVal] = [];
             groupedRows[stageVal].push(row);
         });
@@ -195,8 +195,21 @@ window.openFeesDetail = function(classId, className) {
             <div style="overflow-y: auto; max-height: 75vh; padding-right: 8px;">`;
 
         Object.keys(groupedRows).forEach(stage => {
+            const finalColIdx = colsToKeep.find(c => c.newLabel === 'Final Amount')?.index;
+            const paidColIdx = colsToKeep.find(c => c.newLabel === 'Paid Amount')?.index;
+            const pendingColIdx = colsToKeep.find(c => c.newLabel === 'Pending')?.index;
+
+            let sumFinal = 0, sumPaid = 0, sumPending = 0;
+            groupedRows[stage].forEach(row => {
+                const fVal = finalColIdx !== undefined && row.c && row.c[finalColIdx] ? getVal(row.c[finalColIdx]).replace(/,/g, '') : 0;
+                const pVal = paidColIdx !== undefined && row.c && row.c[paidColIdx] ? getVal(row.c[paidColIdx]).replace(/,/g, '') : 0;
+                const pdVal = pendingColIdx !== undefined && row.c && row.c[pendingColIdx] ? getVal(row.c[pendingColIdx]).replace(/,/g, '') : 0;
+                if (!isNaN(parseFloat(fVal))) sumFinal += parseFloat(fVal);
+                if (!isNaN(parseFloat(pVal))) sumPaid += parseFloat(pVal);
+                if (!isNaN(parseFloat(pdVal))) sumPending += parseFloat(pdVal);
+            });
+
             contentHtml += `<div style="margin-bottom: 28px;">
-                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 1.1rem; border-bottom: 2px solid var(--primary); padding-bottom: 6px; display: inline-block; font-weight: 700;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> Stage: ${stage}</h4>
                 <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
                 <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
                 <thead style="background: #f8fafc;"><tr>`;
@@ -210,11 +223,35 @@ window.openFeesDetail = function(classId, className) {
             });
             contentHtml += `</tr></thead><tbody>`;
             
+            contentHtml += `<tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">`;
+            renderCols.forEach((colObj, i) => {
+                let val = '';
+                let align = 'left';
+                let color = '#0f172a';
+                if (i === 0) {
+                    val = `<span style="color: var(--primary); font-size: 1.05rem;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> Stage: ${stage}</span>`;
+                } else if (colObj.newLabel === 'Final Amount') {
+                    val = sumFinal.toLocaleString();
+                    align = 'right';
+                } else if (colObj.newLabel === 'Paid Amount') {
+                    val = sumPaid.toLocaleString();
+                    align = 'right';
+                } else if (colObj.newLabel === 'Pending') {
+                    val = sumPending.toLocaleString();
+                    align = 'right';
+                    color = '#dc2626'; // red
+                }
+                contentHtml += `<td style="padding: 12px 14px; text-align: ${align}; color: ${color}; font-weight: 700;">${val}</td>`;
+            });
+            contentHtml += `</tr>`;
+
             groupedRows[stage].forEach((row, rowIndex) => {
                 const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
                 contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
                 renderCols.forEach(colObj => {
                     let val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
+                    if (val === 'null' && colObj.newLabel === 'Bill') val = '-';
+
                     const isLongCol = ['remark', 'student name'].includes(colObj.newLabel.toLowerCase());
                     let align = 'left';
                     if (['bill', 'standard', 'sib discount', 'total discount', 'final amount', 'paid amount', 'pending'].includes(colObj.newLabel.toLowerCase()) || (!isNaN(val.replace(/,/g, '')) && val.trim() !== '-')) {
@@ -225,7 +262,13 @@ window.openFeesDetail = function(classId, className) {
                              val = Number(val).toLocaleString();
                         }
                     }
-                    const tdStyle = `padding: 10px 14px; line-height: 1.4; color: #1e293b; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
+                    let colorStr = '#1e293b';
+                    let fw = 'normal';
+                    if (colObj.newLabel === 'Pending' && val !== '-' && val !== '0' && val !== '0.00') {
+                        colorStr = '#dc2626';
+                        fw = '600';
+                    }
+                    const tdStyle = `padding: 10px 14px; line-height: 1.4; color: ${colorStr}; font-weight: ${fw}; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
                     contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
                 });
                 contentHtml += `</tr>`;
@@ -1321,7 +1364,7 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         if (a.branch !== b.branch) return a.branch.localeCompare(b.branch);
         return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
     });
-    const missingStrList = missingClasses.map(m => `[${m.branch}] ${m.name}`);
+    const missingStrList = missingClasses.map(m => m.name);
 
     document.querySelectorAll('.metric-data').forEach(div => {
         const title = div.querySelector('h3').textContent.trim().toLowerCase();
