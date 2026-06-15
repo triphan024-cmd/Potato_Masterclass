@@ -150,14 +150,14 @@ window.openFeesDetail = function(classId, className) {
             let newLabel = null;
             if (l === 'student name') newLabel = 'Student Name';
             else if (l === 'status') newLabel = 'Status';
-            else if (l === 'id product' || l === 'course') newLabel = 'Stage';
+            else if (l === 'month') newLabel = 'Stage';
             else if (l === 'start date') newLabel = 'Start Date';
             else if (l === 'end date') newLabel = 'End Date';
             else if (l === 'division') newLabel = 'Division';
             else if (l === 'bill') newLabel = 'Bill';
             else if (l === 'fees amount' || l === 'standard') newLabel = 'Standard';
             else if (l === 'sib discount') newLabel = 'Sib Discount';
-            else if (l === 'total discount') newLabel = 'Total discount';
+            else if (l === 'total discount') newLabel = 'Total Discount';
             else if (l === 'final amount') newLabel = 'Final Amount';
             else if (l === 'paid amount') newLabel = 'Paid Amount';
             else if (l === 'paid date') newLabel = 'Paid Date';
@@ -169,6 +169,13 @@ window.openFeesDetail = function(classId, className) {
                 colsToKeep.push({ index: idx, newLabel: newLabel });
             }
         });
+
+        const requestedOrder = [
+            'Student Name', 'Status', 'Stage', 'Start Date', 'End Date', 
+            'Division', 'Bill', 'Standard', 'Sib Discount', 'Total Discount', 
+            'Final Amount', 'Paid Amount', 'Paid Date', 'Pending', 'Method', 'Remark'
+        ];
+        colsToKeep.sort((a, b) => requestedOrder.indexOf(a.newLabel) - requestedOrder.indexOf(b.newLabel));
 
         // Ensure we group by Stage
         const stageColObj = colsToKeep.find(c => c.newLabel === 'Stage');
@@ -1304,10 +1311,18 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         }
         if (progress.includes('missing') || progress.includes('mất bài') || progress.includes('nghỉ')) {
             missingLesson++;
-            missingClasses.push(getVal(c[6]) || getVal(c[1]) || 'Unknown');
+            let rawBranch = getVal(c[3]) || getVal(c[2]) || '';
+            let branch = (rawBranch.includes('HD') || rawBranch.includes('Hưng Định') || rawBranch.includes('Hưng \u0110ịnh')) ? 'HD' : 'NQ';
+            missingClasses.push({ branch: branch, name: getVal(c[6]) || getVal(c[1]) || 'Unknown' });
         }
     });
     
+    missingClasses.sort((a, b) => {
+        if (a.branch !== b.branch) return a.branch.localeCompare(b.branch);
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+    const missingStrList = missingClasses.map(m => `[${m.branch}] ${m.name}`);
+
     document.querySelectorAll('.metric-data').forEach(div => {
         const title = div.querySelector('h3').textContent.trim().toLowerCase();
         const valEl = div.querySelector('.value');
@@ -1321,7 +1336,7 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         if (title === 'late progress') valEl.innerText = lateProgress.toLocaleString();
         if (title === 'missing lesson') {
             valEl.innerText = missingLesson.toLocaleString();
-            div.parentElement.title = missingClasses.length > 0 ? "Missing Classes:\n" + missingClasses.join('\n') : "No missing lessons";
+            div.parentElement.title = missingStrList.length > 0 ? "Missing Classes:\n" + missingStrList.join('\n') : "No missing lessons";
         }
         if (title === 'program "story spark"') {
             const ssCount = classRows.filter(r => (getVal(r.c[6]) || '').toLowerCase().includes('story spark') || (getVal(r.c[1]) || '').toLowerCase().includes('ss')).length;
