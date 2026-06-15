@@ -2647,6 +2647,32 @@ function renderTeacherObservations(classRows) {
                 const studentCount = parseInt(getVal(c[7]) || 0);
                 const classTitleStr = className.split(' - ')[0];
 
+                const achievement = getVal(c[30]) || '-';
+                const redFlag = getVal(c[31]) || '-';
+                const action = getVal(c[32]) || '-';
+
+                let detailSafeHTML = '';
+                const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
+                if (hasDetails) {
+                    let modalContent = `
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--primary);">
+                            <h4 style="color: var(--primary); margin-bottom: 8px;">Teacher Achievement</h4>
+                            <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${achievement.replace(/\n/g, '<br>')}</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger);">
+                            <h4 style="color: var(--danger); margin-bottom: 8px;">Red Flag</h4>
+                            <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${redFlag.replace(/\n/g, '<br>')}</p>
+                            <h4 style="color: var(--primary); margin-bottom: 8px;">Action</h4>
+                            <p style="color: var(--text-color); line-height: 1.6;">${action.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `;
+                    detailSafeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '').replace(/\r/g, ' ');
+                }
+                    
+                let detailIcon = hasDetails
+                    ? `<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '${detailSafeHTML}')"></i>`
+                    : '-';
+
                 rowsHtml += `
                     <tr>
                         <td style="padding: 10px 8px;">
@@ -2657,6 +2683,7 @@ function renderTeacherObservations(classRows) {
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;">${headIcon}</td>
+                        <td style="padding: 8px; text-align: center;">${detailIcon}</td>
                         <td style="padding: 8px; text-align: center;"><button class="icon-btn" onclick="openClassDetail('${classTitleStr}')"><i class="fa-solid fa-arrow-right"></i></button></td>
                     </tr>
                 `;
@@ -2686,6 +2713,7 @@ function renderTeacherObservations(classRows) {
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Detail</th>
+                                    <th style="padding: 8px; width: 5%;"></th>
                                 </tr>
                             </thead>
                             <tbody>
