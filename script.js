@@ -141,39 +141,91 @@ window.openFeesDetail = function(classId, className) {
             No fee details found for class: <strong>${safeTitle}</strong>
         </div>`;
     } else {
-        const cols = window.globalFeesCols || [];
+        const originalLabels = window.globalFeesCols || [];
+        let colsToKeep = [];
+        
+        originalLabels.forEach((col, idx) => {
+            if (!col) return;
+            const l = (col.label || '').toLowerCase().trim();
+            let newLabel = null;
+            if (l === 'student name') newLabel = 'Student Name';
+            else if (l === 'status') newLabel = 'Status';
+            else if (l === 'id product' || l === 'course') newLabel = 'Stage';
+            else if (l === 'start date') newLabel = 'Start Date';
+            else if (l === 'end date') newLabel = 'End Date';
+            else if (l === 'division') newLabel = 'Division';
+            else if (l === 'bill') newLabel = 'Bill';
+            else if (l === 'fees amount' || l === 'standard') newLabel = 'Standard';
+            else if (l === 'sib discount') newLabel = 'Sib Discount';
+            else if (l === 'total discount') newLabel = 'Total discount';
+            else if (l === 'final amount') newLabel = 'Final Amount';
+            else if (l === 'paid amount') newLabel = 'Paid Amount';
+            else if (l === 'paid date') newLabel = 'Paid Date';
+            else if (l === 'pending amount' || l === 'pending') newLabel = 'Pending';
+            else if (l === 'payment method' || l === 'method') newLabel = 'Method';
+            else if (l === 'remark') newLabel = 'Remark';
+            
+            if (newLabel && !colsToKeep.find(c => c.newLabel === newLabel)) {
+                colsToKeep.push({ index: idx, newLabel: newLabel });
+            }
+        });
+
+        // Ensure we group by Stage
+        const stageColObj = colsToKeep.find(c => c.newLabel === 'Stage');
+        const stageIdx = stageColObj ? stageColObj.index : -1;
+        
+        let groupedRows = {};
+        rows.forEach(row => {
+            let stageVal = (stageIdx !== -1 && row.c && row.c[stageIdx]) ? getVal(row.c[stageIdx]) : 'Unknown Stage';
+            if (!stageVal || stageVal.trim() === '-' || stageVal.trim() === '') stageVal = 'Unknown Stage';
+            if (!groupedRows[stageVal]) groupedRows[stageVal] = [];
+            groupedRows[stageVal].push(row);
+        });
+
         contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
             <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
             <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
-            <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <table class="modern-table" style="width: 100%; font-size: 0.9rem; border-collapse: collapse; table-layout: auto;">
-            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
-        
-        cols.forEach((col, i) => {
-            const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
-            const isLongCol = ['note', 'content', 'suggestion'].some(c => label.toLowerCase().includes(c));
-            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap; ${isLongCol ? 'min-width: 250px;' : 'min-width: 100px;'}`;
-            contentHtml += `<th style="${thStyle}">${label}</th>`;
-        });
-        contentHtml += `</tr></thead><tbody>`;
-        
-        rows.forEach((row, rowIndex) => {
-            const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
-            contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
-            cols.forEach((col, i) => {
-                let val = (row.c && row.c[i]) ? getVal(row.c[i]) : '-';
-                const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
-                const isLongCol = ['note', 'content', 'suggestion'].some(c => label.toLowerCase().includes(c));
-                let align = 'left';
-                if (['fee', 'amount', 'debt', 'collect', 'total', 'price'].some(c => label.toLowerCase().includes(c)) || (!isNaN(val.replace(/,/g, '')) && val.trim() !== '-')) {
-                    align = 'right';
-                }
-                const tdStyle = `padding: 14px 16px; line-height: 1.5; color: #1e293b; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
-                contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
+            <div style="overflow-y: auto; max-height: 75vh; padding-right: 8px;">`;
+
+        Object.keys(groupedRows).forEach(stage => {
+            contentHtml += `<div style="margin-bottom: 28px;">
+                <h4 style="margin: 0 0 12px 0; color: var(--primary); font-size: 1.1rem; border-bottom: 2px solid var(--primary); padding-bottom: 6px; display: inline-block; font-weight: 700;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> Stage: ${stage}</h4>
+                <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
+                <thead style="background: #f8fafc;"><tr>`;
+            
+            const renderCols = colsToKeep.filter(c => c.newLabel !== 'Stage');
+            
+            renderCols.forEach(colObj => {
+                const isLongCol = ['remark', 'student name'].includes(colObj.newLabel.toLowerCase());
+                const thStyle = `padding: 12px 14px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap; ${isLongCol ? 'min-width: 150px;' : 'min-width: 80px;'}`;
+                contentHtml += `<th style="${thStyle}">${colObj.newLabel}</th>`;
             });
-            contentHtml += `</tr>`;
+            contentHtml += `</tr></thead><tbody>`;
+            
+            groupedRows[stage].forEach((row, rowIndex) => {
+                const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
+                contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
+                renderCols.forEach(colObj => {
+                    let val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
+                    const isLongCol = ['remark', 'student name'].includes(colObj.newLabel.toLowerCase());
+                    let align = 'left';
+                    if (['bill', 'standard', 'sib discount', 'total discount', 'final amount', 'paid amount', 'pending'].includes(colObj.newLabel.toLowerCase()) || (!isNaN(val.replace(/,/g, '')) && val.trim() !== '-')) {
+                        align = 'right';
+                    }
+                    if (align === 'right' && !isNaN(val.replace(/,/g, '')) && val.trim() !== '-' && val.trim() !== '') {
+                        if (val.indexOf(',') === -1 && val.indexOf('.') === -1) {
+                             val = Number(val).toLocaleString();
+                        }
+                    }
+                    const tdStyle = `padding: 10px 14px; line-height: 1.4; color: #1e293b; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
+                    contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
+                });
+                contentHtml += `</tr>`;
+            });
+            contentHtml += `</tbody></table></div></div>`;
         });
-        contentHtml += `</tbody></table></div></div>`;
+        contentHtml += `</div></div>`;
     }
     
     openClassDetail('', contentHtml, true, '95vw');
@@ -1237,6 +1289,7 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
     let upcomingExams = 0;
     let lateProgress = 0;
     let missingLesson = 0;
+    let missingClasses = [];
 
     classRows.forEach(row => {
         const c = row.c;
@@ -1251,10 +1304,10 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         }
         if (progress.includes('missing') || progress.includes('mất bài') || progress.includes('nghỉ')) {
             missingLesson++;
+            missingClasses.push(getVal(c[6]) || getVal(c[1]) || 'Unknown');
         }
     });
     
-    // Tìm thẻ dựa trên text của h3
     document.querySelectorAll('.metric-data').forEach(div => {
         const title = div.querySelector('h3').textContent.trim().toLowerCase();
         const valEl = div.querySelector('.value');
@@ -1266,7 +1319,10 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         if (title === 'active courses') valEl.innerText = totalClasses.toLocaleString();
         if (title === 'upcoming exams') valEl.innerText = upcomingExams.toLocaleString();
         if (title === 'late progress') valEl.innerText = lateProgress.toLocaleString();
-        if (title === 'missing lesson') valEl.innerText = missingLesson.toLocaleString();
+        if (title === 'missing lesson') {
+            valEl.innerText = missingLesson.toLocaleString();
+            div.parentElement.title = missingClasses.length > 0 ? "Missing Classes:\n" + missingClasses.join('\n') : "No missing lessons";
+        }
         if (title === 'program "story spark"') {
             const ssCount = classRows.filter(r => (getVal(r.c[6]) || '').toLowerCase().includes('story spark') || (getVal(r.c[1]) || '').toLowerCase().includes('ss')).length;
             valEl.innerText = ssCount.toLocaleString();
