@@ -234,13 +234,17 @@ window.openFeesDetail = function(classId, className) {
                 let align = 'left';
                 let color = '#0f172a';
                 if (i === 0) {
-                    val = `<span style="color: var(--primary); font-size: 1.05rem;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> Stage: ${stage}</span>`;
+                    const labelStr = stage === 'Book' ? 'Book' : `Stage: ${stage}`;
+                    val = `<span style="color: var(--primary); font-size: 1.05rem;"><i class="fa-solid fa-layer-group" style="margin-right: 6px;"></i> ${labelStr}</span>`;
+                } else if (colObj.newLabel === 'Status') {
+                    val = `<i class="fa-solid fa-user" style="margin-right: 4px; color: #64748b;"></i>${groupedRows[stage].length}`;
                 } else if (colObj.newLabel === 'Final Amount') {
                     val = sumFinal.toLocaleString();
                     align = 'right';
                 } else if (colObj.newLabel === 'Paid Amount') {
                     val = sumPaid.toLocaleString();
                     align = 'right';
+                    color = '#16a34a'; // green
                 } else if (colObj.newLabel === 'Pending') {
                     val = sumPending.toLocaleString();
                     align = 'right';
