@@ -2684,7 +2684,6 @@ function renderTeacherObservations(classRows) {
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;">${headIcon}</td>
                         <td style="padding: 8px; text-align: center;">${detailIcon}</td>
-                        <td style="padding: 8px; text-align: center;"><button class="icon-btn" onclick="openClassDetail('${classTitleStr}')"><i class="fa-solid fa-arrow-right"></i></button></td>
                     </tr>
                 `;
             });
@@ -2713,7 +2712,6 @@ function renderTeacherObservations(classRows) {
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Detail</th>
-                                    <th style="padding: 8px; width: 5%;"></th>
                                 </tr>
                             </thead>
                             <tbody>
