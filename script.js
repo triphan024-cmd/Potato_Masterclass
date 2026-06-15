@@ -194,7 +194,12 @@ window.openFeesDetail = function(classId, className) {
             <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
             <div style="overflow-y: auto; max-height: 75vh; padding-right: 8px;">`;
 
-        Object.keys(groupedRows).forEach(stage => {
+        const sortedStages = Object.keys(groupedRows).sort((a, b) => {
+            if (a === 'Book') return -1;
+            if (b === 'Book') return 1;
+            return a.localeCompare(b, undefined, { numeric: true });
+        });
+        sortedStages.forEach(stage => {
             const finalColIdx = colsToKeep.find(c => c.newLabel === 'Final Amount')?.index;
             const paidColIdx = colsToKeep.find(c => c.newLabel === 'Paid Amount')?.index;
             const pendingColIdx = colsToKeep.find(c => c.newLabel === 'Pending')?.index;
@@ -1696,9 +1701,12 @@ function renderOperationTodayClasses() {
                                     const daThu = getVal(c[45]) || '0';
                                     const congNo = getVal(c[46]) || '0';
                                     const classIdStr = getVal(c[1]) || className;
+                                    
+                                    const safeClassId = classIdStr.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/[\n\r]/g, '').trim();
+                                    const safeClassName = className.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/[\n\r]/g, '').trim();
 
                                     return `
-                                        <tr style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openFeesDetail('${classIdStr.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}')">
+                                        <tr style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openFeesDetail('${safeClassId}', '${safeClassName}')">
                                             <td style="padding: 10px 8px;">
                                                 <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className}</div>
                                                 <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${scheduleStr} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
