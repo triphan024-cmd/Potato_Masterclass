@@ -114,6 +114,71 @@ window.openRoadmapDetail = function(courseName) {
     openClassDetail('', contentHtml, true, '90vw');
 };
 
+window.openFeesDetail = function(classId, className) {
+    if (event) event.stopPropagation();
+    
+    let rows = [];
+    if (window.globalFeesRows) {
+        rows = window.globalFeesRows.filter(row => {
+            if (!row || !row.c) return false;
+            let found = false;
+            for(let i=0; i<10; i++) {
+                if (row.c[i] && getVal(row.c[i]).toLowerCase().trim() === classId.toLowerCase().trim()) {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        });
+    }
+
+    let contentHtml = '';
+    const safeTitle = (className || classId).replace(/"/g, '&quot;');
+    if (rows.length === 0) {
+        contentHtml = `<div style="padding: 32px; text-align: center; color: #64748b; background: white; border-radius: 12px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; color: var(--primary-dark); font-size: 1.4rem; text-align: left;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
+            No fee details found for class: <strong>${safeTitle}</strong>
+        </div>`;
+    } else {
+        const cols = window.globalFeesCols || [];
+        contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
+            <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="modern-table" style="width: 100%; font-size: 0.9rem; border-collapse: collapse; table-layout: auto;">
+            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
+        
+        cols.forEach((col, i) => {
+            const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
+            const isLongCol = ['note', 'content', 'suggestion'].some(c => label.toLowerCase().includes(c));
+            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap; ${isLongCol ? 'min-width: 250px;' : 'min-width: 100px;'}`;
+            contentHtml += `<th style="${thStyle}">${label}</th>`;
+        });
+        contentHtml += `</tr></thead><tbody>`;
+        
+        rows.forEach((row, rowIndex) => {
+            const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
+            contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
+            cols.forEach((col, i) => {
+                let val = (row.c && row.c[i]) ? getVal(row.c[i]) : '-';
+                const label = col && col.label ? col.label.trim() : `Col ${i+1}`;
+                const isLongCol = ['note', 'content', 'suggestion'].some(c => label.toLowerCase().includes(c));
+                let align = 'left';
+                if (['fee', 'amount', 'debt', 'collect', 'total', 'price'].some(c => label.toLowerCase().includes(c)) || (!isNaN(val.replace(/,/g, '')) && val.trim() !== '-')) {
+                    align = 'right';
+                }
+                const tdStyle = `padding: 14px 16px; line-height: 1.5; color: #1e293b; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
+                contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
+            });
+            contentHtml += `</tr>`;
+        });
+        contentHtml += `</tbody></table></div></div>`;
+    }
+    
+    openClassDetail('', contentHtml, true, '95vw');
+};
+
 window.openDutyDetail = function(id) {
     if (event) event.stopPropagation();
     const row = window.globalDutyRows[id];
@@ -976,6 +1041,7 @@ const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
 const DUTY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=585528165';
 const ROADMAP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=882542672';
+const FEES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1245774263';
 
 
 
@@ -1096,6 +1162,14 @@ async function fetchDashboardData() {
             window.globalCourseRoadmapCols = rmJson.table.cols;
             window.globalCourseRoadmapRows = rmJson.table.rows;
             console.log("Roadmap data loaded.");
+            
+            const feesRes = await fetch(FEES_SHEET_URL);
+            const feesText = await feesRes.text();
+            const feesJsonString = feesText.substring(feesText.indexOf('{'), feesText.lastIndexOf('}') + 1);
+            const feesJson = JSON.parse(feesJsonString);
+            window.globalFeesCols = feesJson.table.cols;
+            window.globalFeesRows = feesJson.table.rows;
+            console.log("Fees data loaded.");
         } catch (err) {
             console.error("Error fetching leader data:", err);
         }
@@ -1162,24 +1236,21 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
     
     let upcomingExams = 0;
     let lateProgress = 0;
-    
+    let missingLesson = 0;
+
     classRows.forEach(row => {
         const c = row.c;
-        const examDate = getVal(c[39]) || '';
-        const progress = (getVal(c[34]) || getVal(c[12]) || '').toLowerCase();
+        const examDate = getVal(c[39]);
+        const progress = (getVal(c[34]) || getVal(c[11]) || '').toLowerCase();
         
-        if (examDate && examDate !== '-' && examDate.trim() !== '') {
-            if (!currentMonthStr) {
-                upcomingExams++;
-            } else {
-                const parts = examDate.split('/');
-                if (parts.length >= 2 && parts[1] === currentMonthStr) {
-                    upcomingExams++;
-                }
-            }
+        if (examDate && examDate !== '-' && currentMonthStr && examDate.split('/')[1] === currentMonthStr) {
+            upcomingExams++;
         }
         if (progress.includes('late') || progress.includes('trễ') || progress.includes('chậm') || progress.includes('behind')) {
             lateProgress++;
+        }
+        if (progress.includes('missing') || progress.includes('mất bài') || progress.includes('nghỉ')) {
+            missingLesson++;
         }
     });
     
@@ -1195,6 +1266,7 @@ function updateMetricsCards(classRows, metricsRow, currentMonthStr) {
         if (title === 'active courses') valEl.innerText = totalClasses.toLocaleString();
         if (title === 'upcoming exams') valEl.innerText = upcomingExams.toLocaleString();
         if (title === 'late progress') valEl.innerText = lateProgress.toLocaleString();
+        if (title === 'missing lesson') valEl.innerText = missingLesson.toLocaleString();
         if (title === 'program "story spark"') {
             const ssCount = classRows.filter(r => (getVal(r.c[6]) || '').toLowerCase().includes('story spark') || (getVal(r.c[1]) || '').toLowerCase().includes('ss')).length;
             valEl.innerText = ssCount.toLocaleString();
@@ -1509,9 +1581,10 @@ function renderOperationTodayClasses() {
                                     const totalFee = getVal(c[44]) || '0';
                                     const daThu = getVal(c[45]) || '0';
                                     const congNo = getVal(c[46]) || '0';
+                                    const classIdStr = getVal(c[1]) || className;
 
                                     return `
-                                        <tr>
+                                        <tr style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openFeesDetail('${classIdStr.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}')">
                                             <td style="padding: 10px 8px;">
                                                 <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className}</div>
                                                 <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${scheduleStr} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
