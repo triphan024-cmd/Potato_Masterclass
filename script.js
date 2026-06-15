@@ -114,7 +114,7 @@ window.openRoadmapDetail = function(courseName) {
     openClassDetail('', contentHtml, true, '90vw');
 };
 
-window.openFeesDetail = function(classId, className) {
+window.openFeesDetail = function(classId, className, filterPending = false) {
     if (event) event.stopPropagation();
     
     let rows = [];
@@ -177,6 +177,14 @@ window.openFeesDetail = function(classId, className) {
         ];
         colsToKeep.sort((a, b) => requestedOrder.indexOf(a.newLabel) - requestedOrder.indexOf(b.newLabel));
 
+        const pendingColIdx = colsToKeep.find(c => c.newLabel === 'Pending')?.index;
+        if (filterPending && pendingColIdx !== undefined) {
+            rows = rows.filter(r => {
+                const pdVal = (r.c && r.c[pendingColIdx]) ? getVal(r.c[pendingColIdx]).replace(/,/g, '') : 0;
+                return parseFloat(pdVal) > 0;
+            });
+        }
+
         // Ensure we group by Stage
         const stageColObj = colsToKeep.find(c => c.newLabel === 'Stage');
         const stageIdx = stageColObj ? stageColObj.index : -1;
@@ -189,9 +197,16 @@ window.openFeesDetail = function(classId, className) {
             groupedRows[stageVal].push(row);
         });
 
+        const safeJsId = classId.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeJsName = className.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const toggleBtnStyle = filterPending ? 'background: #ef4444; color: white;' : 'background: #f1f5f9; color: #475569;';
+
         contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
             <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
-            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-right: 40px;">
+                <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-file-invoice-dollar"></i> Fees: ${safeTitle}</h3>
+                <button onclick="window.openFeesDetail('${safeJsId}', '${safeJsName}', ${!filterPending})" class="btn" style="${toggleBtnStyle} border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;"><i class="fa-solid fa-filter" style="margin-right: 6px;"></i> Pending Only</button>
+            </div>
             <div style="overflow-y: auto; max-height: 75vh; padding-right: 8px;">`;
 
         const sortedStages = Object.keys(groupedRows).sort((a, b) => {
@@ -277,6 +292,31 @@ window.openFeesDetail = function(classId, className) {
                         colorStr = '#dc2626';
                         fw = '600';
                     }
+                    
+                    if (colObj.newLabel === 'Status') {
+                        const statusLower = val.toLowerCase();
+                        let bg = '#f1f5f9', col = '#475569', tdDeco = 'none';
+                        if (statusLower.includes('pending')) {
+                            bg = '#fee2e2'; col = '#ef4444';
+                        } else if (statusLower.includes('notice')) {
+                            bg = '#fef9c3'; col = '#eab308';
+                        } else if (statusLower.includes('paid')) {
+                            bg = '#dbeafe'; col = '#3b82f6';
+                        } else if (statusLower.includes('misa')) {
+                            bg = '#ccfbf1'; col = '#14b8a6';
+                        } else if (statusLower.includes('completed')) {
+                            bg = '#dcfce3'; col = '#22c55e';
+                        }
+                        if (statusLower.includes('cancel')) {
+                            tdDeco = 'line-through';
+                            col = '#94a3b8';
+                            bg = 'transparent';
+                        }
+                        if (tdDeco !== 'none' || col !== '#475569') {
+                            val = `<span style="background: ${bg}; color: ${col}; padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 0.75rem; text-decoration: ${tdDeco}; white-space: nowrap;">${val}</span>`;
+                        }
+                    }
+
                     const tdStyle = `padding: 10px 14px; line-height: 1.4; color: ${colorStr}; font-weight: ${fw}; text-align: ${align}; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
                     contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
                 });
