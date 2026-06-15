@@ -241,7 +241,7 @@
                                 <div class="metric-icon"><i class="fa-solid fa-calendar-days"></i></div>
                             </div>
                         </div>
-                        <div class="metric-card card-orange panel">
+                        <div class="metric-card card-red panel">
                             <div class="metric-data">
                                 <h3>Late Progress</h3>
                                 <p class="value">-</p>
@@ -253,22 +253,12 @@
                         </div>
                         <div class="metric-card card-orange panel">
                             <div class="metric-data">
-                                <h3>Task Pending</h3>
-                                <p class="value" id="teacher-task-pending">0</p>
-                                <span class="trend positive"><i class="fa-solid fa-arrow-down"></i> 0% vs last month</span>
+                                <h3>Missing Lesson</h3>
+                                <p class="value">-</p>
+                                <span class="trend neutral"></span>
                             </div>
                             <div class="metric-top">
-                                <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                            </div>
-                        </div>
-                        <div class="metric-card card-green panel">
-                            <div class="metric-data">
-                                <h3>Task Completion</h3>
-                                <p class="value" id="teacher-task-completion">100%</p>
-                                <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 0% vs last month</span>
-                            </div>
-                            <div class="metric-top">
-                                <div class="metric-icon"><i class="fa-solid fa-check-double"></i></div>
+                                <div class="metric-icon alert"><i class="fa-solid fa-triangle-exclamation"></i></div>
                             </div>
                         </div>
                     </section>
@@ -385,6 +375,26 @@
                             </div>
                             <div class="metric-top">
                                 <div class="metric-icon alert"><i class="fa-solid fa-file-invoice"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-orange panel">
+                            <div class="metric-data">
+                                <h3>Task Pending</h3>
+                                <p class="value" id="operation-task-pending">0</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-down"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                            </div>
+                        </div>
+                        <div class="metric-card card-green panel">
+                            <div class="metric-data">
+                                <h3>Task Completion</h3>
+                                <p class="value" id="operation-task-completion">100%</p>
+                                <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 0% vs last month</span>
+                            </div>
+                            <div class="metric-top">
+                                <div class="metric-icon"><i class="fa-solid fa-check-double"></i></div>
                             </div>
                         </div>
                     </section>
@@ -665,6 +675,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=85"></script>
+    <script src="script.js?v=86"></script>
 </body>
 </html>
