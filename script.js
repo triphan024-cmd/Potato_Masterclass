@@ -275,6 +275,7 @@ window.openFeesDetail = function(classId, className, filterPending = false) {
                 renderCols.forEach(colObj => {
                     let val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
                     if (val === 'null' && colObj.newLabel === 'Bill') val = '-';
+                    if (colObj.newLabel === 'Student Name') val = val.replace(/\s*\(/g, '<br>(');
 
                     const isLongCol = ['remark', 'student name'].includes(colObj.newLabel.toLowerCase());
                     let align = 'left';
