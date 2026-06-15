@@ -2644,15 +2644,20 @@ function renderTeacherObservations(classRows) {
                     ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', \`${safeHTML}\`)"></i>`
                     : '-';
 
+                const studentCount = parseInt(getVal(c[7]) || 0);
+                const classTitleStr = className.split(' - ')[0];
+
                 rowsHtml += `
                     <tr>
-                        <td style="padding: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>${className.split(' - ')[0]}</strong></td>
+                        <td style="padding: 10px 8px;">
+                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${classTitleStr}</div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
+                        </td>
                         <td style="padding: 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                        <td style="padding: 8px; text-align: center; font-size: 0.8rem;">${getVal(c[7]) || 0}</td>
-                        <td style="padding: 8px; text-align: center; font-size: 0.8rem;">${schedule}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;">${headIcon}</td>
+                        <td style="padding: 8px; text-align: center;"><button class="icon-btn" onclick="openClassDetail('${classTitleStr}')"><i class="fa-solid fa-arrow-right"></i></button></td>
                     </tr>
                 `;
             });
@@ -2675,13 +2680,12 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 30%;">Class</th>
-                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
-                                    <th style="padding: 8px; width: 10%; text-align: center;">Students</th>
-                                    <th style="padding: 8px; width: 12%; text-align: center;">Schedule</th>
-                                    <th style="padding: 8px; width: 13%; text-align: center;">Status</th>
+                                    <th style="padding: 8px; width: 35%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 15%; text-align: center;">Status</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
+                                    <th style="padding: 8px; width: 10%; text-align: center;">Detail</th>
                                 </tr>
                             </thead>
                             <tbody>
