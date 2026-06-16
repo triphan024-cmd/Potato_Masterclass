@@ -78,7 +78,7 @@ window.openScheduleDetail = function(className) {
             { label: 'Status', index: 4 },
             { label: 'Teacher', index: 6 },
             { label: 'Study Date', index: 10 },
-            { label: 'Session No.', index: 19 },
+            { label: 'No.', index: 19 },
             { label: 'Roadmap', index: 20 },
             { label: 'Lesson', index: 21 },
             { label: 'Detail', index: 22 },
@@ -98,7 +98,11 @@ window.openScheduleDetail = function(className) {
             
         cols.forEach(col => {
             const isLong = [22, 23, 24, 25, 26, 27].includes(col.index);
-            const thStyle = `padding: 12px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; ${isLong ? 'min-width: 150px; white-space: nowrap;' : 'white-space: nowrap;'}`;
+            let widthStyle = '';
+            if (col.index === 19) widthStyle = 'width: 1%; text-align: center;'; // No.
+            else if (col.index === 4) widthStyle = 'width: 1%; text-align: center;'; // Status
+            
+            const thStyle = `padding: 12px; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; ${isLong ? 'min-width: 150px; white-space: nowrap;' : 'white-space: nowrap;'} ${widthStyle || 'text-align: left;'}`;
             contentHtml += `<th style="${thStyle}">${col.label}</th>`;
         });
         contentHtml += `</tr></thead><tbody>`;
@@ -119,14 +123,15 @@ window.openScheduleDetail = function(className) {
                     const lowerStatus = String(val || '').toLowerCase();
                     let bgColor = 'rgba(100, 116, 139, 0.1)';
                     let color = '#64748b';
-                    if (lowerStatus.includes('done')) { bgColor = 'rgba(16, 185, 129, 0.1)'; color = '#10b981'; }
-                    else if (lowerStatus.includes('cancel')) { bgColor = 'rgba(239, 68, 68, 0.1)'; color = '#ef4444'; }
-                    else if (lowerStatus.includes('pending') || lowerStatus.includes('processing')) { bgColor = 'rgba(245, 158, 11, 0.1)'; color = '#f59e0b'; }
+                    if (lowerStatus.includes('completed') || lowerStatus.includes('done')) { bgColor = 'rgba(16, 185, 129, 0.1)'; color = '#10b981'; } // green
+                    else if (lowerStatus.includes('cancel')) { bgColor = 'rgba(239, 68, 68, 0.1)'; color = '#ef4444'; } // red
+                    else if (lowerStatus.includes('registered') || lowerStatus.includes('pending') || lowerStatus.includes('processing')) { bgColor = 'rgba(245, 158, 11, 0.1)'; color = '#f59e0b'; } // yellow
                     displayHtml = `<span class="status-badge" style="background: ${bgColor}; color: ${color}; margin: 0; font-size: 0.75rem;">${val}</span>`;
                 }
 
                 const isLong = [22, 23, 24, 25, 26, 27].includes(col.index);
-                const tdStyle = `padding: 12px; line-height: 1.5; color: #1e293b; ${isLong ? 'white-space: normal; min-width: 150px; word-break: break-word;' : 'white-space: nowrap;'}`;
+                let alignStyle = (col.index === 19 || col.index === 4) ? 'text-align: center;' : 'text-align: left;';
+                const tdStyle = `padding: 12px; line-height: 1.5; color: #1e293b; ${isLong ? 'white-space: normal; min-width: 150px; word-break: break-word;' : 'white-space: nowrap;'} ${alignStyle}`;
                 contentHtml += `<td style="${tdStyle}">${displayHtml}</td>`;
             });
             contentHtml += `</tr>`;
