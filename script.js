@@ -1191,6 +1191,105 @@ window.addEventListener('click', function(event) {
 });
 
 // Navigation Routing Logic
+window.logoutUser = function() {
+    localStorage.removeItem('currentUser');
+    location.reload();
+};
+
+window.checkAuth = function() {
+    const userJson = localStorage.getItem('currentUser');
+    if (!userJson) {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('main-dashboard-container').style.display = 'none';
+    } else {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-dashboard-container').style.display = 'flex';
+        window.applyPermissions(JSON.parse(userJson));
+        fetchDashboardData();
+    }
+};
+
+window.applyPermissions = function(user) {
+    const greeting = document.getElementById('dynamic-greeting');
+    if (greeting) greeting.innerText = `Good morning, ${user.name}!`;
+
+    const isAdmin = user.name.toLowerCase().includes('trí') || 
+                    user.name.toLowerCase().includes('đào') || 
+                    user.username.toLowerCase().includes('tri') ||
+                    user.username.toLowerCase().includes('dao');
+
+    if (!isAdmin) {
+        const cooTab = document.querySelector('.nav-item[data-target="view-coo"]');
+        const headTab = document.querySelector('.nav-item[data-target="view-head"]');
+        if (cooTab) cooTab.style.display = 'none';
+        if (headTab) headTab.style.display = 'none';
+        
+        // Hide other tabs if necessary
+        const financeTab = document.querySelector('.nav-item[data-target="view-finance"]');
+        const hrTab = document.querySelector('.nav-item[data-target="view-hr"]');
+        const salesTab = document.querySelector('.nav-item[data-target="view-sales"]');
+        const dbTab = document.querySelector('.nav-item[data-target="view-database"]');
+        
+        if (financeTab) financeTab.style.display = 'none';
+        if (hrTab) hrTab.style.display = 'none';
+        if (salesTab) salesTab.style.display = 'none';
+        if (dbTab) dbTab.style.display = 'none';
+    } else {
+        const tabs = document.querySelectorAll('.nav-menu .nav-item');
+        tabs.forEach(tab => tab.style.display = 'block'); // Show all for admin
+    }
+};
+
+window.handleLogin = async function(event) {
+    event.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('login-error');
+    const u = document.getElementById('login-username').value.trim();
+    const p = document.getElementById('login-password').value.trim();
+
+    btn.innerText = 'Loading...';
+    btn.disabled = true;
+    err.style.display = 'none';
+
+    try {
+        const hrRes = await fetch(HR_SHEET_URL);
+        const hrText = await hrRes.text();
+        const hrJsonString = hrText.substring(hrText.indexOf('{'), hrText.lastIndexOf('}') + 1);
+        const hrJson = JSON.parse(hrJsonString);
+        const rows = hrJson.table.rows;
+
+        let foundUser = null;
+        for (let row of rows) {
+            if (!row || !row.c) continue;
+            const rowU = String(getVal(row.c[20]) || '').trim(); // Index 20 is User Name
+            const rowP = String(getVal(row.c[21]) || '').trim(); // Index 21 is Password
+            const rowName = String(getVal(row.c[3]) || '').trim(); // Index 3 is Full Name
+            const role = String(getVal(row.c[13]) || '').trim(); // Index 13 is Role
+
+            if (rowU === u && rowP === p) {
+                foundUser = { username: rowU, name: rowName || rowU, role: role };
+                break;
+            }
+        }
+
+        if (foundUser) {
+            localStorage.setItem('currentUser', JSON.stringify(foundUser));
+            window.checkAuth();
+        } else {
+            err.innerText = 'Invalid username or password.';
+            err.style.display = 'block';
+            btn.innerText = 'Login';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        err.innerText = 'Connection error. Please try again.';
+        err.style.display = 'block';
+        btn.innerText = 'Login';
+        btn.disabled = false;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.nav-menu .nav-item[data-target]');
     const pageViews = document.querySelectorAll('.page-view');
@@ -1224,8 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Khởi động lấy dữ liệu Dashboard
-    fetchDashboardData();
+    // Khởi động kiểm tra xác thực
+    window.checkAuth();
 
     // Sync button logic
     const syncBtn = document.getElementById('syncDataBtn');

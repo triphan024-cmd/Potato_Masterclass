@@ -18,7 +18,29 @@
     </script>
 </head>
 <body>
-    <div class="dashboard-container">
+    <!-- Login Screen Overlay -->
+    <div id="login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center;">
+            <img src="https://www.appsheet.com:443/fsimage.png?appid=35e5f9f7-248a-4eb4-a87e-672f26329edc&datasource=google&filename=DocId%3D17DO_wZowyRRcJ2RwJgieoOk-8rNKqraq&signature=531e139f3b6b655d2c117ff2508266b82e3eb3c280f0e627e9890cb549161cc8&tableprovider=google&userid=113051404" alt="Potato Logo" style="height: 60px; margin-bottom: 20px;">
+            <h2 style="color: var(--primary-dark); font-size: 1.6rem; margin-top: 0; margin-bottom: 30px;">Login to Masterclass</h2>
+            <form id="login-form" onsubmit="window.handleLogin(event)">
+                <div style="margin-bottom: 20px; text-align: left;">
+                    <label style="display: block; color: var(--text-dark); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">User Name</label>
+                    <input type="text" id="login-username" required style="width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; color: #334155; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                <div style="margin-bottom: 25px; text-align: left;">
+                    <label style="display: block; color: var(--text-dark); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Password</label>
+                    <input type="password" id="login-password" required style="width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; color: #334155; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                <button type="submit" id="login-btn" style="width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    Login
+                </button>
+            </form>
+            <p id="login-error" style="color: var(--danger); font-size: 0.9rem; margin-top: 15px; margin-bottom: 0; display: none;"></p>
+        </div>
+    </div>
+
+    <div class="dashboard-container" id="main-dashboard-container" style="display: none;">
         <!-- Sidebar Overlay for Mobile -->
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
@@ -55,8 +77,13 @@
             <header class="top-bar">
                 <button id="mobile-menu-btn" style="display: none;"><i class="fa-solid fa-bars"></i></button>
                 <div class="greeting-header" style="flex-grow: 1;">
-                    <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning, Admin!</h1>
+                    <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning!</h1>
                     <span style="color: var(--text-muted); font-size: 0.9rem;">Navigate the future of education with Potato Center.</span>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+                    <button class="action-btn" onclick="window.logoutUser()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s;" title="Logout" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
                 <div class="month-selector" style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 8px 16px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-right: 24px;">
                     <button class="week-btn" id="prevMonthBtn" onclick="changeMonth(-1)" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-left"></i></button>
@@ -692,6 +719,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=117"></script>
+    <script src="script.js?v=118"></script>
 </body>
 </html>
