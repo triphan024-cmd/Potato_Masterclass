@@ -1213,6 +1213,11 @@ window.applyPermissions = function(user) {
     const greeting = document.getElementById('dynamic-greeting');
     if (greeting) greeting.innerText = `Good morning, ${user.name}!`;
 
+    const profileName = document.getElementById('profile-name');
+    const profileTitle = document.getElementById('profile-title');
+    if (profileName) profileName.innerText = user.name;
+    if (profileTitle) profileTitle.innerText = user.title || 'Staff';
+
     const isAdmin = user.name.toLowerCase().includes('trí') || 
                     user.name.toLowerCase().includes('đào') || 
                     user.username.toLowerCase().includes('tri') ||
@@ -1263,11 +1268,12 @@ window.handleLogin = async function(event) {
             if (!row || !row.c) continue;
             const rowU = String(getVal(row.c[20]) || '').trim(); // Index 20 is User Name
             const rowP = String(getVal(row.c[21]) || '').trim(); // Index 21 is Password
-            const rowName = String(getVal(row.c[3]) || '').trim(); // Index 3 is Full Name
+            const rowName = String(getVal(row.c[4]) || getVal(row.c[3]) || '').trim(); // Index 4 is Eng Name, 3 is Full Name
+            const title = String(getVal(row.c[5]) || '').trim(); // Index 5 is Tittle
             const role = String(getVal(row.c[13]) || '').trim(); // Index 13 is Role
 
             if (rowU === u && rowP === p) {
-                foundUser = { username: rowU, name: rowName || rowU, role: role };
+                foundUser = { username: rowU, name: rowName || rowU, title: title, role: role };
                 break;
             }
         }

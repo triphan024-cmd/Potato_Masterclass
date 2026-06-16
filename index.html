@@ -80,11 +80,7 @@
                     <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning!</h1>
                     <span style="color: var(--text-muted); font-size: 0.9rem;">Navigate the future of education with Potato Center.</span>
                 </div>
-                <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
-                    <button class="action-btn" onclick="window.logoutUser()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s;" title="Logout" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
-                </div>
+
                 <div class="month-selector" style="display: flex; align-items: center; gap: 12px; background: #ffffff; padding: 8px 16px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-right: 24px;">
                     <button class="week-btn" id="prevMonthBtn" onclick="changeMonth(-1)" style="background: transparent; border: none; color: var(--text-muted); width: 28px; height: 28px; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-chevron-left"></i></button>
                     <span id="currentMonthDisplay" style="font-weight: 600; color: var(--text-color); font-size: 0.95rem;">June 2026</span>
@@ -102,9 +98,12 @@
                         <img src="https://ui-avatars.com/api/?name=Admin&background=8b5cf6&color=fff" alt="User">
                     </div>
                     <div class="user-info">
-                        <h4>Admin</h4>
-                        <span>Center Manager</span>
+                        <h4 id="profile-name">Admin</h4>
+                        <span id="profile-title">Center Manager</span>
                     </div>
+                    <button class="action-btn" onclick="window.logoutUser()" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; transition: color 0.2s; margin-left: 8px;" title="Logout" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             </header>
 
@@ -719,6 +718,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=119"></script>
+    <script src="script.js?v=120"></script>
 </body>
 </html>
