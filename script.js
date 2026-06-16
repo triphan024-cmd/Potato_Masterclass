@@ -1613,6 +1613,15 @@ async function fetchDashboardData() {
                 const uniqueTitles = [...new Set(Object.values(hrMap))].filter(n => n).sort();
                 gSelect.innerHTML = '<option value="all">All Users</option>' + uniqueTitles.map(t => `<option value="${t}">${t}</option>`).join('');
                 gSelect.style.display = 'block';
+                
+                const userJson = localStorage.getItem('currentUser');
+                if (userJson) {
+                    const cu = JSON.parse(userJson);
+                    const title = cu.title || getShortName(cu.name);
+                    if (uniqueTitles.includes(title)) {
+                        gSelect.value = title;
+                    }
+                }
             }
             
             if (typeof window.applyTeacherFilter === 'function') {
