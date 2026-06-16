@@ -1496,7 +1496,7 @@ function renderDashboardTable(classRows) {
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.innerHTML = `
-            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
+            <td class="sticky-col"><strong>${className}</strong></td>
             <td class="text-center font-bold">${students}</td>
             <td>${teacher}</td>
             <td><span class="stat-badge success">95%</span></td>
@@ -1561,7 +1561,7 @@ function renderTeacherTable(classRows) {
             const tr = document.createElement('tr');
             tr.className = 'clickable-row';
             tr.innerHTML = `
-                <td class="sticky-col" style="padding-left: 24px;"><strong>${className.split(' - ')[0]}</strong></td>
+                <td class="sticky-col" style="padding-left: 24px;"><strong>${className}</strong></td>
                 <td>-</td>
                 <td class="text-center font-bold">${students}</td>
                 <td><span class="trend neutral">90%</span></td>
@@ -1592,7 +1592,7 @@ function renderAcademicTable(classRows) {
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.innerHTML = `
-            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
+            <td class="sticky-col"><strong>${className}</strong></td>
             <td>${start}</td>
             <td>${end}</td>
             <td><span class="trend ${status.includes('Teaching') ? 'positive' : 'neutral'}">${status}</span></td>
@@ -1622,7 +1622,7 @@ function renderOperationTable(classRows) {
         const tr = document.createElement('tr');
         tr.className = 'clickable-row';
         tr.innerHTML = `
-            <td class="sticky-col"><strong>${className.split(' - ')[0]}</strong></td>
+            <td class="sticky-col"><strong>${className}</strong></td>
             <td>${students}</td>
             <td>${doanhThu || '0'}</td>
             <td><span class="trend positive">${daThu || '0'}</span></td>
@@ -2666,7 +2666,7 @@ function renderTeacherObservations(classRows) {
                 
                 let combinedHTML = `
                     <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
-                        <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${className.split(' - ')[0]}</h3>
+                        <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${className}</h3>
                         <strong style="color: var(--primary); display: block; margin-bottom: 5px;">Student Evaluation:</strong>
                         <p style="margin-top: 0; margin-bottom: 15px;">${formattedEval}</p>
                         <strong style="color: var(--warning); display: block; margin-bottom: 5px;">Head Comment:</strong>
@@ -2685,7 +2685,7 @@ function renderTeacherObservations(classRows) {
                     : '-';
 
                 const studentCount = parseInt(getVal(c[7]) || 0);
-                const classTitleStr = className.split(' - ')[0];
+                const classTitleStr = className;
 
                 const achievement = getVal(c[30]) || '-';
                 const redFlag = getVal(c[31]) || '-';
@@ -2875,7 +2875,7 @@ function renderCalendar(monthOffset = 0) {
         if (dayMap[i]) {
             // Day has events
             classList.push('has-events', 'cal-day-active');
-            tooltip = dayMap[i].map(e => `${e.time} - ${e.className.split(' - ')[0]}`).join('&#10;');
+            tooltip = dayMap[i].map(e => `${e.time} - ${e.className}`).join('&#10;');
             html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i})"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
             html += `<div style="padding: 4px;"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
@@ -3124,7 +3124,7 @@ function selectCalendarDate(year, month, day) {
         let hdClasses = 0, hdStudents = 0;
         
         dayEvents.forEach(e => {
-            const parts = e.className ? e.className.split(' - ')[0].split(' | ') : [];
+            const parts = e.className ? e.className.split(' | ') : [];
             const branch = parts.length > 1 ? parts[0].trim() : '';
             const rawData = e.raw && e.raw.c ? e.raw.c : [];
             
@@ -3184,7 +3184,7 @@ function selectCalendarDate(year, month, day) {
     let html = '';
     
     const renderEventCard = (e, showTime) => {
-        const parts = e.className.split(' - ')[0].split(' | ');
+        const parts = e.className.split(' | ');
         const branch = parts.length > 1 ? parts[0].trim() : '';
         const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
         
@@ -3651,7 +3651,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                     return `
                                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
                                             <td style="padding: 12px 8px;">
-                                                <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.split(' - ')[0].trim()}</div>
+                                                <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
                                                 <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
                                                     <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                                 </div>
@@ -3768,7 +3768,7 @@ function renderAcademicPerformance(classRows) {
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <td style="padding: 12px 8px;">
-                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.split(' - ')[0].trim()}</div>
+                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
                                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
