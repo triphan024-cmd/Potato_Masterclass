@@ -75,9 +75,10 @@ window.openScheduleDetail = function(className) {
         </div>`;
     } else {
         const cols = [
+            { label: 'Status', index: 4 },
+            { label: 'Teacher', index: 6 },
             { label: 'Study Date', index: 10 },
             { label: 'Session No.', index: 19 },
-            { label: 'Teacher', index: 6 },
             { label: 'Roadmap', index: 20 },
             { label: 'Lesson', index: 21 },
             { label: 'Detail', index: 22 },
@@ -109,11 +110,24 @@ window.openScheduleDetail = function(className) {
                 let val = '-';
                 if (row.c && row.c[col.index]) {
                     if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
+                    else if (col.index === 6) val = getShortName(getVal(row.c[col.index]));
                     else val = getVal(row.c[col.index]);
                 }
+                
+                let displayHtml = String(val || '-').replace(/\n/g, '<br>');
+                if (col.index === 4 && val !== '-') {
+                    const lowerStatus = String(val || '').toLowerCase();
+                    let bgColor = 'rgba(100, 116, 139, 0.1)';
+                    let color = '#64748b';
+                    if (lowerStatus.includes('done')) { bgColor = 'rgba(16, 185, 129, 0.1)'; color = '#10b981'; }
+                    else if (lowerStatus.includes('cancel')) { bgColor = 'rgba(239, 68, 68, 0.1)'; color = '#ef4444'; }
+                    else if (lowerStatus.includes('pending') || lowerStatus.includes('processing')) { bgColor = 'rgba(245, 158, 11, 0.1)'; color = '#f59e0b'; }
+                    displayHtml = `<span class="status-badge" style="background: ${bgColor}; color: ${color}; margin: 0; font-size: 0.75rem;">${val}</span>`;
+                }
+
                 const isLong = [22, 23, 24, 25, 26, 27].includes(col.index);
                 const tdStyle = `padding: 12px; line-height: 1.5; color: #1e293b; ${isLong ? 'white-space: normal; min-width: 150px; word-break: break-word;' : 'white-space: nowrap;'}`;
-                contentHtml += `<td style="${tdStyle}">${String(val || '-').replace(/\n/g, '<br>')}</td>`;
+                contentHtml += `<td style="${tdStyle}">${displayHtml}</td>`;
             });
             contentHtml += `</tr>`;
         });
@@ -2862,7 +2876,7 @@ function renderTeacherObservations(classRows) {
                     : '-';
 
                 rowsHtml += `
-                    <tr>
+                    <tr style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}')">
                         <td style="padding: 10px 8px;">
                             <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${classTitleStr}</div>
                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
@@ -2870,8 +2884,7 @@ function renderTeacherObservations(classRows) {
                         <td style="padding: 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
-                        <td style="padding: 8px; text-align: center;">${headIcon}</td>
-                        <td style="padding: 8px; text-align: center;">${detailIcon}</td>
+                        <td style="padding: 8px; text-align: center;" onclick="event.stopPropagation();">${headIcon}</td>
                     </tr>
                 `;
             });
@@ -2894,12 +2907,11 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 40%;">Class</th>
-                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 45%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Status</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
-                                    <th style="padding: 8px; width: 10%; text-align: center;">Detail</th>
                                 </tr>
                             </thead>
                             <tbody>
