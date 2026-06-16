@@ -3795,8 +3795,8 @@ function renderAcademicPerformance(classRows) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; table-layout: fixed; min-width: 600px;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 38%;">Class</th>
-                                <th style="padding: 8px; width: 22%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 45%;">Class</th>
+                                <th style="padding: 8px; width: 15%; text-align: right; padding-right: 20px;">Teacher</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Aid</th>
                                 <th style="padding: 8px; width: 14%; text-align: center;">Roadmap</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Exam</th>
@@ -3845,7 +3845,7 @@ function renderAcademicPerformance(classRows) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 14px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                        <td style="padding: 14px 20px 14px 12px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid', course)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', course)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam', course)}</td>
