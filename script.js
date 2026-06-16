@@ -107,7 +107,7 @@ window.openScheduleDetail = function(className) {
             <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-right: 32px;">
                 <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
-                <button onclick="window.openRoadmapDetail('${className}')" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
+                <button onclick="window.openRoadmapDetail('${className}', true)" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
             </div>
             <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
@@ -159,7 +159,7 @@ window.openScheduleDetail = function(className) {
     openClassDetail('', contentHtml, true, '95vw');
 };
 
-window.openRoadmapDetail = function(courseName) {
+window.openRoadmapDetail = function(courseName, fromSchedule = false) {
     if (event) event.stopPropagation();
     
     let rows = [];
@@ -199,7 +199,7 @@ window.openRoadmapDetail = function(courseName) {
     let contentHtml = '';
     if (rows.length === 0) {
         contentHtml = `<div style="padding: 32px; text-align: center; color: #64748b; background: white; border-radius: 12px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <button class="close-btn" onclick="${fromSchedule ? `window.openScheduleDetail('${courseName.replace(/'/g, "\\'")}')` : 'closeClassDetail()'}" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
             <h3 style="margin-top: 0; margin-bottom: 16px; color: var(--primary-dark); font-size: 1.4rem; text-align: left;"><i class="fa-solid fa-map"></i> Roadmap: ${courseName}</h3>
             No roadmap details found for course: <strong>${courseName}</strong>
         </div>`;
@@ -220,7 +220,7 @@ window.openRoadmapDetail = function(courseName) {
         }
 
         contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
-            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
+            <button class="close-btn" onclick="${fromSchedule ? `window.openScheduleDetail('${courseName.replace(/'/g, "\\'")}')` : 'closeClassDetail()'}" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b; transition: color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'"><i class="fa-solid fa-xmark"></i></button>
             <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-map"></i> Roadmap: ${courseName}</h3>
             <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="modern-table" style="width: 100%; font-size: 0.9rem; border-collapse: collapse; table-layout: auto;">
