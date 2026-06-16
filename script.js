@@ -4,7 +4,7 @@ window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyUpPBhYBLvwyK
 // Function to format class name by removing the teacher's name at the end
 function formatClassName(cName) {
     if (!cName) return '';
-    return cName.replace(/\s*-\s*(Mr\.|Ms\.|Mrs\.|Mr|Ms|Mrs)\s+.*$/i, '').trim();
+    return cName.replace(/\s*-?\s*(Mr\.|Ms\.|Mrs\.|Mr|Ms|Mrs)\s+[^-|]+$/i, '').trim();
 }
 
 // Function to open the detailed view of a class
