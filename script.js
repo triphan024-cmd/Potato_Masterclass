@@ -48,6 +48,81 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
+window.openScheduleDetail = function(className) {
+    if (event) event.stopPropagation();
+    
+    if (!window.globalCalendarRows) {
+        showToast("Schedule data is not loaded yet.", "error");
+        return;
+    }
+    
+    const normalizeStr = (s) => String(s || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+    const cleanClassName = normalizeStr(className);
+    
+    const matchedRows = window.globalCalendarRows.filter(row => {
+        if (!row || !row.c) return false;
+        const rowClass = normalizeStr(getVal(row.c[3])); // Index 3 is Class Name
+        return rowClass === cleanClassName || rowClass.includes(cleanClassName) || cleanClassName.includes(rowClass);
+    });
+    
+    let contentHtml = '';
+    if (matchedRows.length === 0) {
+        contentHtml = `
+        <div style="padding: 32px; text-align: center; color: #64748b; background: white; border-radius: 12px; position: relative;">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; color: var(--primary-dark); font-size: 1.4rem; text-align: left;"><i class="fa-solid fa-calendar-days"></i> Schedule Detail: ${className}</h3>
+            No schedule details found for course: <strong>${className}</strong>
+        </div>`;
+    } else {
+        const cols = [
+            { label: 'Study Date', index: 10 },
+            { label: 'Session No.', index: 19 },
+            { label: 'Teacher', index: 6 },
+            { label: 'Roadmap', index: 20 },
+            { label: 'Lesson', index: 21 },
+            { label: 'Detail', index: 22 },
+            { label: 'Homework', index: 23 },
+            { label: 'Achievement', index: 24 },
+            { label: 'Red Flag', index: 25 },
+            { label: 'Action', index: 26 },
+            { label: 'Student Issue', index: 27 }
+        ];
+
+        contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
+            <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
+            <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
+            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
+            
+        cols.forEach(col => {
+            const isLong = [22, 23, 24, 25, 26, 27].includes(col.index);
+            const thStyle = `padding: 12px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; ${isLong ? 'min-width: 150px; white-space: nowrap;' : 'white-space: nowrap;'}`;
+            contentHtml += `<th style="${thStyle}">${col.label}</th>`;
+        });
+        contentHtml += `</tr></thead><tbody>`;
+        
+        matchedRows.forEach((row, rowIndex) => {
+            const bgStr = rowIndex % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;';
+            contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
+            cols.forEach(col => {
+                let val = '-';
+                if (row.c && row.c[col.index]) {
+                    if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
+                    else val = getVal(row.c[col.index]);
+                }
+                const isLong = [22, 23, 24, 25, 26, 27].includes(col.index);
+                const tdStyle = `padding: 12px; line-height: 1.5; color: #1e293b; ${isLong ? 'white-space: normal; min-width: 150px; word-break: break-word;' : 'white-space: nowrap;'}`;
+                contentHtml += `<td style="${tdStyle}">${String(val || '-').replace(/\n/g, '<br>')}</td>`;
+            });
+            contentHtml += `</tr>`;
+        });
+        contentHtml += `</tbody></table></div></div>`;
+    }
+    
+    openClassDetail('', contentHtml, true, '95vw');
+};
+
 window.openRoadmapDetail = function(courseName) {
     if (event) event.stopPropagation();
     
@@ -1447,6 +1522,7 @@ async function fetchDashboardData() {
             const calJson = JSON.parse(calJsonString);
             window.calendarHeaders = calJson.table.cols ? calJson.table.cols.map(c => c ? c.label : '') : [];
             const calRows = calJson.table.rows;
+            window.globalCalendarRows = calRows;
             
             globalCalendarEvents = [];
             calRows.forEach(row => {
@@ -3647,12 +3723,11 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 35%;">Class</th>
-                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
-                                    <th style="padding: 8px; width: 10%; text-align: center;">Details</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -3674,27 +3749,6 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                         formattedExamDate = `<span style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);">${examDate}</span>`;
                                     }
 
-                                    let safeHTML = '';
-                                    const hasDetails = (achievement !== '-' || redFlag !== '-' || action !== '-');
-                                    if (hasDetails) {
-                                        let modalContent = `
-                                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--primary);">
-                                                <h4 style="color: var(--primary); margin-bottom: 8px;">Teacher Achievement</h4>
-                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${achievement.replace(/\n/g, '<br>')}</p>
-                                            </div>
-                                            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--danger);">
-                                                <h4 style="color: var(--danger); margin-bottom: 8px;">Red Flag</h4>
-                                                <p style="color: var(--text-color); margin-bottom: 16px; line-height: 1.6;">${redFlag.replace(/\n/g, '<br>')}</p>
-                                                <h4 style="color: var(--primary); margin-bottom: 8px;">Action</h4>
-                                                <p style="color: var(--text-color); line-height: 1.6;">${action.replace(/\n/g, '<br>')}</p>
-                                            </div>
-                                        `;
-                                        safeHTML = modalContent.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '').replace(/\r/g, ' ');
-                                    }
-                                        
-                                    let icon = hasDetails
-                                        ? `<i class="fa-solid fa-chalkboard-user" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', '${safeHTML}')"></i>`
-                                        : '-';
 
                                     let pColor = '';
                                     let pBg = '';
@@ -3721,7 +3775,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                         : '-';
 
                                     return `
-                                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}')">
                                             <td style="padding: 12px 8px;">
                                                 <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
                                                 <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
@@ -3732,7 +3786,6 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                             <td style="padding: 12px 8px; text-align: center;">${absence}</td>
                                             <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                             <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
-                                            <td style="padding: 12px 8px; text-align: center;">${icon}</td>
                                         </tr>
                                     `;
                                 }).join('')}
