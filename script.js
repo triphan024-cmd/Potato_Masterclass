@@ -1284,6 +1284,30 @@ const getVal = (cell) => {
     return String(val);
 };
 
+function parseCSV(str) {
+    const arr = [];
+    let quote = false;
+    let row = [];
+    let col = '';
+    for (let c = 0; c < str.length; c++) {
+        let cc = str[c], nc = str[c+1];
+        if (cc === '"' && quote && nc === '"') { col += '"'; c++; }
+        else if (cc === '"') { quote = !quote; }
+        else if (cc === ',' && !quote) { row.push(col); col = ''; }
+        else if (cc === '\n' && !quote) { 
+            if (col.endsWith('\r')) col = col.slice(0, -1);
+            row.push(col); arr.push(row); col = ''; row = []; 
+        }
+        else { col += cc; }
+    }
+    if (col !== '') {
+        if (col.endsWith('\r')) col = col.slice(0, -1);
+        row.push(col);
+    }
+    if (row.length > 0) arr.push(row);
+    return arr;
+}
+
 async function fetchDashboardData() {
     try {
         console.log("Loading HR data...");
@@ -1372,13 +1396,17 @@ async function fetchDashboardData() {
             
             console.log(`Retrieved leader data.`);
             
-            const rmRes = await fetch(ROADMAP_SHEET_URL);
+            const rmRes = await fetch(ROADMAP_SHEET_URL.replace('/gviz/tq?tqx=out:json&', '/export?format=csv&'));
             const rmText = await rmRes.text();
-            const rmJsonString = rmText.substring(rmText.indexOf('{'), rmText.lastIndexOf('}') + 1);
-            const rmJson = JSON.parse(rmJsonString);
-            window.globalCourseRoadmapCols = rmJson.table.cols;
-            window.globalCourseRoadmapRows = rmJson.table.rows;
-            console.log("Roadmap data loaded.");
+            const rmCsvArray = parseCSV(rmText);
+            const validRows = rmCsvArray.filter(r => r.some(cell => cell.trim() !== ''));
+            const headerRow = validRows.shift() || [];
+            
+            window.globalCourseRoadmapCols = headerRow.map(col => ({ label: col }));
+            window.globalCourseRoadmapRows = validRows.map(row => {
+                return { c: row.map(val => ({ v: val })) };
+            });
+            console.log("Roadmap data loaded via CSV to bypass filters.");
             
             const feesRes = await fetch(FEES_SHEET_URL);
             const feesText = await feesRes.text();
