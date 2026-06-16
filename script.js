@@ -673,7 +673,7 @@ function openTaskModal(task = null, picName = '', monthStr = '') {
     } else {
         document.getElementById('innerModalTaskTitle').innerText = 'Add New Task';
         
-        document.getElementById('taskInputPic').value = picName || '';
+        document.getElementById('taskInputPic').value = (picName === 'all') ? '' : (picName || '');
         document.getElementById('taskCategory').value = '';
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskDetail').value = '';
@@ -1459,7 +1459,7 @@ function changeMonth(diff) {
             renderDashboardTable(filteredRows);
             renderTeacherObservations(filteredRows);
             if (typeof applyTeacherFilter === 'function') {
-                applyTeacherFilter();
+                window.applyTeacherFilter();
             } else {
                 renderTeacherPerformance(filteredRows, monthStr);
             }
@@ -1473,7 +1473,7 @@ function changeMonth(diff) {
         if (globalLeaderRows.length > 0) {
             updateAllRolesTasksMetrics();
             renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', monthStr);
+            // Teacher task rendering is now handled inside applyTeacherFilter
             renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', monthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', monthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', monthStr);
@@ -1608,7 +1608,7 @@ async function fetchDashboardData() {
             
             // Render for each role
             renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', currentMonthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Khôi', 'teacher-report-grid', currentMonthStr);
+            // Teacher task rendering is handled by applyTeacherFilter which should be called around here
             renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', currentMonthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', currentMonthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', currentMonthStr);
@@ -2123,12 +2123,12 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         if (rowMonth && rowMonth.length === 1) rMonthStr = '0' + rowMonth;
         
         const monthMatches = !monthStr || rMonthStr === monthStr;
-        return type === 'Task' && pic === picName && monthMatches;
+        return type === 'Task' && (picName === 'all' || pic === picName) && monthMatches;
     });
 
     // Render an empty calendar board if no tasks, but allow user to add tasks.
 
-    let roleTitle = `Weekly Planner - ${picName}`;
+    let roleTitle = picName === 'all' ? 'Weekly Planner - All Teachers' : `Weekly Planner - ${picName}`;
     const headerElement = container.previousElementSibling;
     if (headerElement && headerElement.classList.contains('weekly-header')) {
         headerElement.style.display = 'none';
@@ -2467,7 +2467,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     if (rMonthStr && String(rMonthStr).length === 1) rMonthStr = '0' + rMonthStr;
                     const rWeek = getVal(r.c[21]);
                     const parsedWeek = parseFloat(String(rWeek).toUpperCase().replace('W', '').trim());
-                    return rType === 'Onething' && rPic === picName && rMonthStr === monthStr && parsedWeek === index;
+                    return rType === 'Onething' && (picName === 'all' || rPic === picName) && rMonthStr === monthStr && parsedWeek === index;
                 });
                 if (otRow) {
                     otId = getVal(otRow.c[0]) || '';
@@ -3754,8 +3754,28 @@ function updateAllRolesTasksMetrics() {
 window.applyTeacherFilter = function() {
     const tSelect = document.getElementById('teacherFilter');
     let selectedTeacher = 'all';
-    if (tSelect) {
-        selectedTeacher = tSelect.value;
+    
+    const userJson = localStorage.getItem('currentUser');
+    let currentUser = null;
+    let isAdmin = false;
+    if (userJson) {
+        currentUser = JSON.parse(userJson);
+        isAdmin = currentUser.name.toLowerCase().includes('trí') || 
+                  currentUser.name.toLowerCase().includes('đào') || 
+                  currentUser.username.toLowerCase().includes('tri') ||
+                  currentUser.username.toLowerCase().includes('dao');
+    }
+
+    if (!isAdmin && currentUser) {
+        // Teacher user: force selection to their own name
+        selectedTeacher = getShortName(currentUser.name);
+        if (tSelect) tSelect.style.display = 'none';
+    } else {
+        // Admin user: use the dropdown
+        if (tSelect) {
+            tSelect.style.display = 'inline-block';
+            selectedTeacher = tSelect.value;
+        }
     }
     
     let rowsToRender = window.currentMonthFilteredRows || [];
@@ -3766,6 +3786,13 @@ window.applyTeacherFilter = function() {
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
     const monthStr = String(monthVal).padStart(2, '0');
     renderTeacherPerformance(rowsToRender, monthStr);
+    
+    // Also update Weekly Planner for Teacher tab
+    if (window.globalLeaderRows) {
+        const prevMonthStr = String(monthVal - 1).padStart(2, '0');
+        renderRoleTasks(window.globalLeaderRows, selectedTeacher, 'teacher-report-grid', monthStr);
+        updateRoleTaskMetrics(selectedTeacher, 'teacher', monthStr, prevMonthStr);
+    }
 }
 
 function renderTeacherPerformance(classRows, currentMonthStr) {
