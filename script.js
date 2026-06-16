@@ -1608,7 +1608,9 @@ async function fetchDashboardData() {
             
             // Render for each role
             renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', currentMonthStr);
-            // Teacher task rendering is handled by applyTeacherFilter which should be called around here
+            if (typeof window.applyTeacherFilter === 'function') {
+                window.applyTeacherFilter();
+            }
             renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', currentMonthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', currentMonthStr);
             renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', currentMonthStr);
@@ -3767,8 +3769,8 @@ window.applyTeacherFilter = function() {
     }
 
     if (!isAdmin && currentUser) {
-        // Teacher user: force selection to their own name
-        selectedTeacher = getShortName(currentUser.name);
+        // Teacher user: force selection to their title (e.g. 'Mr. Khôi')
+        selectedTeacher = currentUser.title || getShortName(currentUser.name);
         if (tSelect) tSelect.style.display = 'none';
     } else {
         // Admin user: use the dropdown
