@@ -65,6 +65,20 @@ window.openScheduleDetail = function(className) {
         return rowClass === cleanClassName || rowClass.includes(cleanClassName) || cleanClassName.includes(rowClass);
     });
     
+    matchedRows.sort((a, b) => {
+        let dateA = 0;
+        let dateB = 0;
+        if (a.c && a.c[10] && a.c[10].f) {
+            const parts = a.c[10].f.split('/');
+            if (parts.length === 3) dateA = new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+        }
+        if (b.c && b.c[10] && b.c[10].f) {
+            const parts = b.c[10].f.split('/');
+            if (parts.length === 3) dateB = new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+        }
+        return dateA - dateB;
+    });
+    
     let contentHtml = '';
     if (matchedRows.length === 0) {
         contentHtml = `
