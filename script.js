@@ -1348,8 +1348,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize calendar
-    renderCalendar();
-
+    initCalendarHTML('overview-calendar-container', 'overview');
+    initCalendarHTML('academic-calendar-container', 'academic');
+    initCalendarHTML('operation-calendar-container', 'operation');
+    renderCalendar(0, 'overview');
+    renderCalendar(0, 'academic');
+    renderCalendar(0, 'operation');
     // Initialize month selector
     changeMonth(0);
 
@@ -1702,7 +1706,9 @@ async function fetchDashboardData() {
                 }
             });
             console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
-            renderCalendar(0); // Re-render with data
+            renderCalendar(0, 'overview');
+            renderCalendar(0, 'academic');
+            renderCalendar(0, 'operation');
             renderOperationTodayClasses();
         } catch (err) {
             console.error("Error fetching calendar data:", err);
@@ -3126,15 +3132,58 @@ function renderTeacherObservations(classRows) {
     }
 }
 
-let currentCalDate = new Date();
+window.currentCalDates = {
+    'overview': new Date(),
+    'academic': new Date(),
+    'operation': new Date()
+};
 
-function renderCalendar(monthOffset = 0) {
+function initCalendarHTML(containerId, prefix) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = `
+        <div class="calendar-wrapper" style="display: flex; gap: 24px; margin-top: 24px; margin-bottom: 24px;">
+            <section class="panel calendar-panel" style="padding: 24px; flex: 1; max-width: 450px;">
+                <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 id="${prefix}-cal-month-year" style="font-size: 1.1rem; color: var(--text-color); margin: 0;">May 2026</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="renderCalendar(-1, '${prefix}')" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button onclick="renderCalendar(1, '${prefix}')" class="icon-btn" style="width: 28px; height: 28px;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="${prefix}-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center;"></div>
+                <div id="${prefix}-duty-content" style="margin-top: 24px;">
+                    <p style="margin: 0; color: var(--text-muted); font-style: italic;">Chọn một ngày trên lịch để xem người trực.</p>
+                </div>
+            </section>
+            <section class="panel daily-classes-panel" style="padding: 24px; flex: 2; display: flex; flex-direction: column;">
+                <div class="daily-classes-header" id="${prefix}-daily-classes-header" style="display: flex; gap: 20px; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px; padding-top: 4px; position: sticky; top: 0; background: white; z-index: 10;">
+                    <div style="flex: 0 0 150px; text-align: left; padding-right: 16px; border-right: 1px dashed rgba(0,0,0,0.1);">
+                        <h3 id="${prefix}-selected-date-display" style="font-size: 1.1rem; color: var(--text-color); margin: 0; font-weight: 600;">Select a date</h3>
+                    </div>
+                    <div style="flex: 1; text-align: center; border-right: 1px dashed rgba(0,0,0,0.1); padding: 0 20px; z-index: 1;">
+                        <h4 id="${prefix}-header-nq" style="color: #0284c7; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Ngô Quyền (NQ)</h4>
+                    </div>
+                    <div style="flex: 1; text-align: center; padding-left: 20px; z-index: 1;">
+                        <h4 id="${prefix}-header-hd" style="color: #059669; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Hưng Định (HD)</h4>
+                    </div>
+                </div>
+                <div id="${prefix}-daily-classes-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Click on any highlighted date in the calendar to see the list of classes.</p>
+                </div>
+            </section>
+        </div>
+    `;
+}
+
+function renderCalendar(monthOffset = 0, prefix = 'overview') {
+    let currentCalDate = window.currentCalDates[prefix];
     currentCalDate.setMonth(currentCalDate.getMonth() + monthOffset);
     const year = currentCalDate.getFullYear();
     const month = currentCalDate.getMonth();
     
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    const monthYearEl = document.getElementById('cal-month-year');
+    const monthYearEl = document.getElementById(`${prefix}-cal-month-year`);
     if (monthYearEl) {
         monthYearEl.innerText = `${monthNames[month]} ${year}`;
     }
@@ -3142,7 +3191,7 @@ function renderCalendar(monthOffset = 0) {
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    const grid = document.getElementById('calendar-grid');
+    const grid = document.getElementById(`${prefix}-calendar-grid`);
     if (!grid) return;
     
     let html = `
@@ -3173,7 +3222,7 @@ function renderCalendar(monthOffset = 0) {
     for(let i=1; i<=daysInMonth; i++) {
         const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
         
-        let classList = ['cal-day-item'];
+        let classList = [`${prefix}-cal-day-item`, 'cal-day-item'];
         if (isToday) classList.push('is-today');
         
         let tooltip = '';
@@ -3182,31 +3231,31 @@ function renderCalendar(monthOffset = 0) {
             // Day has events
             classList.push('has-events', 'cal-day-active');
             tooltip = dayMap[i].map(e => `${e.time} - ${e.className}`).join('&#10;');
-            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i})"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
-            html += `<div style="padding: 4px;"><div class="${classList.join(' ')}" id="cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         }
     }
     grid.innerHTML = html;
 }
 
-function selectCalendarDate(year, month, day) {
+function selectCalendarDate(year, month, day, prefix = 'overview') {
     // Reset all day styles to remove active selection
-    document.querySelectorAll('.cal-day-item').forEach(el => {
+    document.querySelectorAll(`.${prefix}-cal-day-item`).forEach(el => {
         el.classList.remove('is-selected');
     });
     
     // Highlight selected day
-    const selectedEl = document.getElementById(`cal-day-${year}-${month}-${day}`);
+    const selectedEl = document.getElementById(`${prefix}-cal-day-${year}-${month}-${day}`);
     if (selectedEl) {
         selectedEl.classList.add('is-selected');
     }
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('selected-date-display').innerText = `${monthNames[month]} ${day}, ${year}`;
+    document.getElementById(`${prefix}-selected-date-display`).innerText = `${monthNames[month]} ${day}, ${year}`;
     
     // Update duty person
-    const dutyContent = document.getElementById('duty-content');
+    const dutyContent = document.getElementById(`${prefix}-duty-content`);
     if (dutyContent && window.globalDutyRows) {
         const selectedDateStr = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
         const dutyEvents = window.globalDutyRows.filter(row => {
@@ -3406,9 +3455,9 @@ function selectCalendarDate(year, month, day) {
         }
     }
 
-    const listEl = document.getElementById('daily-classes-list');
-    const nqHeaderEl = document.getElementById('header-nq');
-    const hdHeaderEl = document.getElementById('header-hd');
+    const listEl = document.getElementById(`${prefix}-daily-classes-list`);
+    const nqHeaderEl = document.getElementById(`${prefix}-header-nq`);
+    const hdHeaderEl = document.getElementById(`${prefix}-header-hd`);
     
     const dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
     
