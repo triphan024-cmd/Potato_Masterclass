@@ -1450,7 +1450,10 @@ function changeMonth(diff) {
             // Populate teacher filter
             const teacherSelect = document.getElementById('teacherFilter');
             if (teacherSelect) {
-                const teachers = [...new Set(filteredRows.map(r => getShortName(getVal(r.c[9]))).filter(n => n && n !== '-'))].sort();
+                const teachers = [...new Set([
+                    ...filteredRows.map(r => getShortName(getVal(r.c[8]))),
+                    ...filteredRows.map(r => getShortName(getVal(r.c[9])))
+                ].filter(n => n && n !== '-'))].sort();
                 teacherSelect.innerHTML = '<option value="all">All Teachers</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
                 teacherSelect.style.display = 'block';
             }
@@ -3782,7 +3785,10 @@ window.applyTeacherFilter = function() {
     
     let rowsToRender = window.currentMonthFilteredRows || [];
     if (selectedTeacher !== 'all') {
-        rowsToRender = rowsToRender.filter(row => getShortName(getVal(row.c[9])) === selectedTeacher);
+        rowsToRender = rowsToRender.filter(row => 
+            getShortName(getVal(row.c[8])) === selectedTeacher || 
+            getShortName(getVal(row.c[9])) === selectedTeacher
+        );
     }
     
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
@@ -3790,9 +3796,9 @@ window.applyTeacherFilter = function() {
     renderTeacherPerformance(rowsToRender, monthStr);
     
     // Also update Weekly Planner for Teacher tab
-    if (window.globalLeaderRows) {
+    if (typeof globalLeaderRows !== 'undefined' && globalLeaderRows && globalLeaderRows.length > 0) {
         const prevMonthStr = String(monthVal - 1).padStart(2, '0');
-        renderRoleTasks(window.globalLeaderRows, selectedTeacher, 'teacher-report-grid', monthStr);
+        renderRoleTasks(globalLeaderRows, selectedTeacher, 'teacher-report-grid', monthStr);
         updateRoleTaskMetrics(selectedTeacher, 'teacher', monthStr, prevMonthStr);
     }
 }
