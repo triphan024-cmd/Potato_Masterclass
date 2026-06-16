@@ -117,9 +117,18 @@ window.openRoadmapDetail = function(courseName) {
         
         colIndices.forEach((colObj) => {
             let displayLabel = colObj.label;
-            if (displayLabel.toLowerCase() === 'lesson order') displayLabel = 'Lesson';
-            const isLongCol = ['lesson name', 'lesson content', 'suggestion'].some(c => colObj.label.toLowerCase().includes(c));
-            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap;`;
+            const lowerLabel = displayLabel.toLowerCase();
+            if (lowerLabel === 'lesson order') displayLabel = 'Lesson';
+            if (lowerLabel === 'suggestion') displayLabel = 'Homework';
+            
+            let thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; `;
+            if (lowerLabel.includes('status') || lowerLabel.includes('course') || lowerLabel.includes('lesson order')) {
+                thStyle += `white-space: nowrap; width: 1%;`;
+            } else if (lowerLabel.includes('lesson name')) {
+                thStyle += `white-space: nowrap; width: 15%; min-width: 120px;`;
+            } else {
+                thStyle += `white-space: nowrap;`;
+            }
             contentHtml += `<th style="${thStyle}">${displayLabel}</th>`;
         });
         contentHtml += `</tr></thead><tbody>`;
@@ -129,8 +138,16 @@ window.openRoadmapDetail = function(courseName) {
             contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
             colIndices.forEach((colObj) => {
                 const val = (row.c && row.c[colObj.index]) ? getVal(row.c[colObj.index]) : '-';
-                const isLongCol = ['lesson name', 'lesson content', 'suggestion'].some(c => colObj.label.toLowerCase().includes(c));
-                const tdStyle = `padding: 14px 16px; line-height: 1.5; color: #1e293b; ${isLongCol ? 'white-space: normal;' : 'white-space: nowrap;'}`;
+                const lowerLabel = colObj.label.toLowerCase();
+                let tdStyle = `padding: 14px 16px; line-height: 1.5; color: #1e293b; `;
+                
+                if (lowerLabel.includes('status') || lowerLabel.includes('course') || lowerLabel.includes('lesson order')) {
+                    tdStyle += `white-space: nowrap; width: 1%;`;
+                } else if (lowerLabel.includes('lesson name')) {
+                    tdStyle += `white-space: normal; width: 15%; min-width: 120px; word-break: break-word;`;
+                } else {
+                    tdStyle += `white-space: normal; word-break: break-word;`;
+                }
                 contentHtml += `<td style="${tdStyle}">${val.replace(/\n/g, '<br>')}</td>`;
             });
             contentHtml += `</tr>`;
@@ -3775,14 +3792,14 @@ function renderAcademicPerformance(classRows) {
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; table-layout: auto;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; table-layout: fixed; min-width: 600px;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: auto;">Class</th>
-                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: left;">Teacher</th>
-                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Aid</th>
-                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Roadmap</th>
-                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Exam</th>
+                                <th style="padding: 8px; width: 38%;">Class</th>
+                                <th style="padding: 8px; width: 22%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Aid</th>
+                                <th style="padding: 8px; width: 14%; text-align: center;">Roadmap</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Exam</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3823,7 +3840,7 @@ function renderAcademicPerformance(classRows) {
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'">
                                         <td style="padding: 12px 8px;">
-                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
+                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem; white-space: normal; word-break: break-word;">${className.trim()}</div>
                                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
