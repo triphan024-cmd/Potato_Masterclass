@@ -56,10 +56,14 @@ window.openRoadmapDetail = function(courseName) {
         rows = window.globalCourseRoadmapRows.filter(row => {
             if (!row || !row.c) return false;
             let found = false;
+            const searchVal = courseName.toLowerCase().trim();
             for(let i=0; i<10; i++) {
-                if (row.c[i] && getVal(row.c[i]).toLowerCase().trim() === courseName.toLowerCase().trim()) {
-                    found = true;
-                    break;
+                if (row.c[i]) {
+                    const cellVal = getVal(row.c[i]).toLowerCase().trim();
+                    if (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal)))) {
+                        found = true;
+                        break;
+                    }
                 }
             }
             return found;
@@ -1771,8 +1775,8 @@ function renderOperationTodayClasses() {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 45%;">Class</th>
-                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Total</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Collect</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Debt</th>
@@ -2752,8 +2756,8 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 45%;">Class</th>
-                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Status</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
@@ -3581,8 +3585,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 40%;">Class</th>
-                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 35%;">Class</th>
+                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
@@ -3729,8 +3733,8 @@ function renderAcademicPerformance(classRows) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 50%;">Class</th>
-                                <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 45%;">Class</th>
+                                <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Aid</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Roadmap</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Exam</th>
@@ -3780,9 +3784,9 @@ function renderAcademicPerformance(classRows) {
                                             </div>
                                         </td>
                                         <td style="padding: 14px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid')}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', course)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam')}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid', className)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', className)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam', className)}</td>
                                     </tr>
                                 `;
                             }).join('')}
