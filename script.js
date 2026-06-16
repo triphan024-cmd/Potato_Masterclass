@@ -1117,7 +1117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sidebarOverlay) sidebarOverlay.classList.remove('show');
             }
         });
-        });
     });
 
     // Sidebar Collapse Logic (PC/Tablet)
