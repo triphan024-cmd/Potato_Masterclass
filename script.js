@@ -53,14 +53,15 @@ window.openRoadmapDetail = function(courseName) {
     
     let rows = [];
     if (window.globalCourseRoadmapRows) {
+        const normalizeStr = (s) => s.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
         rows = window.globalCourseRoadmapRows.filter(row => {
             if (!row || !row.c) return false;
             let found = false;
-            const searchVal = courseName.toLowerCase().trim();
+            const searchVal = normalizeStr(courseName);
             for(let i=0; i<10; i++) {
                 if (row.c[i]) {
-                    const cellVal = getVal(row.c[i]).toLowerCase().trim();
-                    if (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal)))) {
+                    const cellVal = normalizeStr(getVal(row.c[i]));
+                    if (cellVal && (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal))))) {
                         found = true;
                         break;
                     }
