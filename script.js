@@ -54,16 +54,30 @@ window.openRoadmapDetail = function(courseName) {
     let rows = [];
     if (window.globalCourseRoadmapRows) {
         const normalizeStr = (s) => s.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
+        const courseColIndex = window.globalCourseRoadmapCols ? window.globalCourseRoadmapCols.findIndex(c => c && c.label && c.label.toLowerCase().trim() === 'course') : -1;
+        
         rows = window.globalCourseRoadmapRows.filter(row => {
             if (!row || !row.c) return false;
             let found = false;
             const searchVal = normalizeStr(courseName);
-            for(let i=0; i<10; i++) {
-                if (row.c[i]) {
-                    const cellVal = normalizeStr(getVal(row.c[i]));
-                    if (cellVal && (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal))))) {
-                        found = true;
-                        break;
+            
+            // Look specifically in the Course column if found, otherwise search first 10 columns
+            if (courseColIndex >= 0 && row.c[courseColIndex]) {
+                const cellVal = normalizeStr(getVal(row.c[courseColIndex]));
+                if (cellVal && (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal))))) {
+                    found = true;
+                }
+            }
+            
+            // Fallback: search all columns if Course column is not explicitly found
+            if (!found) {
+                for(let i=0; i<10; i++) {
+                    if (row.c[i]) {
+                        const cellVal = normalizeStr(getVal(row.c[i]));
+                        if (cellVal && (cellVal === searchVal || (cellVal.length > 4 && searchVal.length > 4 && (cellVal.includes(searchVal) || searchVal.includes(cellVal))))) {
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -1243,7 +1257,7 @@ const LEADER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtg
 const HR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=790611745';
 const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988';
 const DUTY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=585528165';
-const ROADMAP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1169404016';
+const ROADMAP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=882542672';
 const FEES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1245774263';
 
 
