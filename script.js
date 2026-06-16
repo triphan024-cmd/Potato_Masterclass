@@ -105,7 +105,10 @@ window.openScheduleDetail = function(className) {
 
         contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
             <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
-            <h3 style="margin-top: 0; margin-bottom: 20px; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-right: 32px;">
+                <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
+                <button onclick="window.openRoadmapDetail('${className}')" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
+            </div>
             <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
             <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
@@ -4057,7 +4060,7 @@ function renderAcademicPerformance(classRows) {
                         <thead>
                             <tr>
                                 <th style="padding: 8px; width: 45%;">Class</th>
-                                <th style="padding: 8px; width: 15%; text-align: right; padding-right: 20px;">Teacher</th>
+                                <th style="padding: 8px; width: 15%; text-align: left; padding-left: 12px;">Teacher</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Aid</th>
                                 <th style="padding: 8px; width: 14%; text-align: center;">Roadmap</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Exam</th>
@@ -4106,7 +4109,7 @@ function renderAcademicPerformance(classRows) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 14px 20px 14px 12px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                        <td style="padding: 14px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid', course)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', course)}</td>
                                         <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam', course)}</td>
