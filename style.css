@@ -92,6 +92,31 @@ body {
     top: 0;
     height: 100vh;
     overflow-y: auto;
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+.sidebar.collapsed .logo {
+    display: none;
+}
+.sidebar.collapsed .sidebar-header {
+    justify-content: center !important;
+}
+.sidebar.collapsed #sidebar-collapse-btn {
+    position: static !important;
+    transform: rotate(180deg);
+}
+.sidebar.collapsed .nav-item a span {
+    display: none;
+}
+.sidebar.collapsed .nav-item a {
+    justify-content: center;
+    padding: 12px 0;
+}
+.sidebar.collapsed .nav-item a i {
+    font-size: 1.3rem;
 }
 
 .sidebar-header {

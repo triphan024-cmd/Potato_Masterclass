@@ -1117,7 +1117,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sidebarOverlay) sidebarOverlay.classList.remove('show');
             }
         });
+        });
     });
+
+    // Sidebar Collapse Logic (PC/Tablet)
+    const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
+    if (sidebarCollapseBtn && sidebar) {
+        // Load state from localStorage
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+
+        sidebarCollapseBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        });
+    }
 });
 
 

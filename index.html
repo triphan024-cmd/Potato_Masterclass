@@ -23,28 +23,29 @@
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="position: relative; display: flex; justify-content: space-between; align-items: center;">
                 <img src="https://www.appsheet.com:443/fsimage.png?appid=35e5f9f7-248a-4eb4-a87e-672f26329edc&datasource=google&filename=DocId%3D17DO_wZowyRRcJ2RwJgieoOk-8rNKqraq&signature=531e139f3b6b655d2c117ff2508266b82e3eb3c280f0e627e9890cb549161cc8&tableprovider=google&userid=113051404" alt="Potato Logo" class="logo">
+                <button id="sidebar-collapse-btn" class="icon-btn" style="color: var(--text-muted);"><i class="fa-solid fa-chevron-left"></i></button>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item active" data-target="view-dashboard">
-                    <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
+                    <a href="#"><i class="fa-solid fa-house"></i> <span>Overview</span></a>
                 </li>
                 <li class="nav-item" data-target="view-coo">
-                    <a href="#"><i class="fa-solid fa-star"></i> COO</a>
+                    <a href="#"><i class="fa-solid fa-star"></i> <span>COO</span></a>
                 </li>
                 <li class="nav-item" data-target="view-head">
-                    <a href="#"><i class="fa-solid fa-crown"></i> Head</a>
+                    <a href="#"><i class="fa-solid fa-crown"></i> <span>Head</span></a>
                 </li>
                 <li class="nav-item" data-target="view-teacher">
-                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Teacher</a>
+                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> <span>Teacher</span></a>
                 </li>
                 <li class="nav-item" data-target="view-academic">
-                    <a href="#"><i class="fa-solid fa-book-open"></i> Academic</a>
+                    <a href="#"><i class="fa-solid fa-book-open"></i> <span>Academic</span></a>
                 </li>
                 <li class="nav-item" data-target="view-operation">
-                    <a href="#"><i class="fa-solid fa-briefcase"></i> Operation</a>
+                    <a href="#"><i class="fa-solid fa-briefcase"></i> <span>Operation</span></a>
                 </li>
             </ul>
         </aside>
@@ -699,6 +700,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=98"></script>
+    <script src="script.js?v=99"></script>
 </body>
 </html>
