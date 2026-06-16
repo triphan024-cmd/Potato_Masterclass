@@ -1215,8 +1215,8 @@ window.applyPermissions = function(user) {
 
     const profileName = document.getElementById('profile-name');
     const profileTitle = document.getElementById('profile-title');
-    if (profileName) profileName.innerText = user.name;
-    if (profileTitle) profileTitle.innerText = user.title || 'Staff';
+    if (profileName) profileName.innerText = user.title || 'Admin';
+    if (profileTitle) profileTitle.innerText = user.position || 'Staff';
 
     const isAdmin = user.name.toLowerCase().includes('trí') || 
                     user.name.toLowerCase().includes('đào') || 
@@ -1270,10 +1270,11 @@ window.handleLogin = async function(event) {
             const rowP = String(getVal(row.c[21]) || '').trim(); // Index 21 is Password
             const rowName = String(getVal(row.c[4]) || getVal(row.c[3]) || '').trim(); // Index 4 is Eng Name, 3 is Full Name
             const title = String(getVal(row.c[5]) || '').trim(); // Index 5 is Tittle
+            const position = String(getVal(row.c[6]) || '').trim(); // Index 6 is Position
             const role = String(getVal(row.c[13]) || '').trim(); // Index 13 is Role
 
             if (rowU === u && rowP === p) {
-                foundUser = { username: rowU, name: rowName || rowU, title: title, role: role };
+                foundUser = { username: rowU, name: rowName || rowU, title: title, position: position, role: role };
                 break;
             }
         }
