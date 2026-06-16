@@ -116,9 +116,11 @@ window.openRoadmapDetail = function(courseName) {
             <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"><tr>`;
         
         colIndices.forEach((colObj) => {
+            let displayLabel = colObj.label;
+            if (displayLabel.toLowerCase() === 'lesson order') displayLabel = 'Lesson';
             const isLongCol = ['lesson name', 'lesson content', 'suggestion'].some(c => colObj.label.toLowerCase().includes(c));
-            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap; ${isLongCol ? 'min-width: 250px;' : 'min-width: 100px;'}`;
-            contentHtml += `<th style="${thStyle}">${colObj.label}</th>`;
+            const thStyle = `padding: 14px 16px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1; white-space: nowrap;`;
+            contentHtml += `<th style="${thStyle}">${displayLabel}</th>`;
         });
         contentHtml += `</tr></thead><tbody>`;
         
@@ -3773,14 +3775,14 @@ function renderAcademicPerformance(classRows) {
             </div>
             <div class="modern-card-body" style="padding: 0;">
                 <div style="overflow-x: auto;">
-                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
+                    <table class="modern-table" style="width: 100%; font-size: 0.85rem; table-layout: auto;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 45%;">Class</th>
-                                <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
-                                <th style="padding: 8px; width: 15%; text-align: center;">Aid</th>
-                                <th style="padding: 8px; width: 15%; text-align: center;">Roadmap</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Exam</th>
+                                <th style="padding: 8px; width: auto;">Class</th>
+                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Aid</th>
+                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Roadmap</th>
+                                <th style="padding: 8px; width: 1%; white-space: nowrap; text-align: center;">Exam</th>
                             </tr>
                         </thead>
                         <tbody>
