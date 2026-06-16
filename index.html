@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="https://www.appsheet.com:443/fsimage.png?appid=35e5f9f7-248a-4eb4-a87e-672f26329edc&datasource=google&filename=DocId%3D17DO_wZowyRRcJ2RwJgieoOk-8rNKqraq&signature=531e139f3b6b655d2c117ff2508266b82e3eb3c280f0e627e9890cb549161cc8&tableprovider=google&userid=113051404">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <script>
         window.onerror = function(msg, url, line, col, error) {
             alert("JS Error: " + msg + "\nLine: " + line);
@@ -19,6 +19,9 @@
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar Overlay for Mobile -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -49,6 +52,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
+                <button id="mobile-menu-btn" style="display: none;"><i class="fa-solid fa-bars"></i></button>
                 <div class="greeting-header" style="flex-grow: 1;">
                     <h1 style="font-size: 1.6rem; color: var(--text-color); margin-bottom: 4px;" id="dynamic-greeting">Good morning, Admin!</h1>
                     <span style="color: var(--text-muted); font-size: 0.9rem;">Navigate the future of education with Potato Center.</span>
@@ -695,6 +699,6 @@
     </div>
 
     <div id="toastContainer"></div>
-    <script src="script.js?v=97"></script>
+    <script src="script.js?v=98"></script>
 </body>
 </html>
