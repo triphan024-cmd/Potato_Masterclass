@@ -1475,11 +1475,9 @@ function changeMonth(diff) {
         // Re-render role tasks when month changes
         if (globalLeaderRows.length > 0) {
             updateAllRolesTasksMetrics();
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', monthStr);
-            // Teacher task rendering is now handled inside applyTeacherFilter
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', monthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', monthStr);
+            if (typeof window.applyGlobalPlannerFilter === 'function') {
+                window.applyGlobalPlannerFilter();
+            }
             renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', monthStr);
         }
     }
@@ -1609,14 +1607,20 @@ async function fetchDashboardData() {
             const currentMonthVal = currentMonthIndex + 3;
             const currentMonthStr = String(currentMonthVal).padStart(2, '0');
             
-            // Render for each role
-            renderRoleTasks(globalLeaderRows, 'Ms. Đào', 'head-report-grid', currentMonthStr);
+            // Initialize Global Planner Filter
+            const gSelect = document.getElementById('globalPlannerFilter');
+            if (gSelect) {
+                const uniqueTitles = [...new Set(Object.values(hrMap))].filter(n => n).sort();
+                gSelect.innerHTML = '<option value="all">All Users</option>' + uniqueTitles.map(t => `<option value="${t}">${t}</option>`).join('');
+                gSelect.style.display = 'block';
+            }
+            
             if (typeof window.applyTeacherFilter === 'function') {
                 window.applyTeacherFilter();
             }
-            renderRoleTasks(globalLeaderRows, 'Ms. Khanh', 'academic-report-grid', currentMonthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Đạt', 'operation-report-grid', currentMonthStr);
-            renderRoleTasks(globalLeaderRows, 'Mr. Trí', 'coo-report-grid', currentMonthStr);
+            if (typeof window.applyGlobalPlannerFilter === 'function') {
+                window.applyGlobalPlannerFilter();
+            }
             updateAllRolesTasksMetrics();
             
             renderWeeklyReports(globalLeaderRows, 'weekly-report-grid', currentMonthStr);
@@ -2133,7 +2137,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
 
     // Render an empty calendar board if no tasks, but allow user to add tasks.
 
-    let roleTitle = picName === 'all' ? 'Weekly Planner - All Teachers' : `Weekly Planner - ${picName}`;
+    let roleTitle = picName === 'all' ? 'Weekly Planner - All Users' : `Weekly Planner - ${picName}`;
     const headerElement = container.previousElementSibling;
     if (headerElement && headerElement.classList.contains('weekly-header')) {
         headerElement.style.display = 'none';
@@ -3749,12 +3753,7 @@ function updateAllRolesTasksMetrics() {
     const monthStr = String(monthVal).padStart(2, '0');
     const prevMonthStr = (typeof currentMonthIndex !== 'undefined' && currentMonthIndex > 0) ? String(monthVal - 1).padStart(2, '0') : null;
 
-    // Use specific task logic for each role's name
-    updateRoleTaskMetrics('Ms. Đào', 'head', monthStr, prevMonthStr);
-    updateRoleTaskMetrics('Mr. Khôi', 'teacher', monthStr, prevMonthStr);
-    updateRoleTaskMetrics('Ms. Khanh', 'academic', monthStr, prevMonthStr);
-    updateRoleTaskMetrics('Mr. Đạt', 'operation', monthStr, prevMonthStr);
-    updateRoleTaskMetrics('Mr. Trí', 'coo', monthStr, prevMonthStr);
+    // Removed individual role metric updates, handled by applyGlobalPlannerFilter
 }
 window.applyTeacherFilter = function() {
     const tSelect = document.getElementById('teacherFilter');
@@ -3794,12 +3793,40 @@ window.applyTeacherFilter = function() {
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
     const monthStr = String(monthVal).padStart(2, '0');
     renderTeacherPerformance(rowsToRender, monthStr);
+}
+
+window.applyGlobalPlannerFilter = function() {
+    const gSelect = document.getElementById('globalPlannerFilter');
+    let selectedUser = 'all';
     
-    // Also update Weekly Planner for Teacher tab
+    const userJson = localStorage.getItem('currentUser');
+    let currentUser = null;
+    let isAdmin = false;
+    if (userJson) {
+        currentUser = JSON.parse(userJson);
+        isAdmin = currentUser.name.toLowerCase().includes('trí') || 
+                  currentUser.name.toLowerCase().includes('đào') || 
+                  currentUser.username.toLowerCase().includes('tri') ||
+                  currentUser.username.toLowerCase().includes('dao');
+    }
+
+    if (!isAdmin && currentUser) {
+        selectedUser = currentUser.title || getShortName(currentUser.name);
+        if (gSelect) gSelect.style.display = 'none';
+    } else {
+        if (gSelect) {
+            gSelect.style.display = 'inline-block';
+            selectedUser = gSelect.value;
+        }
+    }
+    
     if (typeof globalLeaderRows !== 'undefined' && globalLeaderRows && globalLeaderRows.length > 0) {
+        const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
+        const monthStr = String(monthVal).padStart(2, '0');
         const prevMonthStr = String(monthVal - 1).padStart(2, '0');
-        renderRoleTasks(globalLeaderRows, selectedTeacher, 'teacher-report-grid', monthStr);
-        updateRoleTaskMetrics(selectedTeacher, 'teacher', monthStr, prevMonthStr);
+        
+        renderRoleTasks(globalLeaderRows, selectedUser, 'global-planner-grid', monthStr);
+        updateRoleTaskMetrics(selectedUser, 'planner', monthStr, prevMonthStr);
     }
 }
 
