@@ -3784,9 +3784,9 @@ function renderAcademicPerformance(classRows) {
                                             </div>
                                         </td>
                                         <td style="padding: 14px 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid', className)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', className)}</td>
-                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam', className)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(aid, 'aid', course)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(roadmap, 'roadmap', course)}</td>
+                                        <td style="padding: 14px 12px; text-align: center;">${getBadgeHtml(exam, 'exam', course)}</td>
                                     </tr>
                                 `;
                             }).join('')}
