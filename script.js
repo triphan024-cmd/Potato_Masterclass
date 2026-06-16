@@ -1,6 +1,12 @@
 // Google Apps Script Web App URL for updating tasks
 window.GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyUpPBhYBLvwyKhTk-7bNAC2rr5PE0dnN7T4lizrNNcIyJkDM_Z5PPw1v75-zWG0DQPCg/exec';
 
+// Function to format class name by removing the teacher's name at the end
+function formatClassName(cName) {
+    if (!cName) return '';
+    return cName.replace(/\s*-\s*(Mr\.|Ms\.|Mrs\.|Mr|Ms|Mrs)\s+.*$/i, '').trim();
+}
+
 // Function to open the detailed view of a class
 function openClassDetail(titleStr, contentStr, hideHeader = false, modalWidth = null) {
     if (event) event.stopPropagation();
@@ -1485,7 +1491,7 @@ function renderDashboardTable(classRows) {
 
     classRows.slice(0, 10).forEach((row, i) => { 
         const c = row.c;
-        const className = getVal(c[6]) || getVal(c[1]);
+        const className = formatClassName(getVal(c[6]) || getVal(c[1]));
         const students = getVal(c[7]);
         const teacher = getShortName(getVal(c[9]));
         const testDate = getVal(c[39]);
@@ -1553,7 +1559,7 @@ function renderTeacherTable(classRows) {
         // Render Classes for this teacher
         rows.forEach((row) => {
             const c = row.c;
-            const className = getVal(c[6]);
+            const className = formatClassName(getVal(c[6]));
             const students = getVal(c[7]);
             const lesson = getVal(c[28]);
             const evaluation = getVal(c[25]);
@@ -1582,7 +1588,7 @@ function renderAcademicTable(classRows) {
 
     classRows.forEach((row) => {
         const c = row.c;
-        const className = getVal(c[6]);
+        const className = formatClassName(getVal(c[6]));
         const start = getVal(c[10]);
         const end = getVal(c[11]);
         const status = getVal(c[2]) || '';
@@ -1613,7 +1619,7 @@ function renderOperationTable(classRows) {
 
     classRows.forEach((row) => {
         const c = row.c;
-        const className = getVal(c[6]);
+        const className = formatClassName(getVal(c[6]));
         const students = getVal(c[7]);
         const doanhThu = getVal(c[43]);
         const daThu = getVal(c[44]);
@@ -1765,8 +1771,8 @@ function renderOperationTodayClasses() {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 35%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 45%;">Class</th>
+                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Total</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Collect</th>
                                     <th style="padding: 8px; width: 15%; text-align: right;">Debt</th>
@@ -1776,7 +1782,7 @@ function renderOperationTodayClasses() {
                                 ${sortedRows.map(row => {
                                     const c = row.c;
                                     const fullClassName = getVal(c[6]) || getVal(c[1]);
-                                    const className = fullClassName.split(' - ')[0].trim();
+                                    const className = formatClassName(fullClassName);
                                     const teacherName = getShortName(getVal(c[9])) || '-';
                                     const studentCount = parseInt(getVal(c[7]) || 0);
                                     
@@ -2643,7 +2649,7 @@ function renderTeacherObservations(classRows) {
             let rowsHtml = '';
             sortedRows.forEach(row => {
                 const c = row.c;
-                const className = getVal(c[6]) || 'Unknown';
+                const className = formatClassName(getVal(c[6]) || 'Unknown');
                 const schedule = getVal(c[12]) || '-';
                 const teacherName = getShortName(getVal(c[9])) || '-';
                 const obs = getVal(c[13]) || '';
@@ -2746,8 +2752,8 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 35%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 45%;">Class</th>
+                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Status</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
@@ -3575,8 +3581,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 35%;">Class</th>
-                                    <th style="padding: 8px; width: 15%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
                                     <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
@@ -3586,7 +3592,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                             <tbody>
                                 ${sortedRows.map(row => {
                                     const c = row.c;
-                                    const className = getVal(c[6]) || getVal(c[1]);
+                                    const className = formatClassName(getVal(c[6]) || getVal(c[1]));
                                     const teacherName = getShortName(getVal(c[9])) || '-';
                                     const studentCount = parseInt(getVal(c[7]) || 0);
                                     const schedule = getVal(c[12]) || '-';
@@ -3723,8 +3729,8 @@ function renderAcademicPerformance(classRows) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 40%;">Class</th>
-                                <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 50%;">Class</th>
+                                <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Aid</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Roadmap</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Exam</th>
@@ -3733,7 +3739,7 @@ function renderAcademicPerformance(classRows) {
                         <tbody>
                             ${sortedRows.map(row => {
                                 const c = row.c;
-                                const className = getVal(c[6]) || getVal(c[1]);
+                                const className = formatClassName(getVal(c[6]) || getVal(c[1]));
                                 const schedule = getVal(c[12]) || '-';
                                 const studentCount = parseInt(getVal(c[7]) || 0);
                                 const course = getVal(c[4]) || '';
