@@ -1223,8 +1223,10 @@ window.applyPermissions = function(user) {
 
     const isAdmin = user.name.toLowerCase().includes('trí') || 
                     user.name.toLowerCase().includes('đào') || 
+                    user.name.toLowerCase().includes('khanh') ||
                     user.username.toLowerCase().includes('tri') ||
-                    user.username.toLowerCase().includes('dao');
+                    user.username.toLowerCase().includes('dao') ||
+                    user.username.toLowerCase().includes('khanh');
 
     if (!isAdmin) {
         const cooTab = document.querySelector('.nav-item[data-target="view-coo"]');
@@ -3827,8 +3829,10 @@ window.applyTeacherFilter = function() {
         currentUser = JSON.parse(userJson);
         isAdmin = currentUser.name.toLowerCase().includes('trí') || 
                   currentUser.name.toLowerCase().includes('đào') || 
+                  currentUser.name.toLowerCase().includes('khanh') ||
                   currentUser.username.toLowerCase().includes('tri') ||
-                  currentUser.username.toLowerCase().includes('dao');
+                  currentUser.username.toLowerCase().includes('dao') ||
+                  currentUser.username.toLowerCase().includes('khanh');
     }
 
     if (!isAdmin && currentUser) {
@@ -3867,8 +3871,10 @@ window.applyGlobalPlannerFilter = function() {
         currentUser = JSON.parse(userJson);
         isAdmin = currentUser.name.toLowerCase().includes('trí') || 
                   currentUser.name.toLowerCase().includes('đào') || 
+                  currentUser.name.toLowerCase().includes('khanh') ||
                   currentUser.username.toLowerCase().includes('tri') ||
-                  currentUser.username.toLowerCase().includes('dao');
+                  currentUser.username.toLowerCase().includes('dao') ||
+                  currentUser.username.toLowerCase().includes('khanh');
     }
 
     if (!isAdmin && currentUser) {
