@@ -1223,10 +1223,8 @@ window.applyPermissions = function(user) {
 
     const isAdmin = user.name.toLowerCase().includes('trí') || 
                     user.name.toLowerCase().includes('đào') || 
-                    user.name.toLowerCase().includes('khanh') ||
                     user.username.toLowerCase().includes('tri') ||
-                    user.username.toLowerCase().includes('dao') ||
-                    user.username.toLowerCase().includes('khanh');
+                    user.username.toLowerCase().includes('dao');
 
     if (!isAdmin) {
         const cooTab = document.querySelector('.nav-item[data-target="view-coo"]');
@@ -3825,22 +3823,23 @@ window.applyTeacherFilter = function() {
     const userJson = localStorage.getItem('currentUser');
     let currentUser = null;
     let isAdmin = false;
+    let isLeader = false;
     if (userJson) {
         currentUser = JSON.parse(userJson);
         isAdmin = currentUser.name.toLowerCase().includes('trí') || 
                   currentUser.name.toLowerCase().includes('đào') || 
-                  currentUser.name.toLowerCase().includes('khanh') ||
                   currentUser.username.toLowerCase().includes('tri') ||
-                  currentUser.username.toLowerCase().includes('dao') ||
-                  currentUser.username.toLowerCase().includes('khanh');
+                  currentUser.username.toLowerCase().includes('dao');
+        isLeader = currentUser.name.toLowerCase().includes('khanh') ||
+                   currentUser.username.toLowerCase().includes('khanh');
     }
 
-    if (!isAdmin && currentUser) {
+    if (!isAdmin && !isLeader && currentUser) {
         // Teacher user: force selection to their title (e.g. 'Mr. Khôi')
         selectedTeacher = currentUser.title || getShortName(currentUser.name);
         if (tSelect) tSelect.style.display = 'none';
     } else {
-        // Admin user: use the dropdown
+        // Admin/Leader user: use the dropdown
         if (tSelect) {
             tSelect.style.display = 'inline-block';
             selectedTeacher = tSelect.value;
@@ -3871,10 +3870,8 @@ window.applyGlobalPlannerFilter = function() {
         currentUser = JSON.parse(userJson);
         isAdmin = currentUser.name.toLowerCase().includes('trí') || 
                   currentUser.name.toLowerCase().includes('đào') || 
-                  currentUser.name.toLowerCase().includes('khanh') ||
                   currentUser.username.toLowerCase().includes('tri') ||
-                  currentUser.username.toLowerCase().includes('dao') ||
-                  currentUser.username.toLowerCase().includes('khanh');
+                  currentUser.username.toLowerCase().includes('dao');
     }
 
     if (!isAdmin && currentUser) {
