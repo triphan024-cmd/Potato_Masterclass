@@ -4277,7 +4277,6 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
         
         const rows = data.table.rows;
         let attendanceList = [];
-        let className = '';
         let studyDate = '';
         
         for (let row of rows) {
@@ -4328,12 +4327,12 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                     </div>
                     
                     <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; flex-shrink: 1; overflow-y: auto;">
-                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: auto;">
+                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed;">
                             <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 1;">
                                 <tr>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 1%; white-space: nowrap;">Status</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; white-space: normal;">Student Name</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Reason</th>
+                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 100px;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 35%;">Student Name</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: auto;">Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -4353,9 +4352,9 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                                     
                                     return `
                                         <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'}">
-                                            <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">${statusBadge}</td>
-                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; white-space: normal; min-width: 150px;">${item.studentName}</td>
-                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; white-space: normal; min-width: 200px;">${item.reason || '-'}</td>
+                                            <td style="padding: 12px 16px; text-align: center;">${statusBadge}</td>
+                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; word-wrap: break-word;">${item.studentName}</td>
+                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; word-wrap: break-word;">${item.reason || '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
