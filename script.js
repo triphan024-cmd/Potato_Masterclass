@@ -4002,7 +4002,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                 <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Progress</th>
-                                <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
+                                <th style="padding: 8px; width: 10%; text-align: center;">Exam Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -4284,7 +4284,6 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
             if (row && row.c && row.c[5]) { // Index 5 is ID Schedule
                 const rowId = String(row.c[5].v || '').trim();
                 if (rowId === idSchedule.trim()) {
-                    if (!className && row.c[6]) className = row.c[6].v;
                     if (!studyDate && row.c[9]) studyDate = row.c[9].f || row.c[9].v;
                     
                     const status = row.c[4] && row.c[4].v ? row.c[4].v : '-';
@@ -4320,7 +4319,7 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                         </h3>
                         <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-top: 12px;">
                             <div style="color: #475569; font-size: 0.95rem;">
-                                <strong>Weekly:</strong> <span style="color: #1e293b;">${weeklyValue}</span>
+                                <strong>Schedule:</strong> <span style="color: #1e293b;">${weeklyValue}</span>
                             </div>
                             <div style="color: #475569; font-size: 0.95rem;">
                                 <strong>Attendance Rate:</strong> <span style="color: #10b981; font-weight: 600;">${percentage}%</span> (${presenceCount}/${attendanceList.length})
@@ -4333,7 +4332,7 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                             <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 1;">
                                 <tr>
                                     <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 1%; white-space: nowrap;">Status</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 30%; white-space: nowrap;">Student Name</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; white-space: normal;">Student Name</th>
                                     <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Reason</th>
                                 </tr>
                             </thead>
@@ -4355,8 +4354,8 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                                     return `
                                         <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'}">
                                             <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">${statusBadge}</td>
-                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; white-space: nowrap;">${item.studentName}</td>
-                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic;">${item.reason || '-'}</td>
+                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; white-space: normal; min-width: 150px;">${item.studentName}</td>
+                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; white-space: normal; min-width: 200px;">${item.reason || '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -4367,7 +4366,7 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
             `;
         }
         
-        openClassDetail('', contentHtml, true, '700px');
+        openClassDetail('', contentHtml, true, '850px');
     } catch (err) {
         console.error(err);
         openClassDetail('Error', `<div style="padding: 24px; color: #ef4444; text-align: center;">Failed to fetch attendance details.</div>`, true, '400px');
