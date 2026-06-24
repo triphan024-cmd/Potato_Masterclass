@@ -4251,8 +4251,10 @@ window.openStudentListModal = async function(className, filterMode = 'month') {
             }
         }
         
+        const studentList = studentsStr ? studentsStr.split(/,|\n/).map(s => s.trim()).filter(s => s) : [];
+        
         let contentHtml = '';
-        if (!studentsStr) {
+        if (studentList.length === 0) {
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
                     <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
@@ -4263,8 +4265,6 @@ window.openStudentListModal = async function(className, filterMode = 'month') {
                 </div>
             `;
         } else {
-            const studentList = studentsStr.split(/,|\n/).map(s => s.trim()).filter(s => s);
-            
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
                     <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
@@ -4364,7 +4364,7 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                     </div>
                     
                     <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; flex-shrink: 1; overflow-y: auto;">
-                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed;">
+                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; min-width: unset;">
                             <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 1;">
                                 <tr>
                                     <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 100px;">Status</th>
