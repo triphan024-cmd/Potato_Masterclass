@@ -48,7 +48,7 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
-window.openScheduleDetail = function(className) {
+window.openScheduleDetail = function(className, filterMode = 'month') {
     if (event) event.stopPropagation();
     
     if (!window.globalCalendarRows) {
@@ -59,11 +59,24 @@ window.openScheduleDetail = function(className) {
     const normalizeStr = (s) => String(s || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
     const cleanClassName = normalizeStr(className);
     
-    const matchedRows = window.globalCalendarRows.filter(row => {
+    let matchedRows = window.globalCalendarRows.filter(row => {
         if (!row || !row.c) return false;
         const rowClass = normalizeStr(getVal(row.c[3])); // Index 3 is Class Name
         return rowClass === cleanClassName || rowClass.includes(cleanClassName) || cleanClassName.includes(rowClass);
     });
+
+    if (filterMode === 'month') {
+        const currentMonthStr = String(typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : new Date().getMonth() + 1).padStart(2, '0');
+        matchedRows = matchedRows.filter(row => {
+            if (row.c && row.c[10] && row.c[10].f) {
+                const parts = row.c[10].f.split('/');
+                if (parts.length >= 2) {
+                    return parts[1] === currentMonthStr;
+                }
+            }
+            return false;
+        });
+    }
     
     matchedRows.sort((a, b) => {
         let dateA = 0;
@@ -93,6 +106,7 @@ window.openScheduleDetail = function(className) {
             { label: 'Teacher', index: 6 },
             { label: 'Study Date', index: 10 },
             { label: 'No.', index: 19 },
+            { label: 'Attendant', index: 'ATTENDANT_VIRTUAL' },
             { label: 'Roadmap', index: 20 },
             { label: 'Lesson', index: 21 },
             { label: 'Detail', index: 22 },
@@ -105,9 +119,18 @@ window.openScheduleDetail = function(className) {
 
         contentHtml += `<div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
             <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
-            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-right: 32px;">
-                <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
-                <button onclick="window.openRoadmapDetail('${className}', true)" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-right: 32px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
+                    <button onclick="window.openRoadmapDetail('${className.replace(/'/g, "\\'")}', true)" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
+                    <button onclick="window.openStudentListModal('${className.replace(/'/g, "\\'")}')" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: 1px solid var(--primary-color); background: #f0f9ff; color: var(--primary-dark); cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-group"></i> Student</button>
+                </div>
+                <div>
+                    <select onchange="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', this.value)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; color: #334155; background: white; cursor: pointer;">
+                        <option value="month" ${filterMode === 'month' ? 'selected' : ''}>This Month</option>
+                        <option value="all" ${filterMode === 'all' ? 'selected' : ''}>All</option>
+                    </select>
+                </div>
             </div>
             <div style="overflow-x: auto; max-height: 70vh; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="modern-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse; table-layout: auto;">
@@ -129,13 +152,20 @@ window.openScheduleDetail = function(className) {
             contentHtml += `<tr style="${bgStr} border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc'}'">`;
             cols.forEach(col => {
                 let val = '-';
-                if (row.c && row.c[col.index]) {
+                let displayHtml = '-';
+                
+                if (col.index === 'ATTENDANT_VIRTUAL') {
+                    const idSchedule = getVal(row.c[0]); // ID Schedule is at index 0
+                    if (idSchedule) {
+                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}')" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-list-check"></i> View</button>`;
+                    }
+                } else if (row.c && row.c[col.index]) {
                     if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
                     else if (col.index === 6) val = getShortName(getVal(row.c[col.index]));
                     else val = getVal(row.c[col.index]);
+                    displayHtml = String(val || '-').replace(/\n/g, '<br>');
                 }
                 
-                let displayHtml = String(val || '-').replace(/\n/g, '<br>');
                 if (col.index === 4 && val !== '-') {
                     const lowerStatus = String(val || '').toLowerCase();
                     let bgColor = 'rgba(100, 116, 139, 0.1)';
@@ -4150,3 +4180,179 @@ function renderAcademicPerformance(classRows) {
         grid.appendChild(card);
     });
 }
+
+window.openStudentListModal = async function(className) {
+    if (event) event.stopPropagation();
+    
+    const loadingHtml = `
+        <div style="padding: 32px; text-align: center; color: #64748b;">
+            <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 16px;"></i>
+            <div>Fetching student list...</div>
+        </div>
+    `;
+    openClassDetail('Student List', loadingHtml, true, '400px');
+    
+    try {
+        const studentUrl = "https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=2009932031";
+        const res = await fetch(studentUrl);
+        const text = await res.text();
+        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const data = JSON.parse(jsonString);
+        
+        const rows = data.table.rows;
+        let studentsStr = '';
+        
+        for (let row of rows) {
+            if (row && row.c && row.c[0]) {
+                const rowClass = String(row.c[0].v || '').trim();
+                if (rowClass === className.trim()) {
+                    studentsStr = row.c[15] && row.c[15].v ? row.c[15].v : '';
+                    break;
+                }
+            }
+        }
+        
+        let contentHtml = '';
+        if (!studentsStr) {
+            contentHtml = `
+                <div style="padding: 24px; text-align: center; color: #64748b;">
+                    <i class="fa-solid fa-user-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
+                    <div>No students found for this class.</div>
+                </div>
+            `;
+        } else {
+            const studentList = studentsStr.split(/,|\n/).map(s => s.trim()).filter(s => s);
+            
+            contentHtml = `
+                <div style="padding: 24px;">
+                    <h3 style="margin-top: 0; color: var(--primary-dark); font-size: 1.25rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-user-group"></i> ${className}
+                    </h3>
+                    <div style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+                        <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                            ${studentList.map(s => `
+                                <li style="padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 500; color: #334155; display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                        ${s.charAt(s.search(/[a-zA-Z]/) !== -1 ? s.search(/[a-zA-Z]/) : 0).toUpperCase()}
+                                    </div>
+                                    ${s}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        openClassDetail('', contentHtml, true, '500px');
+    } catch (err) {
+        console.error(err);
+        openClassDetail('Error', `<div style="padding: 24px; color: #ef4444; text-align: center;">Failed to fetch student list.</div>`, true, '400px');
+    }
+};
+
+window.viewAttendance = async function(idSchedule) {
+    if (event) event.stopPropagation();
+    
+    const loadingHtml = `
+        <div style="padding: 32px; text-align: center; color: #64748b;">
+            <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 16px;"></i>
+            <div>Fetching attendance details...</div>
+        </div>
+    `;
+    openClassDetail('Attendance', loadingHtml, true, '600px');
+    
+    try {
+        const url = "https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=438438213";
+        const res = await fetch(url);
+        const text = await res.text();
+        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const data = JSON.parse(jsonString);
+        
+        const rows = data.table.rows;
+        let attendanceList = [];
+        let className = '';
+        let studyDate = '';
+        
+        for (let row of rows) {
+            if (row && row.c && row.c[5]) { // Index 5 is ID Schedule
+                const rowId = String(row.c[5].v || '').trim();
+                if (rowId === idSchedule.trim()) {
+                    if (!className && row.c[6]) className = row.c[6].v;
+                    if (!studyDate && row.c[9]) studyDate = row.c[9].f || row.c[9].v;
+                    
+                    const status = row.c[4] && row.c[4].v ? row.c[4].v : '-';
+                    const studentName = row.c[8] && row.c[8].v ? row.c[8].v : '-';
+                    const reason = row.c[10] && row.c[10].v ? row.c[10].v : '';
+                    
+                    attendanceList.push({ status, studentName, reason });
+                }
+            }
+        }
+        
+        let contentHtml = '';
+        if (attendanceList.length === 0) {
+            contentHtml = `
+                <div style="padding: 24px; text-align: center; color: #64748b;">
+                    <i class="fa-solid fa-calendar-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
+                    <div>No attendance records found.</div>
+                </div>
+            `;
+        } else {
+            contentHtml = `
+                <div style="padding: 24px;">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-list-check"></i> Attendance Details
+                        </h3>
+                        <div style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+                            <strong>Class:</strong> ${className} <br>
+                            <strong>Date:</strong> ${studyDate}
+                        </div>
+                    </div>
+                    
+                    <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                                <tr>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Student Name</th>
+                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 1%;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${attendanceList.map((item, idx) => {
+                                    const lowerStatus = String(item.status).toLowerCase();
+                                    let statusBg = '#f1f5f9';
+                                    let statusColor = '#64748b';
+                                    if (lowerStatus.includes('presence') || lowerStatus.includes('present')) {
+                                        statusBg = 'rgba(16, 185, 129, 0.1)';
+                                        statusColor = '#10b981';
+                                    } else if (lowerStatus.includes('absence') || lowerStatus.includes('absent')) {
+                                        statusBg = 'rgba(239, 68, 68, 0.1)';
+                                        statusColor = '#ef4444';
+                                    }
+                                    
+                                    const statusBadge = `<span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">${item.status}</span>`;
+                                    
+                                    return `
+                                        <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'}">
+                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b;">${item.studentName}</td>
+                                            <td style="padding: 12px 16px; text-align: center;">${statusBadge}</td>
+                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic;">${item.reason || '-'}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        openClassDetail('', contentHtml, true, '700px');
+    } catch (err) {
+        console.error(err);
+        openClassDetail('Error', `<div style="padding: 24px; color: #ef4444; text-align: center;">Failed to fetch attendance details.</div>`, true, '400px');
+    }
+};
