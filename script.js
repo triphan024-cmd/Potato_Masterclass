@@ -123,10 +123,10 @@ window.openScheduleDetail = function(className, filterMode = 'month') {
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.5rem; display: flex; align-items: center; gap: 12px;"><i class="fa-solid fa-calendar-days"></i> Schedule: ${className}</h3>
                     <button onclick="window.openRoadmapDetail('${className.replace(/'/g, "\\'")}', true)" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: none; background: var(--primary-color); color: white; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-route"></i> Roadmap</button>
-                    <button onclick="window.openStudentListModal('${className.replace(/'/g, "\\'")}')" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: 1px solid var(--primary-color); background: #f0f9ff; color: var(--primary-dark); cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-group"></i> Student</button>
+                    <button onclick="window.openStudentListModal('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; font-weight: 500; font-size: 0.85rem; border: 1px solid var(--primary-color); background: #f0f9ff; color: var(--primary-dark); cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-group"></i> Student</button>
                 </div>
                 <div>
-                    <select onchange="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', this.value)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; color: #334155; background: white; cursor: pointer;">
+                    <select onchange="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', this.value)" style="padding: 6px 32px 6px 12px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.15); font-size: 0.85rem; color: #334155; background: #ffffff; cursor: pointer; outline: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 8px auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-weight: 500;">
                         <option value="month" ${filterMode === 'month' ? 'selected' : ''}>This Month</option>
                         <option value="all" ${filterMode === 'all' ? 'selected' : ''}>All</option>
                     </select>
@@ -156,9 +156,10 @@ window.openScheduleDetail = function(className, filterMode = 'month') {
                 
                 if (col.index === 'ATTENDANT_VIRTUAL') {
                     const idSchedule = getVal(row.c[0]); // ID Schedule is at index 0
+                    const weeklyValue = getVal(row.c[11]) || '-'; // Weekly is at index 11
                     if (idSchedule) {
                         const attendantPct = getVal(row.c[42]) || 'View';
-                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}')" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-list-check"></i> ${attendantPct}</button>`;
+                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}', '${weeklyValue.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f0f9ff; color: #0284c7; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${attendantPct}</button>`;
                     }
                 } else if (row.c && row.c[col.index]) {
                     if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
@@ -3997,8 +3998,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 50%;">Class</th>
-                                <th style="padding: 8px; width: 15%; text-align: right;">Teacher</th>
+                                <th style="padding: 8px; width: 60%;">Class</th>
+                                <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Progress</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
@@ -4055,7 +4056,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 12px 8px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                        <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${absence}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
@@ -4182,7 +4183,7 @@ function renderAcademicPerformance(classRows) {
     });
 }
 
-window.openStudentListModal = async function(className) {
+window.openStudentListModal = async function(className, filterMode = 'month') {
     if (event) event.stopPropagation();
     
     const loadingHtml = `
@@ -4217,7 +4218,7 @@ window.openStudentListModal = async function(className) {
         if (!studentsStr) {
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
-                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="text-align: center; color: #64748b; padding: 24px 0;">
                         <i class="fa-solid fa-user-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
                         <div>No students found for this class.</div>
@@ -4229,7 +4230,7 @@ window.openStudentListModal = async function(className) {
             
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
-                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <h3 style="margin-top: 0; color: var(--primary-dark); font-size: 1.25rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-user-group"></i> ${className}
                     </h3>
@@ -4256,7 +4257,7 @@ window.openStudentListModal = async function(className) {
     }
 };
 
-window.viewAttendance = async function(idSchedule) {
+window.viewAttendance = async function(idSchedule, className, weeklyValue, filterMode = 'month') {
     if (event) event.stopPropagation();
     
     const loadingHtml = `
@@ -4299,7 +4300,7 @@ window.viewAttendance = async function(idSchedule) {
         if (attendanceList.length === 0) {
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
-                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="text-align: center; color: #64748b; padding: 24px 0;">
                         <i class="fa-solid fa-calendar-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
                         <div>No attendance records found.</div>
@@ -4312,15 +4313,18 @@ window.viewAttendance = async function(idSchedule) {
 
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
-                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-list-check"></i> Attendance Details
+                        <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
+                            ${className}
                         </h3>
-                        <div style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
-                            <strong>Class:</strong> ${className} <br>
-                            <strong>Date:</strong> ${studyDate} <br>
-                            <strong>Attendance Rate:</strong> ${percentage}% (${presenceCount}/${attendanceList.length})
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-top: 12px;">
+                            <div style="color: #475569; font-size: 0.95rem;">
+                                <strong>Weekly:</strong> <span style="color: #1e293b;">${weeklyValue}</span>
+                            </div>
+                            <div style="color: #475569; font-size: 0.95rem;">
+                                <strong>Attendance Rate:</strong> <span style="color: #10b981; font-weight: 600;">${percentage}%</span> (${presenceCount}/${attendanceList.length})
+                            </div>
                         </div>
                     </div>
                     
