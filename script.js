@@ -202,19 +202,25 @@ window.openScheduleDetail = async function(className, filterMode = 'month') {
                 let displayHtml = '-';
                 
                 if (col.index === 'ATTENDANT_VIRTUAL') {
-                    const idSchedule = getVal(row.c[0]); // ID Schedule is at index 0
+                    const classId = getVal(row.c[2]); // ID Class is at index 2
+                    const studyDate = getVal(row.c[10]); // Study Date is at index 10
                     const weeklyValue = getVal(row.c[11]) || '-'; // Weekly is at index 11
-                    if (idSchedule) {
+                    if (classId && studyDate) {
                         let attendantPct = getVal(row.c[42]) || 'View';
                         if (globalAttendanceRows) {
-                            const attendanceList = globalAttendanceRows.filter(r => getVal(r.c[6]) === idSchedule);
+                            const attendanceList = globalAttendanceRows.filter(r => {
+                                const rClassId = String(getVal(r.c[6]) || '').trim();
+                                const rDate = String(r.c[9] && r.c[9].f ? r.c[9].f : getVal(r.c[9]) || '').trim();
+                                const sDate = String(row.c[10] && row.c[10].f ? row.c[10].f : studyDate || '').trim();
+                                return rClassId === String(classId).trim() && rDate === sDate;
+                            });
                             if (attendanceList.length > 0) {
                                 const presenceCount = attendanceList.filter(a => String(getVal(a.c[4])).toLowerCase().includes('presence') || String(getVal(a.c[4])).toLowerCase().includes('present')).length;
                                 const percentage = ((presenceCount / attendanceList.length) * 100).toFixed(0);
                                 attendantPct = `${percentage}% (${presenceCount}/${attendanceList.length})`;
                             }
                         }
-                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}', '${weeklyValue.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f0f9ff; color: #0284c7; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${attendantPct}</button>`;
+                        displayHtml = `<button onclick="window.viewAttendance('${classId.replace(/'/g, "\\'")}', '${studyDate.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}', '${weeklyValue.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f0f9ff; color: #0284c7; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${attendantPct}</button>`;
                     }
                 } else if (row.c && row.c[col.index]) {
                     if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
@@ -4329,7 +4335,7 @@ window.openStudentListModal = async function(className, filterMode = 'month') {
     }
 };
 
-window.viewAttendance = async function(idSchedule, className, weeklyValue, filterMode = 'month') {
+window.viewAttendance = async function(classId, studyDateArg, className, weeklyValue, filterMode = 'month') {
     if (event) event.stopPropagation();
     
     const loadingHtml = `
@@ -4356,10 +4362,12 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
         let studyDate = '';
         
         for (let row of attRows) {
-            if (row && row.c && row.c[6]) { // Index 6 is Class Name (ID Class)
-                const rowId = String(row.c[6].v || '').trim();
-                if (rowId === idSchedule.trim()) {
-                    if (!studyDate && row.c[9]) studyDate = row.c[9].f || row.c[9].v;
+            if (row && row.c && row.c[6] && row.c[9]) {
+                const rowClassId = String(row.c[6].v || '').trim();
+                const rowDate = String(row.c[9].f || row.c[9].v || '').trim();
+                const sDate = String(studyDateArg).trim();
+                if (rowClassId === classId.trim() && rowDate === sDate) {
+                    if (!studyDate) studyDate = rowDate;
                     
                     const status = row.c[4] && row.c[4].v ? row.c[4].v : '-';
                     const studentName = row.c[8] && row.c[8].v ? row.c[8].v : '-';
