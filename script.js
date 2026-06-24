@@ -48,12 +48,49 @@ function closeClassDetail() {
     modal.classList.remove('show');
 }
 
-window.openScheduleDetail = function(className, filterMode = 'month') {
+window.openScheduleDetail = async function(className, filterMode = 'month') {
     if (event) event.stopPropagation();
     
     if (!window.globalCalendarRows) {
-        showToast("Schedule data is not loaded yet.", "error");
-        return;
+        const loadingHtml = `
+            <div style="padding: 32px; text-align: center; color: #64748b;">
+                <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 16px;"></i>
+                <div>Fetching schedule data...</div>
+            </div>
+        `;
+        openClassDetail('Schedule Detail', loadingHtml, true, '400px');
+        
+        try {
+            const calRes = await fetch('https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=37609988');
+            const calText = await calRes.text();
+            const calJsonString = calText.substring(calText.indexOf('{'), calText.lastIndexOf('}') + 1);
+            const calJson = JSON.parse(calJsonString);
+            window.calendarHeaders = calJson.table.cols ? calJson.table.cols.map(c => c ? c.label : '') : [];
+            const calRows = calJson.table.rows;
+            window.globalCalendarRows = calRows;
+            
+            window.globalCalendarEvents = [];
+            calRows.forEach(row => {
+                if(!row || !row.c || !row.c[10] || !row.c[10].f) return;
+                const dateStr = row.c[10].f;
+                const parts = dateStr.split('/');
+                if(parts.length === 3) {
+                    const d = new Date(parts[2], parts[1] - 1, parts[0]);
+                    window.globalCalendarEvents.push({
+                        date: d,
+                        className: window.getVal ? window.getVal(row.c[3]) : row.c[3]?.v || '',
+                        time: window.getVal ? window.getVal(row.c[14]) : row.c[14]?.v || '',
+                        teacher: window.getVal ? window.getVal(row.c[6]) : row.c[6]?.v || '',
+                        raw: row,
+                        _eventId: window.globalCalendarEvents.length
+                    });
+                }
+            });
+        } catch(err) {
+            console.error("Error fetching calendar data on demand:", err);
+            openClassDetail('Error', `<div style="padding: 24px; color: #ef4444; text-align: center;">Failed to fetch schedule data.</div>`, true, '400px');
+            return;
+        }
     }
     
     const normalizeStr = (s) => String(s || '').toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ').trim();
