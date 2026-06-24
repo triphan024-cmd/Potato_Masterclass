@@ -51,7 +51,7 @@ function closeClassDetail() {
 window.openScheduleDetail = async function(className, filterMode = 'month') {
     if (event) event.stopPropagation();
     
-    if (!window.globalClassRows || window.globalClassRows.length === 0) {
+    if (typeof globalClassRows === 'undefined' || globalClassRows.length === 0) {
         openClassDetail('Loading', `<div style="padding: 32px; text-align: center; color: #64748b;">
             <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 16px;"></i>
             <div>Loading data... please wait</div>
