@@ -51,6 +51,16 @@ function closeClassDetail() {
 window.openScheduleDetail = async function(className, filterMode = 'month') {
     if (event) event.stopPropagation();
     
+    if (!window.globalClassRows || window.globalClassRows.length === 0) {
+        openClassDetail('Loading', `<div style="padding: 32px; text-align: center; color: #64748b;">
+            <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom: 16px;"></i>
+            <div>Loading data... please wait</div>
+        </div>`, true, '400px');
+        if (typeof fetchDashboardData === 'function') {
+            await fetchDashboardData();
+        }
+    }
+    
     if (!window.globalCalendarRows) {
         const loadingHtml = `
             <div style="padding: 32px; text-align: center; color: #64748b;">
@@ -195,7 +205,15 @@ window.openScheduleDetail = async function(className, filterMode = 'month') {
                     const idSchedule = getVal(row.c[0]); // ID Schedule is at index 0
                     const weeklyValue = getVal(row.c[11]) || '-'; // Weekly is at index 11
                     if (idSchedule) {
-                        const attendantPct = getVal(row.c[42]) || 'View';
+                        let attendantPct = getVal(row.c[42]) || 'View';
+                        if (globalAttendanceRows) {
+                            const attendanceList = globalAttendanceRows.filter(r => getVal(r.c[6]) === idSchedule);
+                            if (attendanceList.length > 0) {
+                                const presenceCount = attendanceList.filter(a => String(getVal(a.c[4])).toLowerCase().includes('presence') || String(getVal(a.c[4])).toLowerCase().includes('present')).length;
+                                const percentage = ((presenceCount / attendanceList.length) * 100).toFixed(0);
+                                attendantPct = `${percentage}% (${presenceCount}/${attendanceList.length})`;
+                            }
+                        }
                         displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}', '${weeklyValue.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f0f9ff; color: #0284c7; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${attendantPct}</button>`;
                     }
                 } else if (row.c && row.c[col.index]) {
@@ -1501,6 +1519,7 @@ let currentMonthIndex = 3;
 let globalClassRows = [];
 let globalMetricsRow = [];
 let globalLeaderRows = [];
+let globalAttendanceRows = null;
 
 function changeMonth(diff) {
     let newIndex = currentMonthIndex + diff;
@@ -1569,6 +1588,7 @@ const CALENDAR_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olU
 const DUTY_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=585528165';
 const ROADMAP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=882542672';
 const FEES_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=1245774263';
+const ATTENDANCE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=438438213';
 
 
 
@@ -1795,6 +1815,19 @@ async function fetchDashboardData() {
             console.log(`Retrieved duty events.`);
         } catch (err) {
             console.error("Error fetching duty data:", err);
+        }
+        
+        // Fetch Attendance Data
+        try {
+            console.log("Fetching attendance data...");
+            const attRes = await fetch(ATTENDANCE_SHEET_URL);
+            const attText = await attRes.text();
+            const attJsonStr = attText.substring(attText.indexOf('{'), attText.lastIndexOf('}') + 1);
+            const attJson = JSON.parse(attJsonStr);
+            globalAttendanceRows = attJson.table.rows;
+            console.log("Retrieved attendance rows.");
+        } catch(err) {
+            console.error("Error fetching attendance data:", err);
         }
 
         const today = new Date();
@@ -4035,11 +4068,11 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 60%;">Class</th>
-                                <th style="padding: 8px; width: 10%; text-align: left;">Teacher</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Progress</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Exam Date</th>
+                                <th style="padding: 8px; width: 45%;">Class</th>
+                                <th style="padding: 8px; width: 22%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 8%; text-align: center;">Absence</th>
+                                <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
+                                <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -4242,16 +4275,18 @@ window.openStudentListModal = async function(className, filterMode = 'month') {
         let studentsStr = '';
         
         for (let row of rows) {
-            if (row && row.c && row.c[0]) {
-                const rowClass = String(row.c[0].v || '').trim();
-                if (rowClass === className.trim()) {
+            if (row && row.c && row.c[11]) {
+                const rowClassName = String(row.c[11].v || '').trim();
+                if (formatClassName(rowClassName) === formatClassName(className) || rowClassName.includes(className.trim()) || className.trim().includes(rowClassName)) {
                     studentsStr = row.c[15] && row.c[15].v ? row.c[15].v : '';
                     break;
                 }
             }
         }
         
-        const studentList = studentsStr ? studentsStr.split(/,|\n/).map(s => s.trim()).filter(s => s) : [];
+        const studentList = studentsStr.split(/,|\n/)
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
         
         let contentHtml = '';
         if (studentList.length === 0) {
@@ -4306,19 +4341,23 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
     openClassDetail('Attendance', loadingHtml, true, '600px');
     
     try {
-        const url = "https://docs.google.com/spreadsheets/d/1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE/gviz/tq?tqx=out:json&gid=438438213";
-        const res = await fetch(url);
-        const text = await res.text();
-        const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-        const data = JSON.parse(jsonString);
+        let attRows = globalAttendanceRows;
+        if (!attRows) {
+            const url = ATTENDANCE_SHEET_URL;
+            const res = await fetch(url);
+            const text = await res.text();
+            const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+            const json = JSON.parse(jsonString);
+            attRows = json.table.rows;
+            globalAttendanceRows = attRows;
+        }
         
-        const rows = data.table.rows;
         let attendanceList = [];
         let studyDate = '';
         
-        for (let row of rows) {
-            if (row && row.c && row.c[5]) { // Index 5 is ID Schedule
-                const rowId = String(row.c[5].v || '').trim();
+        for (let row of attRows) {
+            if (row && row.c && row.c[6]) { // Index 6 is Class Name (ID Class)
+                const rowId = String(row.c[6].v || '').trim();
                 if (rowId === idSchedule.trim()) {
                     if (!studyDate && row.c[9]) studyDate = row.c[9].f || row.c[9].v;
                     
@@ -4367,9 +4406,9 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                         <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; min-width: unset;">
                             <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 1;">
                                 <tr>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 100px;">Status</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 35%;">Student Name</th>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: auto;">Reason</th>
+                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 120px;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 45%;">Student Name</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 45%;">Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -4389,9 +4428,9 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
                                     
                                     return `
                                         <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'}">
-                                            <td style="padding: 12px 16px; text-align: center;">${statusBadge}</td>
-                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; word-wrap: break-word;">${item.studentName}</td>
-                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; word-wrap: break-word;">${item.reason || '-'}</td>
+                                            <td style="padding: 12px 16px; text-align: center; vertical-align: top;">${statusBadge}</td>
+                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; vertical-align: top;">${item.studentName}</td>
+                                            <td style="padding: 12px 16px; color: #64748b; font-style: italic; vertical-align: top;">${item.reason || '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -4402,7 +4441,7 @@ window.viewAttendance = async function(idSchedule, className, weeklyValue, filte
             `;
         }
         
-        openClassDetail('', contentHtml, true, '850px');
+        openClassDetail('', contentHtml, true, '1000px');
     } catch (err) {
         console.error(err);
         openClassDetail('Error', `<div style="padding: 24px; color: #ef4444; text-align: center;">Failed to fetch attendance details.</div>`, true, '400px');
