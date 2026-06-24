@@ -157,7 +157,8 @@ window.openScheduleDetail = function(className, filterMode = 'month') {
                 if (col.index === 'ATTENDANT_VIRTUAL') {
                     const idSchedule = getVal(row.c[0]); // ID Schedule is at index 0
                     if (idSchedule) {
-                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}')" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-list-check"></i> View</button>`;
+                        const attendantPct = getVal(row.c[42]) || 'View';
+                        displayHtml = `<button onclick="window.viewAttendance('${idSchedule.replace(/'/g, "\\'")}')" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-list-check"></i> ${attendantPct}</button>`;
                     }
                 } else if (row.c && row.c[col.index]) {
                     if (col.index === 10 && row.c[col.index].f) val = row.c[col.index].f;
@@ -3996,10 +3997,10 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 40%;">Class</th>
-                                <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 50%;">Class</th>
+                                <th style="padding: 8px; width: 15%; text-align: right;">Teacher</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                <th style="padding: 8px; width: 15%; text-align: center;">Progress</th>
+                                <th style="padding: 8px; width: 10%; text-align: center;">Progress</th>
                                 <th style="padding: 8px; width: 15%; text-align: center;">Exam Date</th>
                             </tr>
                         </thead>
@@ -4054,7 +4055,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                        <td style="padding: 12px 8px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${absence}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
@@ -4215,20 +4216,24 @@ window.openStudentListModal = async function(className) {
         let contentHtml = '';
         if (!studentsStr) {
             contentHtml = `
-                <div style="padding: 24px; text-align: center; color: #64748b;">
-                    <i class="fa-solid fa-user-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
-                    <div>No students found for this class.</div>
+                <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
+                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <div style="text-align: center; color: #64748b; padding: 24px 0;">
+                        <i class="fa-solid fa-user-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
+                        <div>No students found for this class.</div>
+                    </div>
                 </div>
             `;
         } else {
             const studentList = studentsStr.split(/,|\n/).map(s => s.trim()).filter(s => s);
             
             contentHtml = `
-                <div style="padding: 24px;">
+                <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
+                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <h3 style="margin-top: 0; color: var(--primary-dark); font-size: 1.25rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
                         <i class="fa-solid fa-user-group"></i> ${className}
                     </h3>
-                    <div style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+                    <div style="overflow-y: auto; padding-right: 8px; flex-shrink: 1;">
                         <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
                             ${studentList.map(s => `
                                 <li style="padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 500; color: #334155; display: flex; align-items: center; gap: 12px;">
@@ -4293,30 +4298,38 @@ window.viewAttendance = async function(idSchedule) {
         let contentHtml = '';
         if (attendanceList.length === 0) {
             contentHtml = `
-                <div style="padding: 24px; text-align: center; color: #64748b;">
-                    <i class="fa-solid fa-calendar-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
-                    <div>No attendance records found.</div>
+                <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column;">
+                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <div style="text-align: center; color: #64748b; padding: 24px 0;">
+                        <i class="fa-solid fa-calendar-xmark fa-2x" style="margin-bottom: 12px; opacity: 0.5;"></i>
+                        <div>No attendance records found.</div>
+                    </div>
                 </div>
             `;
         } else {
+            const presenceCount = attendanceList.filter(a => String(a.status).toLowerCase().includes('presence') || String(a.status).toLowerCase().includes('present')).length;
+            const percentage = ((presenceCount / attendanceList.length) * 100).toFixed(0);
+
             contentHtml = `
-                <div style="padding: 24px;">
+                <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
+                    <button class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="margin-bottom: 20px;">
                         <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-list-check"></i> Attendance Details
                         </h3>
                         <div style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
                             <strong>Class:</strong> ${className} <br>
-                            <strong>Date:</strong> ${studyDate}
+                            <strong>Date:</strong> ${studyDate} <br>
+                            <strong>Attendance Rate:</strong> ${percentage}% (${presenceCount}/${attendanceList.length})
                         </div>
                     </div>
                     
-                    <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                            <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                    <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; flex-shrink: 1; overflow-y: auto;">
+                        <table class="modern-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: auto;">
+                            <thead style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; top: 0; z-index: 1;">
                                 <tr>
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Student Name</th>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 1%;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #334155; width: 1%; white-space: nowrap;">Status</th>
+                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155; width: 30%; white-space: nowrap;">Student Name</th>
                                     <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #334155;">Reason</th>
                                 </tr>
                             </thead>
@@ -4337,8 +4350,8 @@ window.viewAttendance = async function(idSchedule) {
                                     
                                     return `
                                         <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 0 ? 'background: #ffffff;' : 'background: #f8fafc;'}">
-                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b;">${item.studentName}</td>
-                                            <td style="padding: 12px 16px; text-align: center;">${statusBadge}</td>
+                                            <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">${statusBadge}</td>
+                                            <td style="padding: 12px 16px; font-weight: 500; color: #1e293b; white-space: nowrap;">${item.studentName}</td>
                                             <td style="padding: 12px 16px; color: #64748b; font-style: italic;">${item.reason || '-'}</td>
                                         </tr>
                                     `;
