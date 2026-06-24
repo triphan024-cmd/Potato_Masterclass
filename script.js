@@ -4295,12 +4295,14 @@ window.openStudentListModal = async function(className, filterMode = 'month') {
         } else {
             contentHtml = `
                 <div style="background: #ffffff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); position: relative; display: flex; flex-direction: column; max-height: 85vh;">
-                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
-                    <h3 style="margin-top: 0; color: var(--primary-dark); font-size: 1.25rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-user-group"></i> ${className}
-                    </h3>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; color: #475569; font-size: 0.95rem; display: inline-block; width: fit-content;">
-                        <strong>Total Students:</strong> <span style="color: var(--primary-color); font-weight: 600;">${studentList.length}</span>
+                    <button class="close-btn" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}', '${filterMode}')" style="position: absolute; top: 20px; right: 24px; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #64748b;"><i class="fa-solid fa-xmark"></i></button>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-right: 32px;">
+                        <h3 style="margin: 0; color: var(--primary-dark); font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-user-group"></i> ${className}
+                        </h3>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; color: #475569; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                            <strong>Total:</strong> <span style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">${studentList.length}</span>
+                        </div>
                     </div>
                     <div style="overflow-y: auto; padding-right: 8px; flex-shrink: 1;">
                         <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
