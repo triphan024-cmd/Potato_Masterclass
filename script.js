@@ -207,19 +207,6 @@ window.openScheduleDetail = async function(className, filterMode = 'month') {
                     const weeklyValue = getVal(row.c[11]) || '-'; // Weekly is at index 11
                     if (classId && studyDate) {
                         let attendantPct = getVal(row.c[42]) || 'View';
-                        if (globalAttendanceRows) {
-                            const attendanceList = globalAttendanceRows.filter(r => {
-                                const rClassId = String(getVal(r.c[6]) || '').trim();
-                                const rDate = String(r.c[9] && r.c[9].f ? r.c[9].f : getVal(r.c[9]) || '').trim();
-                                const sDate = String(row.c[10] && row.c[10].f ? row.c[10].f : studyDate || '').trim();
-                                return rClassId === String(classId).trim() && rDate === sDate;
-                            });
-                            if (attendanceList.length > 0) {
-                                const presenceCount = attendanceList.filter(a => String(getVal(a.c[4])).toLowerCase().includes('presence') || String(getVal(a.c[4])).toLowerCase().includes('present')).length;
-                                const percentage = ((presenceCount / attendanceList.length) * 100).toFixed(0);
-                                attendantPct = `${percentage}% (${presenceCount}/${attendanceList.length})`;
-                            }
-                        }
                         displayHtml = `<button onclick="window.viewAttendance('${classId.replace(/'/g, "\\'")}', '${studyDate.replace(/'/g, "\\'")}', '${className.replace(/'/g, "\\'")}', '${weeklyValue.replace(/'/g, "\\'")}', '${filterMode}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: #f0f9ff; color: #0284c7; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${attendantPct}</button>`;
                     }
                 } else if (row.c && row.c[col.index]) {
