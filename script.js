@@ -2639,7 +2639,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
 
             const safeHTML = combinedHTML
                 .replace(/"/g, '&quot;')
-                .replace(/`/g, '\\`')
+                .replace(/`/g, '\`')
                 .replace(/\n/g, ' ')
                 .replace(/\r/g, ' ')
                 .replace(/'/g, "&#39;");
@@ -2654,7 +2654,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                             <button onclick="openTaskModal(${taskObjStr})" style="border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
                         </div>
                     </div>
-                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskDetailModal(${taskObjStr}, \`${safeHTML}\`)' title="Click to view details and quick update">
+                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskDetailModal(${taskObjStr}, `${safeHTML}`)' title="Click to view details and quick update">
                         ${shortPlan}
                     </div>
                 </div>
@@ -2722,12 +2722,12 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 
                 const safeHTML = combinedHTML
                     .replace(/"/g, '&quot;')
-                    .replace(/`/g, '\\`')
+                    .replace(/`/g, '\`')
                     .replace(/\n/g, ' ')
                     .replace(/\r/g, ' ')
                     .replace(/'/g, "&#39;");
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s; display: flex; align-items: flex-start; justify-content: space-between;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del style="flex: 1; margin-right: 8px;">${shortPlan}</del> <span style="font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span></li>`;
+                compHtml += `<li style="cursor: pointer; transition: color 0.2s; display: flex; align-items: flex-start; justify-content: space-between;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', `${safeHTML}`)" title="Click to view details"><del style="flex: 1; margin-right: 8px;">${shortPlan}</del> <span style="font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span></li>`;
             });
             compHtml += `</ul></div>`;
             completedPanel.innerHTML = compHtml;
@@ -2990,12 +2990,12 @@ function renderTeacherObservations(classRows) {
                 
                 let safeHTML = combinedHTML
                     .replace(/"/g, '&quot;')
-                    .replace(/`/g, '\\`')
+                    .replace(/`/g, '\`')
                     .replace(/\n/g, ' ')
                     .replace(/\r/g, ' ');
                     
                 let headIcon = (hasEval || hasComment)
-                    ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', \`${safeHTML}\`)"></i>`
+                    ? `<i class="fa-solid fa-comments" style="color: var(--primary); cursor: pointer; font-size: 1.2rem;" onclick="openClassDetail('', `${safeHTML}`)"></i>`
                     : '-';
 
                 const studentCount = parseInt(getVal(c[7]) || 0);
@@ -3284,7 +3284,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                     let timeStr = timeMatch ? timeMatch[1] : '';
                     let namePart = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
                     if (timeStr) {
-                        namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
+                        namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\$&') + '\\)?\\s*'), '').trim();
                     }
                     return { branch, timeStr, namePart, label, dutyType, _dutyId: row._dutyId };
                 });
@@ -3989,7 +3989,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                 
                                 let formattedExamDate = examDate;
                                 if (examDate !== '-' && currentMonthStr && examDate.split('/')[1] === currentMonthStr) {
-                                    formattedExamDate = \`<span style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);">\${examDate}</span>\`;
+                                    formattedExamDate = `<span style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fef08a, #facc15); color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(250, 204, 21, 0.2);">${examDate}</span>`;
                                 }
 
                                 let pColor = '';
@@ -4013,23 +4013,23 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                 }
                                 
                                 let pBadgeHtml = progress !== '-' && progress !== '' 
-                                    ? \`<span class="status-badge" style="margin: 0; background: \${pBg}; color: \${pColor}; font-size: 0.75rem; white-space: nowrap;">\${progress}</span>\` 
+                                    ? `<span class="status-badge" style="margin: 0; background: ${pBg}; color: ${pColor}; font-size: 0.75rem; white-space: nowrap;">${progress}</span>` 
                                     : '-';
 
-                                return \`
-                                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('\${className.replace(/'/g, "\\\\'")}')">
+                                return `
+                                    <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}')">
                                         <td style="padding: 12px 8px;">
-                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">\${className.trim()}</div>
+                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
                                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
-                                                <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> \${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> \${studentCount}</span>
+                                                <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${teacherName}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">\${absence}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">\${pBadgeHtml}</td>
-                                        <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">\${formattedExamDate}</td>
+                                        <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
+                                        <td style="padding: 12px 8px; text-align: center;">${absence}</td>
+                                        <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
+                                        <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
                                     </tr>
-                                \`;
+                                `;
                             }).join('')}
                         </tbody>
                     </table>
@@ -4150,3 +4150,5 @@ function renderAcademicPerformance(classRows) {
         grid.appendChild(card);
     });
 }
+
+
