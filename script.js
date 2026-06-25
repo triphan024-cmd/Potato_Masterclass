@@ -3552,8 +3552,58 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
             
             const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
             if (acadContainer) {
-                let dutyHtml = renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic Duty', '#d97706', true);
-                acadContainer.innerHTML = dutyHtml;
+                if (acDuties.length > 0) {
+                    const nqList = [], hdList = [];
+                    acDuties.forEach(row => {
+                        const label = getVal(row.c[13]) || '';
+                        const branch = getVal(row.c[4]) || '';
+                        const dutyType = getVal(row.c[2]) || '';
+                        let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
+                        let timeStr = timeMatch ? timeMatch[1] : '';
+                        let namePart = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
+                        if (timeStr) {
+                            namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
+                        }
+                        const wfhHtml = dutyType && dutyType.toUpperCase() === 'WFH' ? `<span style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">WFH</span>` : '';
+                        const timeBadge = timeStr ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${timeStr}</span>` : '';
+                        
+                        const card = `
+                        <div onclick="openDutyDetail(${row._dutyId})" class="daily-class-card" style="background: white; border-left: 3px solid #d97706; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden; cursor: pointer;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${namePart}">${namePart}</div>
+                                ${wfhHtml}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: flex-end; align-items: center;">
+                                ${timeBadge}
+                            </div>
+                        </div>`;
+                        
+                        if (branch === 'NQ' || label.includes('NQ')) nqList.push(card); else hdList.push(card);
+                    });
+                    
+                    acadContainer.innerHTML = `
+                    <div style="display: flex; gap: 20px; margin-bottom: 16px; align-items: stretch; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 16px;">
+                        <div style="flex: 0 0 150px; padding-right: 16px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center;">
+                            <div style="background: rgba(217,119,6,0.08); padding: 8px 12px; border-radius: 8px; border-left: 3px solid #d97706;">
+                                <span style="color: #d97706; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
+                                    <i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Trực Academic
+                                </span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; border-right: 1px dashed rgba(0,0,0,0.1); padding-right: 20px; min-width: 0;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                ${nqList.length > 0 ? nqList.join('') : '<div style="color: var(--text-muted); font-style: italic; font-size: 0.85rem; padding: 10px;">-</div>'}
+                            </div>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                ${hdList.length > 0 ? hdList.join('') : '<div style="color: var(--text-muted); font-style: italic; font-size: 0.85rem; padding: 10px;">-</div>'}
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    acadContainer.innerHTML = '';
+                }
             }
             if (dutyContent) dutyContent.style.display = 'none';
         } else {
@@ -3599,7 +3649,8 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         return (a.className || '').localeCompare(b.className || '');
     });
     
-    if (dayEvents.length === 0) {
+    const hasAcadDuty = typeof acDuties !== 'undefined' && acDuties.length > 0;
+    if (dayEvents.length === 0 && !hasAcadDuty) {
         listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding-top: 24px;">No classes scheduled for this date.</p>`;
         if (nqHeaderEl) nqHeaderEl.style.display = 'none';
         if (hdHeaderEl) hdHeaderEl.style.display = 'none';
@@ -3762,8 +3813,9 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 </div>
             </div>
         `;
+    if (dayEvents.length === 0 && hasAcadDuty) {
+        html = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 16px 0;">No classes scheduled for this date.</p>`;
     }
-    
     listEl.innerHTML = html;
 }
 function updateRoleTaskMetrics(roleName, prefix, monthStr, prevMonthStr) {
