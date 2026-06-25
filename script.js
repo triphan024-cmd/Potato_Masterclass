@@ -3101,8 +3101,8 @@ function renderTeacherObservations(classRows) {
                             <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${classTitleStr}</div>
                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
                         </td>
+                        <td style="padding: 8px; text-align: right; font-weight: 500;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: 500;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;" onclick="event.stopPropagation();">${headIcon}</td>
                     </tr>
@@ -3128,8 +3128,8 @@ function renderTeacherObservations(classRows) {
                             <thead>
                                 <tr>
                                     <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: right;">Teacher</th>
                                     <th style="padding: 8px; width: 20%; text-align: center;">Status</th>
-                                    <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
                                 </tr>
@@ -4034,8 +4034,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <thead>
                             <tr>
                                 <th style="padding: 8px; width: 45%;">Class</th>
+                                <th style="padding: 8px; width: 20%; text-align: right;">Teacher</th>
                                 <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
                                 <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                             </tr>
@@ -4091,8 +4091,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
+                                        <td style="padding: 12px 8px; text-align: right; font-weight: 500;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-weight: 600; color: var(--danger);">${absence}</td>
-                                        <td style="padding: 12px 8px; text-align: center; font-weight: 500;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
                                     </tr>
