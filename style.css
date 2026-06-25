@@ -738,11 +738,12 @@ body {
     font-size: 1.2rem;
     color: var(--text-muted);
     cursor: pointer;
-    transition: var(--transition);
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.close-btn:hover {
-    color: var(--danger);
+.close-btn:hover, .close-btn:hover *,
+button:has(.fa-xmark):hover, button:has(.fa-xmark):hover * {
+    color: #ef4444 !important;
 }
 
 .skeleton-line {
