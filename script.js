@@ -1431,9 +1431,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initCalendarHTML('overview-calendar-container', 'overview');
     initCalendarHTML('academic-calendar-container', 'academic');
     initCalendarHTML('operation-calendar-container', 'operation');
+    initCalendarHTML('teacher-calendar-container', 'teacher');
     renderCalendar(0, 'overview');
     renderCalendar(0, 'academic');
     renderCalendar(0, 'operation');
+    renderCalendar(0, 'teacher');
     // Initialize month selector
     changeMonth(0);
 
@@ -3202,7 +3204,8 @@ function renderTeacherObservations(classRows) {
 window.currentCalDates = {
     'overview': new Date(),
     'academic': new Date(),
-    'operation': new Date()
+    'operation': new Date(),
+    'teacher': new Date()
 };
 
 function initCalendarHTML(containerId, prefix) {
