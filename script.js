@@ -1429,11 +1429,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize calendar
     initCalendarHTML('overview-calendar-container', 'overview');
-    initCalendarHTML('academic-calendar-container', 'academic');
     initCalendarHTML('operation-calendar-container', 'operation');
     initCalendarHTML('teacher-calendar-container', 'teacher');
     renderCalendar(0, 'overview');
-    renderCalendar(0, 'academic');
     renderCalendar(0, 'operation');
     renderCalendar(0, 'teacher');
     // Initialize month selector
@@ -1803,9 +1801,7 @@ async function fetchDashboardData() {
             });
             console.log(`Retrieved ${globalCalendarEvents.length} calendar events.`);
             renderCalendar(0, 'overview');
-            renderCalendar(0, 'academic');
             renderCalendar(0, 'operation');
-            renderCalendar(0, 'teacher');
             renderOperationTodayClasses();
         } catch (err) {
             console.error("Error fetching calendar data:", err);
@@ -1840,9 +1836,10 @@ async function fetchDashboardData() {
 
         const today = new Date();
         selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'overview');
-        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'academic');
         selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'operation');
-        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'teacher');
+        if (typeof window.applyTeacherFilter === 'function') {
+            window.applyTeacherFilter();
+        }
     } catch (error) {
         console.error('Error fetching or parsing data:', error);
     }
@@ -3624,6 +3621,14 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 return html;
             };
 
+            if (prefix !== 'teacher') {
+                const acRows = dutyEvents.filter(r => (getVal(r.c[3])||'').toLowerCase() === 'academic');
+                const opRows = dutyEvents.filter(r => (getVal(r.c[3])||'').toLowerCase() !== 'academic');
+                dutyContent.innerHTML = renderDutyGroup(acRows, '<i class="fa-solid fa-graduation-cap"></i> Academic', '#d97706', true) +
+                                        renderDutyGroup(opRows, '<i class="fa-solid fa-headset"></i> Operation', '#0284c7', false);
+                dutyContent.style.display = '';
+            }
+
             currentAcadDuties = dutyEvents.filter(r => { 
                 const d = getVal(r.c[3]) || ''; 
                 if (d.toLowerCase() !== 'academic') return false;
@@ -3720,11 +3725,20 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                     acadContainer.innerHTML = '';
                 }
             }
-            if (dutyContent) dutyContent.style.display = 'none';
+            if (prefix === 'teacher') {
+                if (dutyContent) dutyContent.style.display = 'none';
+            }
         } else {
             const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
             if (acadContainer) acadContainer.innerHTML = '';
-            if (dutyContent) dutyContent.style.display = 'none';
+            if (prefix === 'teacher') {
+                if (dutyContent) dutyContent.style.display = 'none';
+            } else {
+                if (dutyContent) {
+                    dutyContent.innerHTML = '<div style="color: var(--text-muted); font-style: italic; padding: 10px;">No duties scheduled</div>';
+                    dutyContent.style.display = '';
+                }
+            }
         }
     }
 
@@ -4148,7 +4162,10 @@ window.applyTeacherFilter = function() {
     if (!isAdmin && !isLeader && currentUser) {
         // Teacher user: force selection to their title (e.g. 'Mr. Khôi')
         selectedTeacher = currentUser.title || getShortName(currentUser.name);
-        if (tSelect) tSelect.style.display = 'none';
+        if (tSelect) {
+            tSelect.value = selectedTeacher;
+            tSelect.style.display = 'none';
+        }
         const bSelect = document.getElementById('teacherBranchFilter');
         if (bSelect) bSelect.style.display = 'none';
     } else {
