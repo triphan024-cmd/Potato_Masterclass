@@ -576,32 +576,62 @@ window.openDutyDetail = function(id) {
     const taskDetail = getVal(row.c[6]) || '';
     const label = getVal(row.c[13]) || 'Duty';
     
+    let status = '', history = '';
+    if (window.dutyHeaders && row.c) {
+        row.c.forEach((c, i) => {
+            let h = window.dutyHeaders[i] ? String(window.dutyHeaders[i]).trim().toLowerCase() : '';
+            let val = getVal(c);
+            if (val && String(val).trim() !== '') {
+                if (h === 'status' || h === 'trạng thái' || h === 'tình trạng') status = val;
+                if (h === 'history' || h === 'lịch sử') history = val;
+            }
+        });
+    }
+
+    const createBox = (title, value, icon, fullWidth = false, inline = true) => {
+        if (!value || value === 'N/A' || value === '') return '';
+        const colSpan = fullWidth ? 'grid-column: 1 / -1;' : '';
+        
+        if (inline && !fullWidth) {
+            return `
+                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 14px; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; justify-content: space-between; align-items: center; gap: 12px; ${colSpan}">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; white-space: nowrap;">
+                        ${icon ? `<i class="fa-solid ${icon}" style="color: var(--primary-color); opacity: 0.8;"></i>` : ''} ${title}
+                    </div>
+                    <div style="font-weight: 600; color: var(--text-dark); font-size: 0.95rem; text-align: right; word-break: break-word;">${value}</div>
+                </div>
+            `;
+        }
+
+        return `
+            <div style="border: 1px solid rgba(0,0,0,0.06); padding: 14px; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 2px rgba(0,0,0,0.02); ${colSpan}">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">
+                    ${icon ? `<i class="fa-solid ${icon}" style="color: var(--primary-color); opacity: 0.8;"></i>` : ''} ${title}
+                </div>
+                <div style="font-weight: 600; color: var(--text-dark); line-height: 1.6; font-size: 0.95rem; word-break: break-word;">${value}</div>
+            </div>
+        `;
+    };
+
+    let boxesHtml = `
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
+            ${createBox('Status', status || '-', 'fa-info-circle')}
+            ${createBox('Branch', branch, 'fa-building')}
+            ${createBox('Category', category, 'fa-layer-group', true, false)}
+            ${createBox('Details', taskDetail || 'No details available.', 'fa-align-left', true, false)}
+            ${createBox('History', history || '-', 'fa-clock-rotate-left', true, false)}
+        </div>
+    `;
+
     const html = `
-        <div style="background: rgba(255,255,255,0.95); padding: 20px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:16px; font-family: 'Inter', sans-serif;">
-            <div style="background: rgba(0,0,0,0.02); padding: 16px; border-radius: 8px;">
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Duty Info</div>
-                <div style="font-weight: 700; font-size: 1.15rem; color: var(--primary-color);">${label}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
-                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Category</div>
-                    <div style="font-weight: 600; color: var(--text-dark);">${category}</div>
-                </div>
-                <div style="border: 1px solid rgba(0,0,0,0.06); padding: 12px; border-radius: 8px; background: white;">
-                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Branch</div>
-                    <div style="font-weight: 600; color: var(--text-dark);">${branch}</div>
-                </div>
-            </div>
-            
-            <div style="border: 1px solid rgba(0,0,0,0.06); padding: 16px; border-radius: 8px; background: white;">
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Details</div>
-                <div style="font-weight: 500; color: var(--text-dark); white-space: pre-wrap; line-height: 1.6;">${taskDetail || '<span style="color: var(--text-muted); font-style: italic;">No additional details.</span>'}</div>
-            </div>
+        <div style="background: rgba(255,255,255,0.95); padding: 24px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); display:flex; flex-direction:column; font-family: 'Inter', sans-serif; position: relative;">
+            <button type="button" class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"></i></button>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; padding-right: 24px;">${label}</div>
+            ${boxesHtml}
         </div>
     `;
     
-    openClassDetail('Duty Detail', html);
+    openClassDetail('', html, true, '600px');
 };
 
 window.openCalEventDetail = function(id) {
@@ -1815,6 +1845,7 @@ async function fetchDashboardData() {
             const dutyJsonString = dutyText.substring(dutyText.indexOf('{'), dutyText.lastIndexOf('}') + 1);
             const dutyJson = JSON.parse(dutyJsonString);
             window.globalDutyRows = dutyJson.table.rows || [];
+            window.dutyHeaders = dutyJson.table.cols ? dutyJson.table.cols.map(c => c ? c.label : '') : [];
             window.globalDutyRows.forEach((r, i) => r._dutyId = i);
             console.log(`Retrieved duty events.`);
         } catch (err) {
