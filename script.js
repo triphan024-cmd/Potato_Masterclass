@@ -1635,9 +1635,20 @@ function parseCSV(str) {
 
 async function fetchDashboardData() {
     try {
+        console.log("Fetching all Google Sheets concurrently...");
+        const [hrRes, mainRes, leaderRes, rmRes, feesRes, calRes, dutyRes, attRes] = await Promise.all([
+            fetch(HR_SHEET_URL).catch(e => null),
+            fetch(SHEET_URL).catch(e => null),
+            fetch(LEADER_SHEET_URL).catch(e => null),
+            fetch(ROADMAP_SHEET_URL.replace('/gviz/tq?tqx=out:json&', '/export?format=csv&')).catch(e => null),
+            fetch(FEES_SHEET_URL).catch(e => null),
+            fetch(CALENDAR_SHEET_URL).catch(e => null),
+            fetch(DUTY_SHEET_URL).catch(e => null),
+            fetch(ATTENDANCE_SHEET_URL).catch(e => null)
+        ]);
         console.log("Loading HR data...");
         try {
-            const hrRes = await fetch(HR_SHEET_URL);
+            if (!hrRes || !hrRes.ok) throw new Error("HR fetch failed");
             const hrText = await hrRes.text();
             const hrJsonString = hrText.substring(hrText.indexOf('{'), hrText.lastIndexOf('}') + 1);
             const hrJson = JSON.parse(hrJsonString);
@@ -1662,7 +1673,8 @@ async function fetchDashboardData() {
         } catch(e) { console.error("Error fetching HR:", e); }
 
         console.log("Loading data from Google Sheet...");
-        const response = await fetch(SHEET_URL);
+        const response = mainRes;
+        if (!response || !response.ok) return;
         const text = await response.text();
         const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
         const json = JSON.parse(jsonString);
@@ -1688,7 +1700,7 @@ async function fetchDashboardData() {
         // Fetch Leader Data
         try {
             console.log("Loading leader data...");
-            const leaderRes = await fetch(LEADER_SHEET_URL);
+            if (!leaderRes || !leaderRes.ok) throw new Error("Leader fetch failed");
             const leaderText = await leaderRes.text();
             const leaderJsonString = leaderText.substring(leaderText.indexOf('{'), leaderText.lastIndexOf('}') + 1);
             const leaderJson = JSON.parse(leaderJsonString);
@@ -1738,7 +1750,7 @@ async function fetchDashboardData() {
             
             console.log(`Retrieved leader data.`);
             
-            const rmRes = await fetch(ROADMAP_SHEET_URL.replace('/gviz/tq?tqx=out:json&', '/export?format=csv&'));
+            if (!rmRes || !rmRes.ok) throw new Error("Roadmap fetch failed");
             const rmText = await rmRes.text();
             const rmCsvArray = parseCSV(rmText);
             const validRows = rmCsvArray.filter(r => r.some(cell => cell.trim() !== ''));
@@ -1750,7 +1762,7 @@ async function fetchDashboardData() {
             });
             console.log("Roadmap data loaded via CSV to bypass filters.");
             
-            const feesRes = await fetch(FEES_SHEET_URL);
+            if (!feesRes || !feesRes.ok) throw new Error("Fees fetch failed");
             const feesText = await feesRes.text();
             const feesJsonString = feesText.substring(feesText.indexOf('{'), feesText.lastIndexOf('}') + 1);
             const feesJson = JSON.parse(feesJsonString);
@@ -1764,7 +1776,7 @@ async function fetchDashboardData() {
         // Fetch Calendar Data
         try {
             console.log("Loading calendar data...");
-            const calRes = await fetch(CALENDAR_SHEET_URL);
+            if (!calRes || !calRes.ok) throw new Error("Calendar fetch failed");
             const calText = await calRes.text();
             const calJsonString = calText.substring(calText.indexOf('{'), calText.lastIndexOf('}') + 1);
             const calJson = JSON.parse(calJsonString);
@@ -1802,7 +1814,7 @@ async function fetchDashboardData() {
         // Fetch Duty Data
         try {
             console.log("Loading duty data...");
-            const dutyRes = await fetch(DUTY_SHEET_URL);
+            if (!dutyRes || !dutyRes.ok) throw new Error("Duty fetch failed");
             const dutyText = await dutyRes.text();
             const dutyJsonString = dutyText.substring(dutyText.indexOf('{'), dutyText.lastIndexOf('}') + 1);
             const dutyJson = JSON.parse(dutyJsonString);
@@ -1816,7 +1828,7 @@ async function fetchDashboardData() {
         // Fetch Attendance Data
         try {
             console.log("Fetching attendance data...");
-            const attRes = await fetch(ATTENDANCE_SHEET_URL);
+            if (!attRes || !attRes.ok) throw new Error("Attendance fetch failed");
             const attText = await attRes.text();
             const attJsonStr = attText.substring(attText.indexOf('{'), attText.lastIndexOf('}') + 1);
             const attJson = JSON.parse(attJsonStr);
@@ -1827,7 +1839,10 @@ async function fetchDashboardData() {
         }
 
         const today = new Date();
-        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate());
+        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'overview');
+        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'academic');
+        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'operation');
+        selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'teacher');
     } catch (error) {
         console.error('Error fetching or parsing data:', error);
     }
@@ -3223,9 +3238,7 @@ function initCalendarHTML(containerId, prefix) {
                     </div>
                 </div>
                 <div class="calendar-grid" id="${prefix}-calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center;"></div>
-                <div id="${prefix}-duty-content" style="margin-top: 24px;">
-                    <p style="margin: 0; color: var(--text-muted); font-style: italic;">Chọn một ngày trên lịch để xem người trực.</p>
-                </div>
+                <div id="${prefix}-duty-content" style="display: none;"></div>
             </section>
             <section class="panel daily-classes-panel" style="padding: 24px; flex: 2; display: flex; flex-direction: column;">
                 <div class="daily-classes-header" id="${prefix}-daily-classes-header" style="display: flex; gap: 20px; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px; padding-top: 4px; position: sticky; top: 0; background: white; z-index: 10;">
@@ -3239,6 +3252,7 @@ function initCalendarHTML(containerId, prefix) {
                         <h4 id="${prefix}-header-hd" style="color: #059669; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin: 0; display: none;">Hưng Định (HD)</h4>
                     </div>
                 </div>
+                <div id="${prefix}-academic-duty-container" style="margin-top: 16px; margin-bottom: 8px;"></div>
                 <div id="${prefix}-daily-classes-list" style="display: flex; flex-direction: column; gap: 12px;">
                     <p style="color: var(--text-muted); font-size: 0.9rem;">Click on any highlighted date in the calendar to see the list of classes.</p>
                 </div>
@@ -3534,17 +3548,18 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 return html;
             };
 
-            const opDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'operation'; });
             const acDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
             
-            let dutyHtml = '';
-            dutyHtml += renderDutyGroup(opDuties, '<i class="fa-solid fa-briefcase" style="margin-right: 4px;"></i> Operation', 'var(--primary-dark)', false);
-            dutyHtml += renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic', '#d97706', true);
-            
-            if (!dutyHtml) dutyHtml = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
-            dutyContent.innerHTML = dutyHtml;
+            const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
+            if (acadContainer) {
+                let dutyHtml = renderDutyGroup(acDuties, '<i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic Duty', '#d97706', true);
+                acadContainer.innerHTML = dutyHtml;
+            }
+            if (dutyContent) dutyContent.style.display = 'none';
         } else {
-            dutyContent.innerHTML = '<p style="margin: 0; color: var(--text-muted); font-style: italic;">Không có người trực.</p>';
+            const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
+            if (acadContainer) acadContainer.innerHTML = '';
+            if (dutyContent) dutyContent.style.display = 'none';
         }
     }
 
