@@ -3326,6 +3326,70 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         dayMap[d].push(e);
     });
 
+    if (window.globalDutyRows) {
+        window.globalDutyRows.forEach(row => {
+            if (!row || !row.c || !row.c[15] || !row.c[3]) return;
+            const dutyCat = getVal(row.c[3]).toLowerCase();
+            if (dutyCat !== 'academic') return;
+            
+            if (prefix === 'teacher') {
+                const tSelect = document.getElementById('teacherFilter');
+                const bSelect = document.getElementById('teacherBranchFilter');
+                const selT = tSelect ? tSelect.value : 'all';
+                const selB = bSelect ? bSelect.value : 'all';
+                
+                if (selT !== 'all') {
+                    const sTeacher = getShortName(selT).toLowerCase();
+                    const selLower = selT.toLowerCase();
+                    let matchedT = false;
+                    for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                        if (row.c && row.c[col]) {
+                            const val = getVal(row.c[col]);
+                            if (val) {
+                                const valLower = val.toLowerCase();
+                                const shortVal = getShortName(val).toLowerCase();
+                                if (valLower === selLower || shortVal === sTeacher || valLower.includes(selLower) || valLower.includes(sTeacher)) {
+                                    matchedT = true; break;
+                                }
+                            }
+                        }
+                    }
+                    if (!matchedT) return;
+                }
+                if (selB !== 'all') {
+                    const bVal = getVal(row.c[4]) || '';
+                    const lVal = getVal(row.c[13]) || '';
+                    const rawStr = (bVal + ' ' + lVal).toUpperCase();
+                    const isHD = rawStr.includes('HD') || rawStr.includes('HƯNG ĐỊNH');
+                    if (selB === 'HD' && !isHD) return;
+                    if (selB === 'NQ' && isHD) return;
+                }
+            }
+
+            let dStr = '';
+            if (row.c[15].f) {
+                dStr = row.c[15].f;
+            } else if (row.c[15].v) {
+                const parts = String(row.c[15].v).replace('Date(', '').replace(')', '').split(',');
+                if (parts.length >= 3) {
+                    dStr = `${String(parts[2]).padStart(2, '0')}/${String(parseInt(parts[1])+1).padStart(2, '0')}/${parts[0]}`;
+                }
+            }
+            if (dStr) {
+                const dParts = dStr.split('/');
+                if (dParts.length === 3) {
+                    const dDay = parseInt(dParts[0]);
+                    const dMonth = parseInt(dParts[1]) - 1;
+                    const dYear = parseInt(dParts[2]);
+                    if (dYear === year && dMonth === month) {
+                        if (!dayMap[dDay]) dayMap[dDay] = [];
+                        dayMap[dDay].push({ time: 'Academic', className: getVal(row.c[13]) });
+                    }
+                }
+            }
+        });
+    }
+
     for(let i=1; i<=daysInMonth; i++) {
         const isToday = today.getDate() === i && today.getMonth() === month && today.getFullYear() === year;
         
@@ -3334,13 +3398,12 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         
         let tooltip = '';
         
-        if (dayMap[i]) {
-            // Day has events
+        if (dayMap[i] && dayMap[i].length > 0) {
             classList.push('has-events', 'cal-day-active');
             tooltip = dayMap[i].map(e => `${e.time} - ${e.className}`).join('&#10;');
             html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
-            html += `<div style="padding: 4px;"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         }
     }
     grid.innerHTML = html;
@@ -3549,7 +3612,43 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 return html;
             };
 
-            currentAcadDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
+            currentAcadDuties = dutyEvents.filter(r => { 
+                const d = getVal(r.c[3]) || ''; 
+                if (d.toLowerCase() !== 'academic') return false;
+                if (prefix === 'teacher') {
+                    const tSelect = document.getElementById('teacherFilter');
+                    const bSelect = document.getElementById('teacherBranchFilter');
+                    const selT = tSelect ? tSelect.value : 'all';
+                    const selB = bSelect ? bSelect.value : 'all';
+                    if (selT !== 'all') {
+                        const sTeacher = getShortName(selT).toLowerCase();
+                        const selLower = selT.toLowerCase();
+                        let matchedT = false;
+                        for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                            if (r.c && r.c[col]) {
+                                const val = getVal(r.c[col]);
+                                if (val) {
+                                    const valLower = val.toLowerCase();
+                                    const shortVal = getShortName(val).toLowerCase();
+                                    if (valLower === selLower || shortVal === sTeacher || valLower.includes(selLower) || valLower.includes(sTeacher)) {
+                                        matchedT = true; break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!matchedT) return false;
+                    }
+                    if (selB !== 'all') {
+                        const bVal = getVal(r.c[4]) || '';
+                        const lVal = getVal(r.c[13]) || '';
+                        const rawStr = (bVal + ' ' + lVal).toUpperCase();
+                        const isHD = rawStr.includes('HD') || rawStr.includes('HƯNG ĐỊNH');
+                        if (selB === 'HD' && !isHD) return false;
+                        if (selB === 'NQ' && isHD) return false;
+                    }
+                }
+                return true;
+            });
             const acDuties = currentAcadDuties;
             
             const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
@@ -3588,7 +3687,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                         <div style="flex: 0 0 150px; padding-right: 16px; border-right: 1px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center;">
                             <div style="background: rgba(217,119,6,0.08); padding: 8px 12px; border-radius: 8px; border-left: 3px solid #d97706;">
                                 <span style="color: #d97706; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px;">
-                                    <i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Trực Academic
+                                    <i class="fa-solid fa-graduation-cap" style="margin-right: 4px;"></i> Academic
                                 </span>
                             </div>
                         </div>
@@ -4060,17 +4159,20 @@ window.applyTeacherFilter = function() {
     const monthStr = String(monthVal).padStart(2, '0');
     renderTeacherPerformance(rowsToRender, monthStr);
     if (typeof renderCalendar === 'function') {
+        let activeId = null;
+        const activeBeforeEl = document.querySelector('.teacher-cal-day-item.is-selected');
+        if (activeBeforeEl) activeId = activeBeforeEl.id;
+        
         renderCalendar(0, 'teacher');
-        // also re-select the currently selected date if any, to refresh the classes list
-        const monthYearEl = document.getElementById('teacher-cal-month-year');
-        if (monthYearEl) {
-            const activeDayEl = document.querySelector('.teacher-cal-day-item.is-selected');
-            if (activeDayEl) {
-                const parts = activeDayEl.id.split('-');
-                if (parts.length >= 6) {
-                    selectCalendarDate(parseInt(parts[3]), parseInt(parts[4]), parseInt(parts[5]), 'teacher');
-                }
+        
+        if (activeId) {
+            const parts = activeId.split('-');
+            if (parts.length >= 6) {
+                selectCalendarDate(parseInt(parts[3]), parseInt(parts[4]), parseInt(parts[5]), 'teacher');
             }
+        } else {
+            const today = new Date();
+            selectCalendarDate(today.getFullYear(), today.getMonth(), today.getDate(), 'teacher');
         }
     }
 }
