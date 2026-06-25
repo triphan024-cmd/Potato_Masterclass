@@ -1793,6 +1793,7 @@ async function fetchDashboardData() {
             renderCalendar(0, 'overview');
             renderCalendar(0, 'academic');
             renderCalendar(0, 'operation');
+            renderCalendar(0, 'teacher');
             renderOperationTodayClasses();
         } catch (err) {
             console.error("Error fetching calendar data:", err);
