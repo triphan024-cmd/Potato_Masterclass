@@ -3323,7 +3323,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
     monthEvents.forEach(e => {
         const d = e.date.getDate();
         if(!dayMap[d]) dayMap[d] = [];
-        dayMap[d].push(e);
+        dayMap[d].push({ ...e, isSchedule: true });
     });
 
     if (window.globalDutyRows) {
@@ -3383,7 +3383,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
                     const dYear = parseInt(dParts[2]);
                     if (dYear === year && dMonth === month) {
                         if (!dayMap[dDay]) dayMap[dDay] = [];
-                        dayMap[dDay].push({ time: 'Academic', className: getVal(row.c[13]) });
+                        dayMap[dDay].push({ time: 'Academic', className: getVal(row.c[13]), isAcad: true });
                     }
                 }
             }
@@ -3396,14 +3396,26 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         let classList = [`${prefix}-cal-day-item`, 'cal-day-item'];
         if (isToday) classList.push('is-today');
         
-        let tooltip = '';
+        let hasAcad = false, hasSched = false;
+        if (dayMap[i]) {
+            dayMap[i].forEach(ev => {
+                if (ev.isAcad) hasAcad = true;
+                if (ev.isSchedule) hasSched = true;
+            });
+        }
         
+        let dayStyle = '';
+        if (hasAcad) dayStyle += 'border: 2px solid #f59e0b; ';
+        if (hasSched) dayStyle += 'color: #8b5cf6; font-weight: 700; ';
+        else if (hasAcad) dayStyle += 'color: var(--text-dark); font-weight: 500; ';
+        
+        let tooltip = '';
         if (dayMap[i] && dayMap[i].length > 0) {
             classList.push('has-events', 'cal-day-active');
             tooltip = dayMap[i].map(e => `${e.time} - ${e.className}`).join('&#10;');
-            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" style="${dayStyle}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
-            html += `<div style="padding: 4px;" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
+            html += `<div style="padding: 4px;" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" style="${dayStyle}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         }
     }
     grid.innerHTML = html;
@@ -3669,13 +3681,15 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                         const timeBadge = timeStr ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${timeStr}</span>` : '';
                         
                         const card = `
-                        <div onclick="openDutyDetail(${row._dutyId})" class="daily-class-card" style="background: white; border-left: 3px solid #d97706; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden; cursor: pointer;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${namePart}">${namePart}</div>
-                                ${wfhHtml}
-                            </div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: flex-end; align-items: center;">
-                                ${timeBadge}
+                        <div onclick="openDutyDetail(${row._dutyId})" class="daily-class-card" style="background: white; border-left: 3px solid #d97706; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: transform 0.2s; cursor: pointer;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+                                    <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${namePart}">${namePart}</div>
+                                    ${wfhHtml ? `<div>${wfhHtml}</div>` : ''}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; padding-top: 2px;">
+                                    ${timeBadge}
+                                </div>
                             </div>
                         </div>`;
                         
@@ -3825,6 +3839,17 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         const branch = parts.length > 1 ? parts[0].trim() : '';
         const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
         
+        let cleanName = cName;
+        cleanName = cleanName.replace(/^(NQ|HD)\s*\|\s*/i, '').replace(/-\s*(NQ|HD)\s*$/i, '').trim();
+        if (e.teacher) {
+            const tShort = getShortName(e.teacher).trim();
+            const esc = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            if (tShort) cleanName = cleanName.replace(new RegExp('\\s*-\\s*' + esc(tShort) + '$', 'i'), '');
+            const tPlain = tShort.replace(/^(ms\.|mr\.|mrs\.|teacher)\s*/i, '').trim();
+            if (tPlain && tPlain.length > 1) cleanName = cleanName.replace(new RegExp('\\s*-\\s*' + esc(tPlain) + '$', 'i'), '');
+        }
+        cleanName = cleanName.trim();
+        
         let branchText = 'var(--primary-dark)';
         if (branch.includes('NQ')) branchText = '#0284c7'; // Blue
         if (branch.includes('HD')) branchText = '#059669'; // Green
@@ -3835,13 +3860,13 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         return `
         <div onclick="openCalEventDetail(${e._eventId})" class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden; cursor: pointer;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cName}">${cName}</div>
+                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cleanName}">${cleanName}</div>
             </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <div style="display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
+            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: ${prefix === 'teacher' ? 'flex-end' : 'space-between'}; align-items: center; gap: 8px;">
+                ${prefix === 'teacher' ? '' : `<div style="display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
                     <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> 
                     <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
-                </div>
+                </div>`}
                 ${timeHtml}
             </div>
         </div>
