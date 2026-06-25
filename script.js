@@ -3347,6 +3347,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
 }
 
 function selectCalendarDate(year, month, day, prefix = 'overview') {
+    let currentAcadDuties = [];
     // Reset all day styles to remove active selection
     document.querySelectorAll(`.${prefix}-cal-day-item`).forEach(el => {
         el.classList.remove('is-selected');
@@ -3548,7 +3549,8 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 return html;
             };
 
-            const acDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
+            currentAcadDuties = dutyEvents.filter(r => { const d = getVal(r.c[3]) || ''; return d.toLowerCase() === 'academic'; });
+            const acDuties = currentAcadDuties;
             
             const acadContainer = document.getElementById(`${prefix}-academic-duty-container`);
             if (acadContainer) {
@@ -3649,7 +3651,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         return (a.className || '').localeCompare(b.className || '');
     });
     
-    const hasAcadDuty = typeof acDuties !== 'undefined' && acDuties.length > 0;
+    const hasAcadDuty = currentAcadDuties.length > 0;
     if (dayEvents.length === 0 && !hasAcadDuty) {
         listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding-top: 24px;">No classes scheduled for this date.</p>`;
         if (nqHeaderEl) nqHeaderEl.style.display = 'none';
@@ -3813,6 +3815,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 </div>
             </div>
         `;
+    }
     if (dayEvents.length === 0 && hasAcadDuty) {
         html = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 16px 0;">No classes scheduled for this date.</p>`;
     }
