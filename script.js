@@ -2962,88 +2962,61 @@ function renderWeeklyReports(rows, containerId, monthStr) {
     container.appendChild(tableWrapper);
 }
 
+window.applyObsFilter = function() {
+    const bSelect = document.getElementById('obs-branch-filter');
+    let selectedBranch = 'all';
+    if (bSelect) {
+        selectedBranch = bSelect.value;
+    }
+    
+    let rowsToRender = window.currentMonthFilteredRows || globalClassRows || [];
+    if (selectedBranch !== 'all') {
+        rowsToRender = rowsToRender.filter(row => {
+            if (!row || !row.c || !row.c[3]) return false;
+            const branchStr = String(row.c[3].v || row.c[3].f || '').toLowerCase();
+            return branchStr.includes(selectedBranch.toLowerCase());
+        });
+    }
+    renderTeacherObservations(rowsToRender);
+};
+
 function renderTeacherObservations(classRows) {
     const grid = document.getElementById('teacher-observation-grid');
     if (!grid) return;
     grid.innerHTML = '';
     
-    // Group by branch then department
-    const branchMap = {
-        'Ngô Quyền (NQ)': {},
-        'Hưng Định (HD)': {}
-    };
+    const departmentMap = {};
     
     let totalCompletedObs = 0;
     let totalPendingObs = 0;
     classRows.forEach(row => {
         const c = row.c;
-        let rawBranch = getVal(c[3]) || '';
-        let branch = '';
-        if (rawBranch.includes('HD') || rawBranch.includes('Hưng Định')) {
-            branch = 'Hưng Định (HD)';
-        } else {
-            branch = 'Ngô Quyền (NQ)';
-        }
-        
         const department = getVal(c[5]) || 'Unknown Department';
-        if (!branchMap[branch][department]) {
-            branchMap[branch][department] = {
+        if (!departmentMap[department]) {
+            departmentMap[department] = {
                 rows: [],
                 observed: 0,
                 pending: 0
             };
         }
-        branchMap[branch][department].rows.push(row);
+        departmentMap[department].rows.push(row);
         
         const obs = getVal(c[13]) || '';
         if (obs && String(obs).trim() !== '') {
-            branchMap[branch][department].observed++;
+            departmentMap[department].observed++;
             totalCompletedObs++;
         } else {
-            branchMap[branch][department].pending++;
+            departmentMap[department].pending++;
             totalPendingObs++;
         }
     });
 
-    const branches = ['Ngô Quyền (NQ)', 'Hưng Định (HD)'];
-    let hasAnyData = false;
+    const departments = Object.keys(departmentMap).sort((a, b) => a.localeCompare(b));
+    let hasAnyData = departments.length > 0;
     
-    branches.forEach(branch => {
-        const departments = Object.keys(branchMap[branch]).sort((a, b) => a.localeCompare(b));
-        if (departments.length === 0) return;
-        hasAnyData = true;
-
-        let colorStr = branch === 'Ngô Quyền (NQ)' ? '#3498db' : '#2ecc71';
-        let bgStr = branch === 'Ngô Quyền (NQ)' ? 'rgba(52, 152, 219, 0.1)' : 'rgba(46, 204, 113, 0.1)';
-        const totalClasses = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.length, 0);
-        const totalStudents = Object.values(branchMap[branch]).reduce((acc, dept) => acc + dept.rows.reduce((sum, row) => sum + parseInt(getVal(row.c[7]) || 0), 0), 0);
-
-        const branchHeader = document.createElement('div');
-        branchHeader.style.gridColumn = '1 / -1';
-        branchHeader.style.marginTop = '16px';
-        branchHeader.style.paddingBottom = '8px';
-        branchHeader.style.borderBottom = `2px solid ${colorStr}`;
-        branchHeader.style.display = 'flex';
-        branchHeader.style.alignItems = 'center';
-        branchHeader.style.justifyContent = 'space-between';
-        branchHeader.innerHTML = `
-            <h3 style="color: ${colorStr}; margin: 0; font-size: 1.3rem;">
-                <i class="fa-solid fa-building"></i> ${branch}
-            </h3>
-            <div style="display: flex; gap: 8px;">
-                <span class="status-badge" style="background: ${bgStr}; color: ${colorStr}; font-size: 0.95rem; margin: 0;">
-                    ${totalClasses} Classes
-                </span>
-                <span class="status-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 0.95rem; margin: 0;">
-                    ${totalStudents} Students
-                </span>
-            </div>
-        `;
-        grid.appendChild(branchHeader);
-
-        departments.forEach(department => {
-            const data = branchMap[branch][department];
-            const sortedRows = data.rows.sort((a, b) => {
+    departments.forEach(department => {
+        const data = departmentMap[department];
+        const sortedRows = data.rows.sort((a, b) => {
                 const classA = String(getVal(a.c[6]) || '');
                 const classB = String(getVal(b.c[6]) || '');
                 return classA.localeCompare(classB, undefined, { numeric: true, sensitivity: 'base' });
@@ -3128,8 +3101,8 @@ function renderTeacherObservations(classRows) {
                             <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${classTitleStr}</div>
                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
                         </td>
-                        <td style="padding: 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: 500;">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;" onclick="event.stopPropagation();">${headIcon}</td>
                     </tr>
@@ -3154,9 +3127,9 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 45%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
-                                    <th style="padding: 8px; width: 15%; text-align: center;">Status</th>
+                                    <th style="padding: 8px; width: 40%;">Class</th>
+                                    <th style="padding: 8px; width: 20%; text-align: center;">Status</th>
+                                    <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
                                     <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
                                 </tr>
@@ -3170,7 +3143,6 @@ function renderTeacherObservations(classRows) {
             `;
             grid.appendChild(card);
         });
-    });
 
     if (!hasAnyData) {
         grid.innerHTML = '<p style="color: var(--text-muted);">No classes available.</p>';
@@ -4062,8 +4034,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                         <thead>
                             <tr>
                                 <th style="padding: 8px; width: 45%;">Class</th>
-                                <th style="padding: 8px; width: 22%; text-align: left;">Teacher</th>
-                                <th style="padding: 8px; width: 8%; text-align: center;">Absence</th>
+                                <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
+                                <th style="padding: 8px; width: 20%; text-align: center;">Teacher</th>
                                 <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                             </tr>
@@ -4119,8 +4091,8 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 12px 8px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${teacherName}</td>
-                                        <td style="padding: 12px 8px; text-align: center;">${absence}</td>
+                                        <td style="padding: 12px 8px; text-align: center; font-weight: 600; color: var(--danger);">${absence}</td>
+                                        <td style="padding: 12px 8px; text-align: center; font-weight: 500;">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
                                     </tr>

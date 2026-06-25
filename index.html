@@ -228,6 +228,15 @@
                     <section style="margin-top: 24px;">
                         <div class="weekly-header" style="margin-bottom: 16px;">
                             <h2>Class Observations</h2>
+                            <div class="header-filters">
+                                <select id="obs-branch-filter" class="filter-select" onchange="window.applyObsFilter()">
+                                    <option value="all">All Branches</option>
+                                    <option value="hoang dieu">Hoàng Diệu</option>
+                                    <option value="su van hanh">Sư Vạn Hạnh</option>
+                                    <option value="ba hom">Bà Hom</option>
+                                    <option value="tran nao">Trần Não</option>
+                                </select>
+                            </div>
                         </div>
                         <div id="teacher-observation-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
                             <!-- Dynamic Teacher Cards -->
