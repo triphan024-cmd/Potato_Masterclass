@@ -3326,7 +3326,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         dayMap[d].push({ ...e, isSchedule: true });
     });
 
-    if (window.globalDutyRows) {
+    if (prefix === 'teacher' && window.globalDutyRows) {
         window.globalDutyRows.forEach(row => {
             if (!row || !row.c || !row.c[15] || !row.c[3]) return;
             const dutyCat = getVal(row.c[3]).toLowerCase();
@@ -3397,7 +3397,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         if (isToday) classList.push('is-today');
         
         let hasAcad = false, hasSched = false;
-        if (dayMap[i]) {
+        if (prefix === 'teacher' && dayMap[i]) {
             dayMap[i].forEach(ev => {
                 if (ev.isAcad) hasAcad = true;
                 if (ev.isSchedule) hasSched = true;
@@ -3840,15 +3840,17 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         const cName = parts.length > 1 ? parts.slice(1).join(' | ').trim() : parts[0].trim();
         
         let cleanName = cName;
-        cleanName = cleanName.replace(/^(NQ|HD)\s*\|\s*/i, '').replace(/-\s*(NQ|HD)\s*$/i, '').trim();
+        cleanName = cleanName.replace(/^(?:NQ|HD)\s*\|\s*/i, '').replace(/^[IVX]+\.\s*/i, '').replace(/-\s*(?:NQ|HD)\s*$/i, '').trim();
         if (e.teacher) {
             const tShort = getShortName(e.teacher).trim();
             const esc = (s) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            if (tShort) cleanName = cleanName.replace(new RegExp('\\s*-\\s*' + esc(tShort) + '$', 'i'), '');
-            const tPlain = tShort.replace(/^(ms\.|mr\.|mrs\.|teacher)\s*/i, '').trim();
-            if (tPlain && tPlain.length > 1) cleanName = cleanName.replace(new RegExp('\\s*-\\s*' + esc(tPlain) + '$', 'i'), '');
+            if (tShort) cleanName = cleanName.replace(new RegExp('\\s*(?:-\\s*)?' + esc(tShort) + '$', 'i'), '');
+            const tPlain = tShort.replace(/^(?:ms\.|mr\.|mrs\.|teacher)\s*/i, '').trim();
+            if (tPlain && tPlain.length > 1) cleanName = cleanName.replace(new RegExp('\\s*(?:-\\s*)?' + esc(tPlain) + '$', 'i'), '');
         }
         cleanName = cleanName.trim();
+        
+        const displayTitle = prefix === 'teacher' ? cleanName : cName;
         
         let branchText = 'var(--primary-dark)';
         if (branch.includes('NQ')) branchText = '#0284c7'; // Blue
@@ -3860,13 +3862,13 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         return `
         <div onclick="openCalEventDetail(${e._eventId})" class="daily-class-card" style="background: white; border-left: 3px solid ${leftBorder}; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s; overflow: hidden; cursor: pointer;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cleanName}">${cleanName}</div>
+                <div style="font-weight: 600; color: var(--text-dark); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${displayTitle}">${displayTitle}</div>
             </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: ${prefix === 'teacher' ? 'flex-end' : 'space-between'}; align-items: center; gap: 8px;">
-                ${prefix === 'teacher' ? '' : `<div style="display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
+            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;" title="${getShortName(e.teacher)}">
                     <i class="fa-solid fa-chalkboard-user" style="margin-right: 4px;"></i> 
                     <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${getShortName(e.teacher)}</span>
-                </div>`}
+                </div>
                 ${timeHtml}
             </div>
         </div>
