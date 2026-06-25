@@ -3112,11 +3112,11 @@ function renderTeacherObservations(classRows) {
 
                 rowsHtml += `
                     <tr style="cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}')">
-                        <td style="padding: 10px 8px;">
-                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${classTitleStr}</div>
-                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
+                        <td style="padding: 10px 8px; overflow: hidden;">
+                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${classTitleStr}">${classTitleStr}</div>
+                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="fa-regular fa-clock"></i> ${schedule} &nbsp;|&nbsp; <i class="fa-solid fa-users"></i> ${studentCount}</div>
                         </td>
-                        <td style="padding: 8px; text-align: left; font-weight: 500;">${teacherName}</td>
+                        <td style="padding: 8px; text-align: left; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${teacherName}">${teacherName}</td>
                         <td style="padding: 8px; text-align: center;">${statusBadge}</td>
                         <td style="padding: 8px; text-align: center;">${tScore}</td>
                         <td style="padding: 8px; text-align: center;" onclick="event.stopPropagation();">${headIcon}</td>
@@ -3142,11 +3142,11 @@ function renderTeacherObservations(classRows) {
                         <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                             <thead>
                                 <tr>
-                                    <th style="padding: 8px; width: 40%;">Class</th>
-                                    <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
-                                    <th style="padding: 8px; width: 20%; text-align: center;">Status</th>
-                                    <th style="padding: 8px; width: 10%; text-align: center;">T.Score</th>
-                                    <th style="padding: 8px; width: 10%; text-align: center;">Head</th>
+                                    <th style="padding: 8px; width: 52%;">Class</th>
+                                    <th style="padding: 8px; width: 14%; text-align: left;">Teacher</th>
+                                    <th style="padding: 8px; width: 16%; text-align: center;">Status</th>
+                                    <th style="padding: 8px; width: 9%; text-align: center;">T.Score</th>
+                                    <th style="padding: 8px; width: 9%; text-align: center;">Head</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -3468,9 +3468,14 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 s = s.replace(/\b\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\b/g, '');
                 s = s.replace(/\(\s*\)/g, '').replace(/\[\s*\]/g, '');
                 s = s.replace(/^[-\s|:()]+/, '').replace(/[-\s|:()]+$/, '').trim();
-                s = s.replace(/^(?:NQ|HD|HĐ|Ngo Quyen|Hung Dinh)\s*[|:-]\s*/i, '');
-                s = s.replace(/^[-\s|:()]+/, '').trim();
-                s = s.replace(/^(?:Trực\s*)?(?:Academic|Operation|Hotline|Admin|CS|Tư vấn)\s*[|:-]*\s*/i, '');
+                let prev = '';
+                while (s !== prev) {
+                    prev = s;
+                    s = s.replace(/^(?:NQ|HD|HĐ|Ngo Quyen|Hung Dinh|WFH|Online|Onsite|Off|Trực|Duty)\s*[|:-]\s*/i, '');
+                    s = s.replace(/^[-\s|:()]+/, '').trim();
+                    s = s.replace(/^(?:Trực\s*)?(?:Academic|Operation|Hotline|Admin|CS|Tư vấn|Schedule)\s*[|:-]*\s*/i, '');
+                    s = s.replace(/^[-\s|:()]+/, '').trim();
+                }
                 s = s.replace(/^[-\s|:()]+/, '').replace(/[-\s|:()]+$/, '').trim();
                 return s || rawLabel;
             }
@@ -4392,10 +4397,10 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                     <table class="modern-table" style="width: 100%; font-size: 0.85rem; min-width: 450px; table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="padding: 8px; width: 45%;">Class</th>
-                                <th style="padding: 8px; width: 20%; text-align: left;">Teacher</th>
-                                <th style="padding: 8px; width: 10%; text-align: center;">Absence</th>
-                                <th style="padding: 8px; width: 12%; text-align: center;">Progress</th>
+                                <th style="padding: 8px; width: 54%;">Class</th>
+                                <th style="padding: 8px; width: 13%; text-align: left;">Teacher</th>
+                                <th style="padding: 8px; width: 9%; text-align: center;">Absence</th>
+                                <th style="padding: 8px; width: 11%; text-align: center;">Progress</th>
                                 <th style="padding: 8px; width: 13%; text-align: center;">Exam Date</th>
                             </tr>
                         </thead>
@@ -4444,13 +4449,13 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
 
                                 return `
                                     <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(99,102,241,0.03)'" onmouseout="this.style.backgroundColor='transparent'" onclick="window.openScheduleDetail('${className.replace(/'/g, "\\'")}')">
-                                        <td style="padding: 12px 8px;">
-                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">${className.trim()}</div>
-                                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center;">
+                                        <td style="padding: 12px 8px; overflow: hidden;">
+                                            <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${className.trim()}">${className.trim()}</div>
+                                            <div style="color: #64748b; font-size: 0.75rem; margin-top: 4px; display: flex; gap: 8px; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                                 <span style="white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${schedule}</span> &nbsp;|&nbsp; <span style="white-space: nowrap;"><i class="fa-solid fa-users"></i> ${studentCount}</span>
                                             </div>
                                         </td>
-                                        <td style="padding: 12px 8px; text-align: left; font-weight: 500;">${teacherName}</td>
+                                        <td style="padding: 12px 8px; text-align: left; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${teacherName}">${teacherName}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-weight: 600; color: var(--danger);">${absence}</td>
                                         <td style="padding: 12px 8px; text-align: center;">${pBadgeHtml}</td>
                                         <td style="padding: 12px 8px; text-align: center; font-size: 0.8rem;">${formattedExamDate}</td>
