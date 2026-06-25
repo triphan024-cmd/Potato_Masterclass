@@ -3281,7 +3281,29 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
     const today = new Date();
     
     // Map events for this month
-    const monthEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month);
+    let monthEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month);
+
+    if (prefix === 'teacher') {
+        const tSelect = document.getElementById('teacherFilter');
+        const bSelect = document.getElementById('teacherBranchFilter');
+        const selectedTeacher = tSelect ? tSelect.value : 'all';
+        const selectedBranch = bSelect ? bSelect.value : 'all';
+        
+        if (selectedTeacher !== 'all') {
+            monthEvents = monthEvents.filter(e => {
+                const eTeacher = e.teacher || '';
+                return getShortName(eTeacher) === selectedTeacher || eTeacher === selectedTeacher || eTeacher.includes(selectedTeacher);
+            });
+        }
+        if (selectedBranch !== 'all') {
+            monthEvents = monthEvents.filter(e => {
+                const rawBranch = e.className || '';
+                if (selectedBranch === 'HD') return rawBranch.includes('HD') || rawBranch.includes('Hưng Định') || rawBranch.includes('Hưng \u0110ịnh');
+                if (selectedBranch === 'NQ') return !rawBranch.includes('HD') && !rawBranch.includes('Hưng Định') && !rawBranch.includes('Hưng \u0110ịnh');
+                return true;
+            });
+        }
+    }
     const dayMap = {};
     monthEvents.forEach(e => {
         const d = e.date.getDate();
@@ -3529,7 +3551,29 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
     const nqHeaderEl = document.getElementById(`${prefix}-header-nq`);
     const hdHeaderEl = document.getElementById(`${prefix}-header-hd`);
     
-    const dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
+    let dayEvents = globalCalendarEvents.filter(e => e.date.getFullYear() === year && e.date.getMonth() === month && e.date.getDate() === day);
+
+    if (prefix === 'teacher') {
+        const tSelect = document.getElementById('teacherFilter');
+        const bSelect = document.getElementById('teacherBranchFilter');
+        const selectedTeacher = tSelect ? tSelect.value : 'all';
+        const selectedBranch = bSelect ? bSelect.value : 'all';
+        
+        if (selectedTeacher !== 'all') {
+            dayEvents = dayEvents.filter(e => {
+                const eTeacher = e.teacher || '';
+                return getShortName(eTeacher) === selectedTeacher || eTeacher === selectedTeacher || eTeacher.includes(selectedTeacher);
+            });
+        }
+        if (selectedBranch !== 'all') {
+            dayEvents = dayEvents.filter(e => {
+                const rawBranch = e.className || '';
+                if (selectedBranch === 'HD') return rawBranch.includes('HD') || rawBranch.includes('Hưng Định') || rawBranch.includes('Hưng \u0110ịnh');
+                if (selectedBranch === 'NQ') return !rawBranch.includes('HD') && !rawBranch.includes('Hưng Định') && !rawBranch.includes('Hưng \u0110ịnh');
+                return true;
+            });
+        }
+    }
     
     // Sort events by time (morning -> afternoon) then by branch
     dayEvents.sort((a, b) => {
@@ -3944,6 +3988,20 @@ window.applyTeacherFilter = function() {
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
     const monthStr = String(monthVal).padStart(2, '0');
     renderTeacherPerformance(rowsToRender, monthStr);
+    if (typeof renderCalendar === 'function') {
+        renderCalendar(0, 'teacher');
+        // also re-select the currently selected date if any, to refresh the classes list
+        const monthYearEl = document.getElementById('teacher-cal-month-year');
+        if (monthYearEl) {
+            const activeDayEl = document.querySelector('.teacher-cal-day-item.is-selected');
+            if (activeDayEl) {
+                const parts = activeDayEl.id.split('-');
+                if (parts.length >= 6) {
+                    selectCalendarDate(parseInt(parts[3]), parseInt(parts[4]), parseInt(parts[5]), 'teacher');
+                }
+            }
+        }
+    }
 }
 
 window.applyGlobalPlannerFilter = function() {
