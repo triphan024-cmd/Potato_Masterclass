@@ -3461,6 +3461,20 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         });
         
         if (dutyEvents.length > 0) {
+            function cleanDutyPersonName(rawLabel, timeStr) {
+                if (!rawLabel) return '';
+                let s = rawLabel;
+                if (timeStr) s = s.replace(timeStr, '');
+                s = s.replace(/\b\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\b/g, '');
+                s = s.replace(/\(\s*\)/g, '').replace(/\[\s*\]/g, '');
+                s = s.replace(/^[-\s|:()]+/, '').replace(/[-\s|:()]+$/, '').trim();
+                s = s.replace(/^(?:NQ|HD|HĐ|Ngo Quyen|Hung Dinh)\s*[|:-]\s*/i, '');
+                s = s.replace(/^[-\s|:()]+/, '').trim();
+                s = s.replace(/^(?:Trực\s*)?(?:Academic|Operation|Hotline|Admin|CS|Tư vấn)\s*[|:-]*\s*/i, '');
+                s = s.replace(/^[-\s|:()]+/, '').replace(/[-\s|:()]+$/, '').trim();
+                return s || rawLabel;
+            }
+
             const renderDutyGroup = (groupDuties, title, color, isAcademic) => {
                 if (groupDuties.length === 0) return '';
                 
@@ -3470,10 +3484,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                     const dutyType = getVal(row.c[2]) || '';
                     let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
                     let timeStr = timeMatch ? timeMatch[1] : '';
-                    let namePart = label.indexOf('-') !== -1 ? label.substring(label.indexOf('-') + 1).trim() : label;
-                    if (timeStr) {
-                        namePart = namePart.replace(new RegExp('\\s*\\(?' + timeStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '\\)?\\s*'), '').trim();
-                    }
+                    let namePart = cleanDutyPersonName(label, timeStr);
                     return { branch, timeStr, namePart, label, dutyType, _dutyId: row._dutyId };
                 });
 
@@ -3687,11 +3698,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                         const dutyType = getVal(row.c[2]) || '';
                         let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : '';
-                        let namePart = label;
-                        if (timeStr) {
-                            namePart = namePart.replace(timeStr, '').replace(/^[-\s()]+/, '').trim();
-                        }
-                        namePart = namePart.replace(/^Trực\s+/i, '');
+                        let namePart = cleanDutyPersonName(label, timeStr);
                         const wfhHtml = dutyType && dutyType.toUpperCase() === 'WFH' ? `<span style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">WFH</span>` : '';
                         const timeBadge = timeStr ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${timeStr}</span>` : '';
                         
@@ -3750,11 +3757,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                         const dutyType = getVal(row.c[2]) || '';
                         let timeMatch = label.match(/(\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})/);
                         let timeStr = timeMatch ? timeMatch[1] : '';
-                        let namePart = label;
-                        if (timeStr) {
-                            namePart = namePart.replace(timeStr, '').replace(/^[-\s()]+/, '').trim();
-                        }
-                        namePart = namePart.replace(/^Trực\s+/i, '');
+                        let namePart = cleanDutyPersonName(label, timeStr);
                         const wfhHtml = dutyType && dutyType.toUpperCase() === 'WFH' ? `<span style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">WFH</span>` : '';
                         const timeBadge = timeStr ? `<span style="background: var(--bg-color); padding: 1px 6px; border-radius: 4px; font-size: 0.7rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${timeStr}</span>` : '';
                         
