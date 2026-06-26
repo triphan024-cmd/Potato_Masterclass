@@ -2782,7 +2782,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
         if (completedTasks.length > 0) {
             let compHtml = `<div style="background: #f8fafc; border: 1px dashed rgba(0,0,0,0.1); border-radius: 8px; padding: 16px;">`;
             compHtml += `<h4 style="margin-top: 0; margin-bottom: 12px; color: var(--success); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-circle-check"></i> Completed Tasks (${completedTasks.length})</h4>`;
-            compHtml += `<ul style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 0.85rem; display: flex; flex-direction: column; gap: 8px;">`;
+            compHtml += `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">`;
             completedTasks.forEach(row => {
                 const c = row.c;
                 const category = getVal(c[6]) || 'Task';
@@ -2835,9 +2835,17 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     .replace(/\r/g, ' ')
                     .replace(/'/g, "&#39;");
                 
-                compHtml += `<li style="cursor: pointer; transition: color 0.2s; display: flex; align-items: flex-start; justify-content: space-between;" onmouseover="this.style.color='var(--success)'" onmouseout="this.style.color='var(--text-muted)'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details"><del style="flex: 1; margin-right: 8px;">${shortPlan}</del> <span style="font-size: 0.8rem; background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span></li>`;
+                compHtml += `
+                    <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;" onmouseover="this.style.borderColor='var(--success)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'; this.style.transform='none'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
+                        <div style="display: flex; align-items: flex-start; min-width: 0; flex: 1;">
+                            <i class="fa-solid fa-circle-check" style="color: var(--success); margin-right: 8px; flex-shrink: 0; margin-top: 3px;"></i>
+                            <span style="font-size: 0.85rem; color: var(--text-dark); word-break: break-word; line-height: 1.4;">${shortPlan}</span>
+                        </div>
+                        <span style="font-size: 0.75rem; background: rgba(0,0,0,0.05); color: var(--text-muted); padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span>
+                    </div>
+                `;
             });
-            compHtml += `</ul></div>`;
+            compHtml += `</div></div>`;
             completedPanel.innerHTML = compHtml;
         } else {
             completedPanel.innerHTML = '';
