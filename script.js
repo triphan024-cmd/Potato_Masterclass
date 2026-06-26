@@ -2327,8 +2327,11 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
     // Right: Detail Panel
     const rightDiv = document.createElement('div');
     rightDiv.className = 'task-split-right';
-    rightDiv.id = `${containerId}-detail-panel`;
-    rightDiv.innerHTML = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px;"><i class="fa-solid fa-inbox"></i> Tasks Overview</h3><p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
+    
+    const activePanel = document.createElement('div');
+    activePanel.id = `${containerId}-detail-panel`;
+    activePanel.innerHTML = `<h3 style="color: var(--primary-color); margin-top: 0; margin-bottom: 16px;"><i class="fa-solid fa-inbox"></i> Tasks Overview</h3><p style="color: var(--text-muted); font-size: 0.9rem;">Select a date on the calendar to view tasks.</p>`;
+    rightDiv.appendChild(activePanel);
 
     const parseDateStr = (dateStr) => {
         if (!dateStr) return null;
@@ -2372,7 +2375,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
             el.style.backgroundColor = '';
             el.style.color = 'var(--primary-color)';
         });
-        showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
+        showTaskDetails(picName, year, month, {type: 'all'}, activePanel.id, validRows);
     };
     blankHeader.appendChild(allBtn);
     board.appendChild(blankHeader);
@@ -2479,7 +2482,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
                             el.style.color = 'var(--primary-color)';
                         }
                     });
-                    showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentW}, rightDiv.id, validRows);
+                    showTaskDetails(picName, year, month, {type: 'week', start: wStart, end: wEnd, index: currentW}, activePanel.id, validRows);
                 };
                 btnCell.appendChild(wBtn);
             }
@@ -2519,7 +2522,7 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
                     });
                     this.dataset.origBorder = this.style.border;
                     this.style.border='2px solid var(--primary-dark)';
-                    showTaskDetails('${picName}', ${year}, ${month}, ${dateNum}, '${rightDiv.id}', window['tmpValidRows_${containerId}'])
+                    showTaskDetails('${picName}', ${year}, ${month}, ${dateNum}, '${activePanel.id}', window['tmpValidRows_${containerId}'])
                 ">${dateNum}</div></div>`;
             } else {
                 cell.innerHTML = `<div style="padding: 4px;"><div style="${style}">${currentDate}</div></div>`;
@@ -2536,60 +2539,24 @@ function renderRoleTasks(rows, picName, containerId, monthStr) {
         unscheduledBtn.className = 'icon-btn';
         unscheduledBtn.style.cssText = 'margin-top: 16px; background: #f8fafc; color: var(--primary-color); border: 1px dashed rgba(0,0,0,0.1); border-radius: 6px; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: all 0.2s;';
         unscheduledBtn.innerText = `View ${dayMap['unscheduled'].length} Unscheduled Tasks`;
-        unscheduledBtn.onclick = () => showTaskDetails(picName, null, null, null, rightDiv.id, validRows);
+        unscheduledBtn.onclick = () => showTaskDetails(picName, null, null, null, activePanel.id, validRows);
         leftDiv.appendChild(unscheduledBtn);
     }
     
     const completedTasksContainer = document.createElement('div');
     completedTasksContainer.id = `${containerId}-completed-panel`;
     completedTasksContainer.style.marginTop = '24px';
-    leftDiv.appendChild(completedTasksContainer);
+    rightDiv.appendChild(completedTasksContainer);
     
     splitWrapper.appendChild(leftDiv);
     splitWrapper.appendChild(rightDiv);
     container.appendChild(splitWrapper);
     
-    const today = new Date();
-    if (today.getMonth() === month && today.getFullYear() === year) {
-        let firstDayOfMonth = new Date(year, month, 1).getDay();
-        let firstTuesdayDate = 1;
-        for (let day = 1; day <= 7; day++) {
-            let d = new Date(year, month, day);
-            if (d.getDay() === 2) {
-                firstTuesdayDate = day;
-                break;
-            }
-        }
-        
-        let indexOfFirstTue = firstDayOfMonth + firstTuesdayDate - 1;
-        let w1RowIndex = Math.floor(indexOfFirstTue / 7);
-        
-        let todayCellIndex = firstDayOfMonth + today.getDate() - 1;
-        let todayRowIndex = Math.floor(todayCellIndex / 7);
-        
-        if (todayRowIndex < w1RowIndex) {
-            const allBtn = Array.from(document.querySelectorAll(`#${containerId} .week-btn`)).find(b => b.innerText === 'All');
-            if (allBtn) allBtn.click();
-            else showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
-        } else {
-            let currentWeek = todayRowIndex - w1RowIndex + 1;
-            const weekBtns = Array.from(document.querySelectorAll(`#${containerId} .week-btn`));
-            const targetBtn = weekBtns.find(b => b.innerText === 'W' + currentWeek);
-            if (targetBtn) {
-                targetBtn.click();
-            } else {
-                // Determine start and end to pass
-                let startCell = todayRowIndex * 7;
-                let wStart = new Date(year, month, 1 - firstDayOfMonth + startCell);
-                let wEnd = new Date(wStart);
-                wEnd.setDate(wStart.getDate() + 6);
-                showTaskDetails(picName, year, month, {type: 'week', index: currentWeek, start: wStart, end: wEnd}, rightDiv.id, validRows);
-            }
-        }
-    } else if (dayMap['unscheduled'] && dayMap['unscheduled'].length > 0) {
-        showTaskDetails(picName, null, null, null, rightDiv.id, validRows);
+    const allBtnEl = Array.from(document.querySelectorAll(`#${containerId} .week-btn`)).find(b => b.innerText === 'All');
+    if (allBtnEl) {
+        allBtnEl.click();
     } else {
-        showTaskDetails(picName, year, month, {type: 'all'}, rightDiv.id, validRows);
+        showTaskDetails(picName, year, month, {type: 'all'}, activePanel.id, validRows);
     }
 }
 
