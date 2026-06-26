@@ -2753,17 +2753,13 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 .replace(/'/g, "&#39;");
             
             listHtml += `
-                <div class="modern-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0; transition: transform 0.2s, box-shadow 0.2s; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='none'; this.style.boxShadow=''">
-                    <div class="modern-card-header">
-                        <span class="status-badge" style="background: ${statusBg}; color: ${statusColor};">${status}</span>
-                        <span class="category-badge" style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
-                        <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
-                            <span class="deadline-badge" style="margin: 0;"><i class="fa-regular fa-clock"></i> ${deadline || 'No Deadline'}</span>
-                            <button onclick="openTaskModal(${taskObjStr})" style="border: none; background: none; color: var(--primary); cursor: pointer; padding: 4px; font-size: 0.9rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
-                        </div>
-                    </div>
-                    <div class="modern-card-body" style="font-size: 0.9rem; cursor: pointer;" onclick='openTaskDetailModal(${taskObjStr}, \`${safeHTML}\`)' title="Click to view details and quick update">
+                <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-left: 4px solid ${statusColor}; border-radius: 6px; padding: 10px 12px; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);" onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.06)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.02)'; this.style.transform='none'">
+                    <div style="flex: 1; min-width: 0; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" onclick='openTaskDetailModal(${taskObjStr}, \`${safeHTML}\`)' title="${safeTittle}">
                         ${shortPlan}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <span style="font-size: 0.75rem; background: rgba(0,0,0,0.05); color: var(--text-muted); padding: 2px 6px; border-radius: 4px; white-space: nowrap;"><i class="fa-regular fa-clock"></i> ${deadline || 'N/A'}</span>
+                        <button onclick="openTaskModal(${taskObjStr})" style="border: none; background: none; color: var(--primary); cursor: pointer; padding: 2px 4px; font-size: 0.85rem;" title="Edit Task"><i class="fa-solid fa-pen"></i></button>
                     </div>
                 </div>
             `;
@@ -2771,7 +2767,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
     }
 
     if (activeTasks.length > 0) {
-        detailPanel.innerHTML = titleHtml + `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">${listHtml}</div>`;
+        detailPanel.innerHTML = titleHtml + `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">${listHtml}</div>`;
     } else {
         detailPanel.innerHTML = titleHtml + listHtml;
     }
