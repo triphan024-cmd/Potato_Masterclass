@@ -3676,7 +3676,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 return html;
             };
 
-            if (prefix !== 'teacher' && prefix !== 'operation') {
+            if (prefix !== 'teacher' && prefix !== 'operation' && prefix !== 'overview') {
                 const acRows = dutyEvents.filter(r => (getVal(r.c[3])||'').toLowerCase() === 'academic');
                 const opRows = dutyEvents.filter(r => (getVal(r.c[3])||'').toLowerCase() !== 'academic');
                 dutyContent.innerHTML = renderDutyGroup(acRows, '<i class="fa-solid fa-graduation-cap"></i> Academic', '#d97706', true) +
@@ -3782,7 +3782,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
             const opContainer = document.getElementById(`${prefix}-operation-duty-container`);
             if (opContainer) {
                 let currentOpDuties = [];
-                if (prefix === 'operation') {
+                if (prefix === 'operation' || prefix === 'overview') {
                     currentOpDuties = dutyEvents.filter(r => (getVal(r.c[3])||'').toLowerCase() !== 'academic');
                 }
                 if (currentOpDuties.length > 0) {
@@ -3838,7 +3838,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                 }
             }
 
-            if (prefix === 'teacher' || prefix === 'operation') {
+            if (prefix === 'teacher' || prefix === 'operation' || prefix === 'overview') {
                 if (dutyContent) dutyContent.style.display = 'none';
             }
         } else {
@@ -3846,7 +3846,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
             if (acadContainer) acadContainer.innerHTML = '';
             const opContainer = document.getElementById(`${prefix}-operation-duty-container`);
             if (opContainer) opContainer.innerHTML = '';
-            if (prefix === 'teacher' || prefix === 'operation') {
+            if (prefix === 'teacher' || prefix === 'operation' || prefix === 'overview') {
                 if (dutyContent) dutyContent.style.display = 'none';
             } else {
                 if (dutyContent) {
