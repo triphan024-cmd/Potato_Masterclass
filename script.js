@@ -1627,8 +1627,7 @@ let globalCalendarEvents = [];
 
 function isForeignTeacher(nameStr) {
     if (!nameStr) return false;
-    const lower = String(nameStr).toLowerCase();
-    return lower.includes('vibha') || lower.includes('sue') || lower.includes('grace');
+    return /\b(vibha|sue|grace)\b/i.test(String(nameStr));
 }
 
 function getShortName(fullName) {
@@ -3350,7 +3349,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
                 
                 if (selT === 'foreign') {
                     let matchedT = false;
-                    for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                    for (let col of [13, 8, 9, 1]) {
                         if (row.c && row.c[col]) {
                             const val = getVal(row.c[col]);
                             if (val && isForeignTeacher(val)) {
@@ -3363,7 +3362,7 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
                     const sTeacher = getShortName(selT).toLowerCase();
                     const selLower = selT.toLowerCase();
                     let matchedT = false;
-                    for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                    for (let col of [13, 8, 9, 1]) {
                         if (row.c && row.c[col]) {
                             const val = getVal(row.c[col]);
                             if (val) {
@@ -3686,7 +3685,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                     const selB = bSelect ? bSelect.value : 'all';
                     if (selT === 'foreign') {
                         let matchedT = false;
-                        for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                        for (let col of [13, 8, 9, 1]) {
                             if (r.c && r.c[col]) {
                                 const val = getVal(r.c[col]);
                                 if (val && isForeignTeacher(val)) {
@@ -3699,7 +3698,7 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                         const sTeacher = getShortName(selT).toLowerCase();
                         const selLower = selT.toLowerCase();
                         let matchedT = false;
-                        for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                        for (let col of [13, 8, 9, 1]) {
                             if (r.c && r.c[col]) {
                                 const val = getVal(r.c[col]);
                                 if (val) {
