@@ -2808,8 +2808,9 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                 const shortPlan = String(tittle).length > 50 ? String(tittle).substring(0, 50) + '...' : String(tittle);
                 
                 const combinedHTML = `
-                    <div style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1);">
-                        <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
+                    <div style="background: rgba(255,255,255,0.95); padding: 24px; border-radius: 8px; font-size: 1.1rem; line-height: 1.6; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.1); position: relative;">
+                        <button type="button" class="close-btn" onclick="closeClassDetail()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted)'"><i class="fa-solid fa-xmark"></i></button>
+                        <h3 style="margin-top: 0; margin-bottom: 15px; padding-right: 24px; color: var(--primary-dark); font-size: 1.3rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 10px;">${safeTittle}</h3>
                         <div style="display: flex; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px;">
                             <span class="status-badge" style="background: rgba(46, 204, 113, 0.1); color: var(--success); margin: 0;">${safeStatus}</span>
                             <span class="category-badge" style="margin: 0;"><i class="fa-solid fa-tag"></i> ${safeCategory}</span>
@@ -2832,7 +2833,7 @@ function showTaskDetails(picName, year, month, date, containerId, validRows) {
                     .replace(/'/g, "&#39;");
                 
                 compHtml += `
-                    <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;" onmouseover="this.style.borderColor='var(--success)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'; this.style.transform='none'" onclick="openClassDetail('', \`${safeHTML}\`)" title="Click to view details">
+                    <div style="background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;" onmouseover="this.style.borderColor='var(--success)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(0,0,0,0.08)'; this.style.transform='none'" onclick="openClassDetail('', \`${safeHTML}\`, true, '600px')" title="Click to view details">
                         <div style="display: flex; align-items: flex-start; min-width: 0; flex: 1;">
                             <i class="fa-solid fa-circle-check" style="color: var(--success); margin-right: 8px; flex-shrink: 0; margin-top: 3px;"></i>
                             <span style="font-size: 0.85rem; color: var(--text-dark); word-break: break-word; line-height: 1.4;">${shortPlan}</span>
