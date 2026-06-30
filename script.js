@@ -1627,7 +1627,9 @@ let globalCalendarEvents = [];
 
 function isForeignTeacher(nameStr) {
     if (!nameStr) return false;
-    return /\b(vibha|sue|grace)\b/i.test(String(nameStr));
+    const raw = String(nameStr);
+    const short = typeof getShortName === 'function' ? getShortName(raw) : raw;
+    return /\b(vibha|sue|grace)\b/i.test(raw) || /\b(vibha|sue|grace)\b/i.test(short);
 }
 
 function getShortName(fullName) {
@@ -4301,7 +4303,8 @@ window.applyTeacherFilter = function() {
     let rowsToRender = window.currentMonthFilteredRows || [];
     if (selectedTeacher === 'foreign') {
         rowsToRender = rowsToRender.filter(row => 
-            isForeignTeacher(getVal(row.c[8])) || isForeignTeacher(getVal(row.c[9]))
+            isForeignTeacher(getVal(row.c[8])) || isForeignTeacher(getVal(row.c[9])) ||
+            isForeignTeacher(getShortName(getVal(row.c[8]))) || isForeignTeacher(getShortName(getVal(row.c[9])))
         );
     } else if (selectedTeacher !== 'all') {
         rowsToRender = rowsToRender.filter(row => 
