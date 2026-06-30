@@ -1564,15 +1564,23 @@ function changeMonth(diff) {
                 return row.c[57] && String(row.c[57].v).padStart(2, '0') === monthStr;
             });
             window.currentMonthFilteredRows = filteredRows;
+            if (window.currentCalDates) {
+                const year = new Date().getFullYear();
+                ['overview', 'operation', 'teacher'].forEach(k => {
+                    if (window.currentCalDates[k]) window.currentCalDates[k] = new Date(year, monthVal - 1, 1);
+                });
+            }
             
             // Populate teacher filter
             const teacherSelect = document.getElementById('teacherFilter');
             if (teacherSelect) {
+                const currentVal = teacherSelect.value;
                 const teachers = [...new Set([
                     ...filteredRows.map(r => getShortName(getVal(r.c[8]))),
                     ...filteredRows.map(r => getShortName(getVal(r.c[9])))
                 ].filter(n => n && n !== '-'))].sort();
                 teacherSelect.innerHTML = '<option value="all">All Teachers</option><option value="foreign">Foreign teachers</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                if (currentVal) teacherSelect.value = currentVal;
                 teacherSelect.style.display = 'block';
             }
 
@@ -3444,9 +3452,11 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
             html += `<div style="padding: 4px;" title="${tooltip}" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" style="${dayStyle}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
         } else {
             html += `<div style="padding: 4px;" onclick="selectCalendarDate(${year}, ${month}, ${i}, '${prefix}')"><div class="${classList.join(' ')}" style="${dayStyle}" id="${prefix}-cal-day-${year}-${month}-${i}">${i}</div></div>`;
-        }
     }
     grid.innerHTML = html;
+    if (prefix === 'teacher' && monthOffset !== 0 && typeof applyTeacherFilter === 'function') {
+        applyTeacherFilter();
+    }
 }
 
 function selectCalendarDate(year, month, day, prefix = 'overview') {
@@ -4301,11 +4311,39 @@ window.applyTeacherFilter = function() {
     }
     
     const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
-    const calendarClassTeachers = {};
+    const calMonthVal = (window.currentCalDates && window.currentCalDates['teacher']) ? window.currentCalDates['teacher'].getMonth() + 1 : monthVal;
+    
+    function cleanClassCodeForMatch(str) {
+        if (!str) return '';
+        let s = formatClassName(str);
+        s = s.replace(/^(?:HD|NQ|HĐ|Hưng Định|Ngô Quyền)\s*\|\s*/i, '')
+             .replace(/^(?:HD|NQ|HĐ)\s*-\s*/i, '');
+        s = s.replace(/^[IVX]+\.\s*/i, '');
+        s = s.replace(/\|\s*(?:HD|NQ|HĐ)$/i, '').replace(/-\s*(?:HD|NQ|HĐ)$/i, '');
+        return s.trim().toUpperCase();
+    }
+
+    function isClassNameMatch(nameA, nameB) {
+        if (!nameA || !nameB) return false;
+        const normA = cleanClassCodeForMatch(nameA);
+        const normB = cleanClassCodeForMatch(nameB);
+        if (!normA || !normB) return false;
+        if (normA === normB || normA.includes(normB) || normB.includes(normA)) return true;
+        
+        const stripA = normA.replace(/[^A-Z0-9]/g, '');
+        const stripB = normB.replace(/[^A-Z0-9]/g, '');
+        if (stripA && stripB && (stripA === stripB || stripA.includes(stripB) || stripB.includes(stripA))) {
+            if (Math.min(stripA.length, stripB.length) >= 5) return true;
+        }
+        return false;
+    }
+
+    const calendarClassTeachers = [];
     if (window.globalCalendarEvents && (selectedTeacher === 'foreign' || selectedTeacher !== 'all')) {
         window.globalCalendarEvents.forEach(e => {
             if (!e || !e.date || !e.className) return;
-            if (e.date.getMonth() + 1 !== monthVal) return;
+            const eMonth = e.date.getMonth() + 1;
+            if (eMonth !== monthVal && eMonth !== calMonthVal) return;
             const eTeacher = e.teacher || '';
             let isMatch = false;
             if (selectedTeacher === 'foreign') {
@@ -4316,8 +4354,7 @@ window.applyTeacherFilter = function() {
                 }
             }
             if (isMatch) {
-                const cClean = formatClassName(e.className).toUpperCase();
-                if (cClean) calendarClassTeachers[cClean] = eTeacher;
+                calendarClassTeachers.push({ className: e.className, teacher: eTeacher });
             }
         });
     }
@@ -4329,10 +4366,10 @@ window.applyTeacherFilter = function() {
                 isForeignTeacher(getShortName(getVal(row.c[8]))) || isForeignTeacher(getShortName(getVal(row.c[9])))) {
                 return true;
             }
-            const rowClassName = formatClassName(getVal(row.c[6]) || getVal(row.c[1])).toUpperCase();
-            for (let cName in calendarClassTeachers) {
-                if (rowClassName === cName || rowClassName.includes(cName) || cName.includes(rowClassName)) {
-                    row._calendarTeacher = calendarClassTeachers[cName];
+            const rowClassName = getVal(row.c[6]) || getVal(row.c[1]);
+            for (let item of calendarClassTeachers) {
+                if (isClassNameMatch(rowClassName, item.className)) {
+                    row._calendarTeacher = item.teacher;
                     return true;
                 }
             }
@@ -4343,10 +4380,10 @@ window.applyTeacherFilter = function() {
             if (getShortName(getVal(row.c[8])) === selectedTeacher || getShortName(getVal(row.c[9])) === selectedTeacher) {
                 return true;
             }
-            const rowClassName = formatClassName(getVal(row.c[6]) || getVal(row.c[1])).toUpperCase();
-            for (let cName in calendarClassTeachers) {
-                if (rowClassName === cName || rowClassName.includes(cName) || cName.includes(rowClassName)) {
-                    row._calendarTeacher = calendarClassTeachers[cName];
+            const rowClassName = getVal(row.c[6]) || getVal(row.c[1]);
+            for (let item of calendarClassTeachers) {
+                if (isClassNameMatch(rowClassName, item.className)) {
+                    row._calendarTeacher = item.teacher;
                     return true;
                 }
             }
@@ -4367,9 +4404,8 @@ window.applyTeacherFilter = function() {
         });
     }
     
-    const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
-    const monthStr = String(monthVal).padStart(2, '0');
-    renderTeacherPerformance(rowsToRender, monthStr);
+    const calMonthStr = String(calMonthVal).padStart(2, '0');
+    renderTeacherPerformance(rowsToRender, calMonthStr);
     if (typeof renderCalendar === 'function') {
         let activeId = null;
         const activeBeforeEl = document.querySelector('.teacher-cal-day-item.is-selected');
