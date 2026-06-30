@@ -1572,7 +1572,7 @@ function changeMonth(diff) {
                     ...filteredRows.map(r => getShortName(getVal(r.c[8]))),
                     ...filteredRows.map(r => getShortName(getVal(r.c[9])))
                 ].filter(n => n && n !== '-'))].sort();
-                teacherSelect.innerHTML = '<option value="all">All Teachers</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                teacherSelect.innerHTML = '<option value="all">All Teachers</option><option value="foreign">Foreign teachers</option>' + teachers.map(t => `<option value="${t}">${t}</option>`).join('');
                 teacherSelect.style.display = 'block';
             }
 
@@ -1624,6 +1624,12 @@ function getFormattedHistoryTime() {
 let hrMap = {};
 let hrReverseMap = {};
 let globalCalendarEvents = [];
+
+function isForeignTeacher(nameStr) {
+    if (!nameStr) return false;
+    const lower = String(nameStr).toLowerCase();
+    return lower.includes('vibha') || lower.includes('sue') || lower.includes('grace');
+}
 
 function getShortName(fullName) {
     if (!fullName) return '';
@@ -3305,7 +3311,9 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
         const selectedTeacher = tSelect ? tSelect.value : 'all';
         const selectedBranch = bSelect ? bSelect.value : 'all';
         
-        if (selectedTeacher !== 'all') {
+        if (selectedTeacher === 'foreign') {
+            monthEvents = monthEvents.filter(e => isForeignTeacher(e.teacher));
+        } else if (selectedTeacher !== 'all') {
             monthEvents = monthEvents.filter(e => {
                 const eTeacher = e.teacher || '';
                 return getShortName(eTeacher) === selectedTeacher || eTeacher === selectedTeacher || eTeacher.includes(selectedTeacher);
@@ -3340,7 +3348,18 @@ function renderCalendar(monthOffset = 0, prefix = 'overview') {
                 const selT = tSelect ? tSelect.value : 'all';
                 const selB = bSelect ? bSelect.value : 'all';
                 
-                if (selT !== 'all') {
+                if (selT === 'foreign') {
+                    let matchedT = false;
+                    for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                        if (row.c && row.c[col]) {
+                            const val = getVal(row.c[col]);
+                            if (val && isForeignTeacher(val)) {
+                                matchedT = true; break;
+                            }
+                        }
+                    }
+                    if (!matchedT) return;
+                } else if (selT !== 'all') {
                     const sTeacher = getShortName(selT).toLowerCase();
                     const selLower = selT.toLowerCase();
                     let matchedT = false;
@@ -3665,7 +3684,18 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
                     const bSelect = document.getElementById('teacherBranchFilter');
                     const selT = tSelect ? tSelect.value : 'all';
                     const selB = bSelect ? bSelect.value : 'all';
-                    if (selT !== 'all') {
+                    if (selT === 'foreign') {
+                        let matchedT = false;
+                        for (let col of [13, 8, 9, 1, 5, 7, 10, 11, 12]) {
+                            if (r.c && r.c[col]) {
+                                const val = getVal(r.c[col]);
+                                if (val && isForeignTeacher(val)) {
+                                    matchedT = true; break;
+                                }
+                            }
+                        }
+                        if (!matchedT) return false;
+                    } else if (selT !== 'all') {
                         const sTeacher = getShortName(selT).toLowerCase();
                         const selLower = selT.toLowerCase();
                         let matchedT = false;
@@ -3841,7 +3871,9 @@ function selectCalendarDate(year, month, day, prefix = 'overview') {
         const selectedTeacher = tSelect ? tSelect.value : 'all';
         const selectedBranch = bSelect ? bSelect.value : 'all';
         
-        if (selectedTeacher !== 'all') {
+        if (selectedTeacher === 'foreign') {
+            dayEvents = dayEvents.filter(e => isForeignTeacher(e.teacher));
+        } else if (selectedTeacher !== 'all') {
             dayEvents = dayEvents.filter(e => {
                 const eTeacher = e.teacher || '';
                 return getShortName(eTeacher) === selectedTeacher || eTeacher === selectedTeacher || eTeacher.includes(selectedTeacher);
@@ -4268,7 +4300,11 @@ window.applyTeacherFilter = function() {
     }
     
     let rowsToRender = window.currentMonthFilteredRows || [];
-    if (selectedTeacher !== 'all') {
+    if (selectedTeacher === 'foreign') {
+        rowsToRender = rowsToRender.filter(row => 
+            isForeignTeacher(getVal(row.c[8])) || isForeignTeacher(getVal(row.c[9]))
+        );
+    } else if (selectedTeacher !== 'all') {
         rowsToRender = rowsToRender.filter(row => 
             getShortName(getVal(row.c[8])) === selectedTeacher || 
             getShortName(getVal(row.c[9])) === selectedTeacher
