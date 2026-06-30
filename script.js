@@ -4300,17 +4300,58 @@ window.applyTeacherFilter = function() {
         if (bSelect) bSelect.style.display = 'inline-block';
     }
     
+    const monthVal = typeof currentMonthIndex !== 'undefined' ? currentMonthIndex + 3 : 3;
+    const calendarClassTeachers = {};
+    if (window.globalCalendarEvents && (selectedTeacher === 'foreign' || selectedTeacher !== 'all')) {
+        window.globalCalendarEvents.forEach(e => {
+            if (!e || !e.date || !e.className) return;
+            if (e.date.getMonth() + 1 !== monthVal) return;
+            const eTeacher = e.teacher || '';
+            let isMatch = false;
+            if (selectedTeacher === 'foreign') {
+                if (isForeignTeacher(eTeacher)) isMatch = true;
+            } else {
+                if (getShortName(eTeacher) === selectedTeacher || eTeacher === selectedTeacher || eTeacher.includes(selectedTeacher)) {
+                    isMatch = true;
+                }
+            }
+            if (isMatch) {
+                const cClean = formatClassName(e.className).toUpperCase();
+                if (cClean) calendarClassTeachers[cClean] = eTeacher;
+            }
+        });
+    }
+
     let rowsToRender = window.currentMonthFilteredRows || [];
     if (selectedTeacher === 'foreign') {
-        rowsToRender = rowsToRender.filter(row => 
-            isForeignTeacher(getVal(row.c[8])) || isForeignTeacher(getVal(row.c[9])) ||
-            isForeignTeacher(getShortName(getVal(row.c[8]))) || isForeignTeacher(getShortName(getVal(row.c[9])))
-        );
+        rowsToRender = rowsToRender.filter(row => {
+            if (isForeignTeacher(getVal(row.c[8])) || isForeignTeacher(getVal(row.c[9])) ||
+                isForeignTeacher(getShortName(getVal(row.c[8]))) || isForeignTeacher(getShortName(getVal(row.c[9])))) {
+                return true;
+            }
+            const rowClassName = formatClassName(getVal(row.c[6]) || getVal(row.c[1])).toUpperCase();
+            for (let cName in calendarClassTeachers) {
+                if (rowClassName === cName || rowClassName.includes(cName) || cName.includes(rowClassName)) {
+                    row._calendarTeacher = calendarClassTeachers[cName];
+                    return true;
+                }
+            }
+            return false;
+        });
     } else if (selectedTeacher !== 'all') {
-        rowsToRender = rowsToRender.filter(row => 
-            getShortName(getVal(row.c[8])) === selectedTeacher || 
-            getShortName(getVal(row.c[9])) === selectedTeacher
-        );
+        rowsToRender = rowsToRender.filter(row => {
+            if (getShortName(getVal(row.c[8])) === selectedTeacher || getShortName(getVal(row.c[9])) === selectedTeacher) {
+                return true;
+            }
+            const rowClassName = formatClassName(getVal(row.c[6]) || getVal(row.c[1])).toUpperCase();
+            for (let cName in calendarClassTeachers) {
+                if (rowClassName === cName || rowClassName.includes(cName) || cName.includes(rowClassName)) {
+                    row._calendarTeacher = calendarClassTeachers[cName];
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     const bSelect = document.getElementById('teacherBranchFilter');
@@ -4449,7 +4490,7 @@ function renderTeacherPerformance(classRows, currentMonthStr) {
                             ${sortedRows.map(row => {
                                 const c = row.c;
                                 const className = formatClassName(getVal(c[6]) || getVal(c[1]));
-                                const teacherName = getShortName(getVal(c[9])) || '-';
+                                const teacherName = row._calendarTeacher ? getShortName(row._calendarTeacher) : (getShortName(getVal(c[9])) || '-');
                                 const studentCount = parseInt(getVal(c[7]) || 0);
                                 const schedule = getVal(c[12]) || '-';
                                 const absence = getVal(c[33]) || '-';
